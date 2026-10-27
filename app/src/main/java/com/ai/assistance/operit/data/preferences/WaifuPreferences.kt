@@ -52,11 +52,8 @@ class WaifuPreferences private constructor(private val context: Context) {
         const val DEFAULT_WAIFU_SELFIE_PROMPT = "kipfel vrchat, long hair, Matcha color hair, purple eyes, sweater vest, black skirt, black necktie, collared shirt, long sleeves, black headwear, beanie, pleated skirt, hair bun, white shirt, hair ribbon, hairclip, hair between eyes, black footwear, blush, hair ornament, cat hat, very long hair, sweater, animal ear headwear, bag, bandaid on leg, socks" // 默认外貌提示词
     }
 
-    // Flow for Waifu Mode
-    val enableWaifuModeFlow: Flow<Boolean> =
-        context.waifuDataStore.data.map { preferences ->
-            preferences[ENABLE_WAIFU_MODE] ?: DEFAULT_ENABLE_WAIFU_MODE
-        }
+    // Waifu 模式已移除：恒为关闭
+    val enableWaifuModeFlow: Flow<Boolean> = kotlinx.coroutines.flow.flowOf(false)
 
     val waifuCharDelayFlow: Flow<Int> =
         context.waifuDataStore.data.map { preferences ->

@@ -222,13 +222,6 @@ fun SettingsScreen(
                                 onClick = navigateToPersonaCardGeneration
                         )
                         
-                        // 新增：Waifu模式设置
-                        CompactSettingsItem(
-                                title = stringResource(R.string.waifu_mode_settings),
-                                subtitle = stringResource(R.string.waifu_mode_settings_desc),
-                                icon = Icons.Default.EmojiEmotions,
-                                onClick = navigateToWaifuModeSettings
-                        )
                 }
 
                 // ======= 上下文和总结设置 =======

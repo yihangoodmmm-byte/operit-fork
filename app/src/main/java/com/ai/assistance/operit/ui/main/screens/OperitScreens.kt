@@ -59,6 +59,7 @@ import com.ai.assistance.operit.ui.features.settings.screens.LayoutAdjustmentSet
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigEntryMode
 import com.ai.assistance.operit.ui.features.settings.screens.ModelPromptsSettingsScreen
+import com.ai.assistance.operit.ui.features.settings.screens.SystemPromptSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.TagMarketScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SpeechServicesSettingsScreen
@@ -162,7 +163,7 @@ sealed class Screen(
                     onNavigateToMemoryBase = { navigateTo(MemoryBase) },
                     onNavigateToModelConfig = { navigateTo(ModelConfig) },
                     onNavigateToOnboardingModelConfig = { navigateTo(ModelConfigOnboarding) },
-                    onNavigateToModelPrompts = { navigateTo(ModelPromptsSettings) },
+                    onNavigateToModelPrompts = { navigateTo(SystemPromptSettings) },
                     onNavigateToPackageManager = { navigateTo(Packages) },
                     onLoading = onLoading,
                     onError = onError,
@@ -606,7 +607,7 @@ sealed class Screen(
                     navigateToModelConfig = { navigateTo(ModelConfig) },
                     navigateToThemeSettings = { navigateTo(ThemeSettings) },
                     navigateToGlobalDisplaySettings = { navigateTo(GlobalDisplaySettings) },
-                    navigateToModelPrompts = { navigateTo(ModelPromptsSettings) },
+                    navigateToModelPrompts = { navigateTo(SystemPromptSettings) },
                     navigateToFunctionalConfig = { navigateTo(FunctionalConfig) },
                     navigateToChatHistorySettings = { navigateTo(ChatHistorySettings) },
                     navigateToChatBackupSettings = { navigateTo(ChatBackupSettings) },
@@ -920,7 +921,7 @@ sealed class Screen(
             com.ai.assistance.operit.ui.features.settings.screens.PersonaCardGenerationScreen(
                 onNavigateToSettings = { navigateTo(Settings) },
                 onNavigateToModelConfig = { navigateTo(ModelConfig) },
-                onNavigateToModelPrompts = { navigateTo(ModelPromptsSettings) }
+                onNavigateToModelPrompts = { navigateTo(SystemPromptSettings) }
             )
         }
     }
@@ -977,6 +978,22 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             TagMarketScreen(onBackPressed = onGoBack)
+        }
+    }
+
+    data object SystemPromptSettings :
+            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_system_prompt_settings) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            SystemPromptSettingsScreen(onBackPressed = onGoBack)
         }
     }
 

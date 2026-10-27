@@ -160,8 +160,9 @@ fun ChatScreenHeader(
                 historyIconColor = chatHeaderHistoryIconColor,
                 pipIconColor = chatHeaderPipIconColor,
                 runningTaskCount = activeStreamingChatIds.size,
-                activeCharacterName = activeCharacterGroup?.name ?: activeCharacterCard?.name ?: "",
-                activeCharacterAvatarUri = activeCharacterAvatarUri,
+                // 角色卡已停用：聊天头部不再展示角色名/头像入口
+                activeCharacterName = "",
+                activeCharacterAvatarUri = null,
                 onCharacterClick = onCharacterSwitcherClick
         )
 

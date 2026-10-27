@@ -151,7 +151,8 @@ fun ChatHeader(
                 }
 
                 // Character Switcher
-                Row(
+                if (activeCharacterName.isNotBlank()) {
+Row(
                         modifier =
                                 Modifier
                                         .widthIn(max = 176.dp)
@@ -193,6 +194,7 @@ fun ChatHeader(
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.widthIn(max = 116.dp)
                         )
+                }
                 }
         }
 }

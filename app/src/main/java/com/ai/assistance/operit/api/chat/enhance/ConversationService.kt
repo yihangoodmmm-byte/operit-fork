@@ -576,7 +576,8 @@ class ConversationService(
                 )
 
                 // 构建waifu特殊规则
-                val waifuRulesText = if(waifuPreferences.enableWaifuModeFlow.first()) buildWaifuRulesText() else ""
+                // Waifu 模式已移除：不再注入任何 waifu 规则
+                val waifuRulesText = ""
                 // 语音头像模式：添加 <mood> 标签协议
                 val avatarMoodRulesText =
                     if (shouldInjectMoodRules(promptFunctionType)) {
