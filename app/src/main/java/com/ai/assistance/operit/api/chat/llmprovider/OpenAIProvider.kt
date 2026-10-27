@@ -3171,7 +3171,15 @@ open class OpenAIProvider(
             }
             
             if (!state.streamCompletionConfirmed) {
-                throw IOException(context.getString(R.string.openai_error_network_interrupted))
+                // 补尾：部分中转站/网关在正文发完后直接断连，不补 [DONE] 也不给 finish_reason。
+                // 只要已经收到过数据就按正常结束处理——否则上层会把这段回答整个回滚重发，
+                // 界面表现是「说完又整段重来」，供应商侧还会记两次调用。
+                if (state.chunkCount > 0) {
+                    state.streamCompletionConfirmed = true
+                    AppLogger.d("AIService", "【发送消息】未收到结束标记但已有内容，按完成处理（补尾）")
+                } else {
+                    throw IOException(context.getString(R.string.openai_error_network_interrupted))
+                }
             }
 
             closeAllOpenToolCalls(state, emitter)

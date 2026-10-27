@@ -26,6 +26,8 @@ import com.ai.assistance.operit.core.chat.hooks.toRoleContentPairs
 import com.ai.assistance.operit.core.application.ActivityLifecycleManager
 import com.ai.assistance.operit.core.tools.AIToolHandler
 import com.ai.assistance.operit.core.tools.StringResultData
+import com.ai.assistance.operit.core.context.ConversationCompactor
+import com.ai.assistance.operit.core.tools.ToolOutputSpillStore
 import com.ai.assistance.operit.core.tools.climode.CliToolModeSupport
 import com.ai.assistance.operit.core.tools.climode.ToolExposureMode
 import com.ai.assistance.operit.core.tools.packTool.PackageManager
@@ -1108,9 +1110,15 @@ class EnhancedAIService private constructor(private val context: Context) {
                         }
                     execContext.conversationHistory.clear()
                     execContext.conversationHistory.addAll(requestHistory)
+                    // 上下文预算：超过模型窗口 70% 时把较早轮次压成骨架。
+                    // 只影响本次请求，不改 execContext.conversationHistory（历史要保留原文）。
+                    val requestHistoryForModel = ConversationCompactor.compact(
+                        turns = requestHistory,
+                        modelWindow = (modelSnapshot.config.maxContextLength * 1000f).toInt()
+                    ).turns
                     estimatePreparedRequestWindow(
                         serviceForFunction = serviceForFunction,
-                        preparedHistory = requestHistory,
+                        preparedHistory = requestHistoryForModel,
                         availableTools = availableTools,
                         publishEstimate = true
                     )
@@ -1121,7 +1129,7 @@ class EnhancedAIService private constructor(private val context: Context) {
                     val responseStream =
                             serviceForFunction.sendMessage(
                                     context = this@EnhancedAIService.context,
-                                    chatHistory = requestHistory,
+                                    chatHistory = requestHistoryForModel,
                                     modelParameters = modelParameters,
                                     enableThinking = enableThinking,
                                     stream = stream,
@@ -2218,8 +2226,20 @@ class EnhancedAIService private constructor(private val context: Context) {
     ) {
         val startTime = messageTimingNow()
         val toolNames = results.joinToString(", ") { it.toolName }
+        // 工具输出落盘：超过阈值的正文写进文件，只回预览 + 路径，避免长输出被截断后信息全丢。
+        val spillDir = java.io.File(this.context.filesDir, "artifacts")
+        val resultsForModel = results.map { result ->
+            val spilled = ToolOutputSpillStore.spillIfNeeded(
+                raw = result.result.toString(),
+                toolName = result.toolName,
+                baseDir = spillDir
+            )
+            if (spilled == null) result else result.copy(
+                result = StringResultData(spilled.toModelText(result.toolName))
+            )
+        }
         val toolResultMessage =
-            toolResultMessageOverride ?: ConversationMarkupManager.buildToolResultMessage(results)
+            toolResultMessageOverride ?: ConversationMarkupManager.buildToolResultMessage(resultsForModel)
 
         if (toolResultMessage.isBlank()) {
             AppLogger.w(TAG, "工具结果消息为空，跳过后续AI请求")
@@ -2333,10 +2353,15 @@ class EnhancedAIService private constructor(private val context: Context) {
             try {
                 // 发送消息并获取响应流
                 val aiStartTime = messageTimingNow()
+                // 工具轮之后同样按预算压缩一次，避免长任务把窗口顶爆。
+                val compactedCurrentHistory = ConversationCompactor.compact(
+                    turns = currentChatHistory,
+                    modelWindow = (modelSnapshot.config.maxContextLength * 1000f).toInt()
+                ).turns
                 val responseStream =
                         serviceForFunction.sendMessage(
                                 context = this@EnhancedAIService.context,
-                                chatHistory = currentChatHistory,
+                                chatHistory = compactedCurrentHistory,
                                 modelParameters = modelParameters,
                                 enableThinking = enableThinking,
                                 stream = stream,

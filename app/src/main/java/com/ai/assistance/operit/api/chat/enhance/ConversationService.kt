@@ -524,6 +524,13 @@ class ConversationService(
                 // 非空时交给 14 层引擎渲染：人格作为 identity 层，其余内置层可按开关剔除。
                 val personaPrompt = apiPreferences.systemPersonaPromptFlow.first().trim()
                 val disabledLayers = apiPreferences.promptDisabledLayersFlow.first()
+                val layerContents = apiPreferences.promptLayerContentsFlow.first()
+                val layerOverrides = (disabledLayers + layerContents.keys).associateWith { id ->
+                    PromptLayerOverride(
+                        enabled = if (id in disabledLayers) false else null,
+                        content = layerContents[id]
+                    )
+                }
                 val introPrompt = if (personaPrompt.isEmpty()) {
                     ""
                 } else {
@@ -532,9 +539,7 @@ class ConversationService(
                             useEnglish = !LocaleUtils.usesChineseContent(context),
                             userPersona = personaPrompt
                         ),
-                        config = PromptLayerConfig(
-                            overrides = disabledLayers.associateWith { PromptLayerOverride(enabled = false) }
-                        )
+                        config = PromptLayerConfig(overrides = layerOverrides)
                     ).finalPrompt
                 }
 

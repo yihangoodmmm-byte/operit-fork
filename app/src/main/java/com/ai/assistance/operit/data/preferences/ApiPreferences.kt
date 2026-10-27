@@ -147,6 +147,7 @@ class ApiPreferences private constructor(private val context: Context) {
         // 系统级人格提示词（空 = 不注入任何人设，使用模型自身默认行为）
         val SYSTEM_PERSONA_PROMPT = stringPreferencesKey("system_persona_prompt")
         val PROMPT_DISABLED_LAYERS = stringPreferencesKey("prompt_disabled_layers")
+        val PROMPT_LAYER_CONTENTS = stringPreferencesKey("prompt_layer_contents")
 
         val MAX_IMAGE_HISTORY_USER_TURNS = intPreferencesKey("max_image_history_user_turns")
         val MAX_MEDIA_HISTORY_USER_TURNS = intPreferencesKey("max_media_history_user_turns")
@@ -340,6 +341,16 @@ class ApiPreferences private constructor(private val context: Context) {
                 preferences[SYSTEM_PERSONA_PROMPT] ?: DEFAULT_SYSTEM_PERSONA_PROMPT
             }
 
+    /** 用户改写过正文的层：id -> 正文（JSON 对象字符串存储） */
+    val promptLayerContentsFlow: Flow<Map<String, String>> =
+            context.apiDataStore.data.map { preferences ->
+                val raw = preferences[PROMPT_LAYER_CONTENTS].orEmpty()
+                if (raw.isBlank()) emptyMap() else runCatching {
+                    val obj = org.json.JSONObject(raw)
+                    obj.keys().asSequence().associateWith { key -> obj.optString(key) }
+                }.getOrDefault(emptyMap())
+            }
+
     /** 被用户关闭的提示词层 id 集合（JSON 数组字符串存储） */
     val promptDisabledLayersFlow: Flow<Set<String>> =
             context.apiDataStore.data.map { preferences ->
@@ -496,6 +507,19 @@ class ApiPreferences private constructor(private val context: Context) {
     suspend fun saveCustomSystemPromptTemplate(template: String) {
         context.apiDataStore.edit { preferences ->
             preferences[CUSTOM_SYSTEM_PROMPT_TEMPLATE] = template
+        }
+    }
+
+    /** 保存被改写的层正文 */
+    suspend fun savePromptLayerContents(contents: Map<String, String>) {
+        context.apiDataStore.edit { preferences ->
+            if (contents.isEmpty()) {
+                preferences[PROMPT_LAYER_CONTENTS] = ""
+            } else {
+                val obj = org.json.JSONObject()
+                contents.forEach { (id, text) -> obj.put(id, text) }
+                preferences[PROMPT_LAYER_CONTENTS] = obj.toString()
+            }
         }
     }
 
