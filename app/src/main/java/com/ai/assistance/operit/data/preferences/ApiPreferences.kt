@@ -144,6 +144,9 @@ class ApiPreferences private constructor(private val context: Context) {
         // Custom System Prompt Template (Advanced Configuration)
         val CUSTOM_SYSTEM_PROMPT_TEMPLATE = stringPreferencesKey("custom_system_prompt_template")
 
+        // 系统级人格提示词（空 = 不注入任何人设，使用模型自身默认行为）
+        val SYSTEM_PERSONA_PROMPT = stringPreferencesKey("system_persona_prompt")
+
         val MAX_IMAGE_HISTORY_USER_TURNS = intPreferencesKey("max_image_history_user_turns")
         val MAX_MEDIA_HISTORY_USER_TURNS = intPreferencesKey("max_media_history_user_turns")
 
@@ -167,6 +170,7 @@ class ApiPreferences private constructor(private val context: Context) {
 
         // Default system prompt template (empty means use built-in template)
         const val DEFAULT_SYSTEM_PROMPT_TEMPLATE = ""
+        const val DEFAULT_SYSTEM_PERSONA_PROMPT = ""
 
         const val DEFAULT_MAX_IMAGE_HISTORY_USER_TURNS = 2
         const val DEFAULT_MAX_MEDIA_HISTORY_USER_TURNS = 1
@@ -329,6 +333,12 @@ class ApiPreferences private constructor(private val context: Context) {
                 preferences[CUSTOM_SYSTEM_PROMPT_TEMPLATE] ?: DEFAULT_SYSTEM_PROMPT_TEMPLATE
             }
 
+    // 系统级人格提示词：空表示不注入人设
+    val systemPersonaPromptFlow: Flow<String> =
+            context.apiDataStore.data.map { preferences ->
+                preferences[SYSTEM_PERSONA_PROMPT] ?: DEFAULT_SYSTEM_PERSONA_PROMPT
+            }
+
     val maxImageHistoryUserTurnsFlow: Flow<Int> =
         context.apiDataStore.data.map { preferences ->
             preferences[MAX_IMAGE_HISTORY_USER_TURNS] ?: DEFAULT_MAX_IMAGE_HISTORY_USER_TURNS
@@ -475,6 +485,13 @@ class ApiPreferences private constructor(private val context: Context) {
     suspend fun saveCustomSystemPromptTemplate(template: String) {
         context.apiDataStore.edit { preferences ->
             preferences[CUSTOM_SYSTEM_PROMPT_TEMPLATE] = template
+        }
+    }
+
+    // 保存系统级人格提示词
+    suspend fun saveSystemPersonaPrompt(prompt: String) {
+        context.apiDataStore.edit { preferences ->
+            preferences[SYSTEM_PERSONA_PROMPT] = prompt
         }
     }
 

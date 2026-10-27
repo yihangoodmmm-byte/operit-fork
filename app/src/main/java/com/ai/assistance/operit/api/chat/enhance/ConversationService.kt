@@ -509,29 +509,15 @@ class ConversationService(
                         ?: userPreferencesManager.activeMemorySpaceIdFlow.first()
                 val userProfileMarkdown =
                     memorySpaceProfileDocumentRepository.load(effectiveMemorySpaceId).trim()
-                val proxyRolePrompt =
-                    proxySenderName
-                        ?.takeIf { it.isNotBlank() }
-                        ?.let { name -> characterCardManager.findCharacterCardByName(name) }
-                        ?.let { proxyCard ->
-                            characterCardManager.combinePrompts(
-                                proxyCard.id,
-                                promptFunctionType = promptFunctionType
-                            )
-                        }
-                        .orEmpty()
+                // 角色卡不再参与人设：代理角色正文不注入。
+                val proxyRolePrompt = ""
 
-                // 根据功能类型获取对应的提示词
                 val effectiveRoleCardId = roleCardId?.takeIf { it.isNotBlank() }
                 val activeCard = effectiveRoleCardId?.let {
                     characterCardManager.getCharacterCardFlow(it).first()
                 }
-                val introPrompt = activeCard?.let {
-                    characterCardManager.combinePrompts(
-                        it.id,
-                        promptFunctionType = promptFunctionType
-                    )
-                }.orEmpty()
+                // 人设唯一来源 = 系统级提示词；为空时身份区整段不注入，交由模型自身默认行为。
+                val introPrompt = apiPreferences.systemPersonaPromptFlow.first().trim()
 
                 // 获取自定义系统提示模板
                 val finalCustomSystemPromptTemplate = customSystemPromptTemplate ?: apiPreferences.customSystemPromptTemplateFlow.first()
