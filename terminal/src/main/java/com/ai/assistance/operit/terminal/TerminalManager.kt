@@ -769,26 +769,24 @@ class TerminalManager private constructor(
     }
 
     /**
-     * 从外部导入 rootfs 包（不随 APK 分发）。
-     * 查找顺序：应用外置私有目录 -> 下载目录 -> 共享存储根目录。
+     * rootfs 包不随 APK 分发，也不联网或自动抓取：
+     * 手动把 operit-rootfs.tar.xz 放进应用私有目录（filesDir）后重启终端即可生效。
      */
     private fun importRootfsPack(target: File) {
-        val downloadDir = File(Environment.getExternalStorageDirectory(), "Download")
-        val candidates = listOf(
-            File(context.getExternalFilesDir(null), "operit-rootfs.tar.xz"),
-            File(downloadDir, "operit-rootfs.tar.xz"),
-            File(downloadDir, "rootfs.tar.xz"),
-            File(Environment.getExternalStorageDirectory(), "operit-rootfs.tar.xz")
-        )
-        val source = candidates.firstOrNull { it.isFile && it.length() > 1_000_000L }
-            ?: throw IllegalStateException(
-                "未找到 rootfs 包：请把 operit-rootfs.tar.xz 放到 " + downloadDir.absolutePath +
-                    " 后重新打开终端（或在应用私有目录放置同名文件）。"
-            )
-        target.outputStream().use { output ->
-            source.inputStream().use { input -> input.copyTo(output) }
+        val manualPack = File(filesDir, "operit-rootfs.tar.xz")
+        if (manualPack.isFile && manualPack.length() > 1_000_000L) {
+            if (!manualPack.renameTo(target)) {
+                target.outputStream().use { output ->
+                    manualPack.inputStream().use { input -> input.copyTo(output) }
+                }
+            }
+            Log.d(TAG, "Imported rootfs pack from " + manualPack.absolutePath)
+            return
         }
-        Log.d(TAG, "Imported rootfs pack from " + source.absolutePath)
+        throw IllegalStateException(
+            "未找到 rootfs 包：请把 operit-rootfs.tar.xz 放到 " + filesDir.absolutePath +
+                " 后重新打开终端。"
+        )
     }
 
     private fun generateStartScript(): String {

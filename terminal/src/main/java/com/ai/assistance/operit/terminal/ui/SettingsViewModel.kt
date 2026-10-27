@@ -1,10 +1,11 @@
 package com.ai.assistance.operit.terminal.ui
 
 import android.app.Application
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ai.assistance.operit.terminal.utils.CacheManager
-import com.ai.assistance.operit.terminal.utils.UpdateChecker
 import com.ai.assistance.operit.terminal.utils.FtpServerManager
 import com.ai.assistance.operit.terminal.TerminalManager
 import com.ai.assistance.operit.terminal.data.MirrorSource
@@ -27,7 +28,6 @@ class SettingsViewModel(
 ) : AndroidViewModel(application) {
     private val cacheManager = CacheManager(application)
     private val terminalManagerRef by lazy { terminalManager ?: TerminalManager.getInstance(application) }
-    private val updateChecker = UpdateChecker(application)
     private val ftpServerManager = FtpServerManager.getInstance(application)
     private val sourceManager = SourceManager(application)
     private val sshConfigManager = SSHConfigManager(application)
@@ -282,32 +282,26 @@ class SettingsViewModel(
         }
     }
 
+    // 联网更新检查已移除：不再发起任何网络请求
     fun checkForUpdates() {
-        viewModelScope.launch {
-            _updateStatus.value = getApplication<Application>().getString(com.ai.assistance.operit.terminal.R.string.checking_updates)
-            when (val result = updateChecker.checkForUpdates(showToast = true)) {
-                is UpdateChecker.UpdateResult.UpdateAvailable -> {
-                    _updateStatus.value = getApplication<Application>().getString(com.ai.assistance.operit.terminal.R.string.update_available, result.latestVersion, result.currentVersion)
-                    _hasUpdateAvailable.value = true
-                }
-                is UpdateChecker.UpdateResult.UpToDate -> {
-                    _updateStatus.value = getApplication<Application>().getString(com.ai.assistance.operit.terminal.R.string.up_to_date, result.currentVersion)
-                    _hasUpdateAvailable.value = false
-                }
-                is UpdateChecker.UpdateResult.Error -> {
-                    _updateStatus.value = getApplication<Application>().getString(com.ai.assistance.operit.terminal.R.string.update_check_failed, result.message)
-                    _hasUpdateAvailable.value = false
-                }
-            }
-        }
+        _updateStatus.value = "已移除联网更新检查"
+        _hasUpdateAvailable.value = false
     }
-    
+
     fun openGitHubRepo() {
-        updateChecker.openGitHubRepo()
+        openUrl("https://github.com/AAswordman/OperitTerminal")
     }
-    
+
     fun openGitHubReleases() {
-        updateChecker.openGitHubReleases()
+        openUrl("https://github.com/AAswordman/OperitTerminal/releases")
+    }
+
+    private fun openUrl(url: String) {
+        runCatching {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            getApplication<Application>().startActivity(intent)
+        }
     }
     
     fun startFtpServer() {

@@ -46,7 +46,6 @@ import com.ai.assistance.operit.terminal.TerminalManager
 import com.ai.assistance.operit.terminal.ui.SetupScreen
 import com.ai.assistance.operit.terminal.ui.TerminalHome
 import com.ai.assistance.operit.terminal.ui.SettingsScreen
-import com.ai.assistance.operit.terminal.utils.UpdateChecker
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -67,9 +66,6 @@ fun TerminalScreen(
     val manager = remember { TerminalManager.getInstance(context) }
     val terminalState by manager.terminalState.collectAsState()
     val isTerminalReady = terminalState.currentSession?.isInitializing == false
-    
-    // 更新检查器
-    val updateChecker = remember { UpdateChecker(context) }
 
     DisposableEffect(hostActivity, manifestSoftInputMode, useLocalImeHandling) {
         if (useLocalImeHandling) {
@@ -92,12 +88,6 @@ fun TerminalScreen(
             env.forceShowSetup -> TerminalRoutes.SETUP_ROUTE
             isFirstLaunch -> TerminalRoutes.SETUP_ROUTE
             else -> TerminalRoutes.TERMINAL_HOME_ROUTE
-        }
-        
-        if (checkUpdatesOnEnter) {
-            coroutineScope.launch {
-                updateChecker.checkForUpdates(showToast = true)
-            }
         }
     }
 
