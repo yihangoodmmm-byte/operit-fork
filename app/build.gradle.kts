@@ -394,11 +394,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ai.assistance.operit"
+        applicationId = "com.inmyfeelings.ai"
         minSdk = 26
         targetSdk = 34
-        versionCode = 51
-        versionName = "1.12.2"
+        versionCode = 1
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

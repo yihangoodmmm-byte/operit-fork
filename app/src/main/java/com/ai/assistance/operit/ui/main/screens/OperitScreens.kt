@@ -615,7 +615,6 @@ sealed class Screen(
                     navigateToSpeechServicesSettings = { navigateTo(SpeechServicesSettings) },
                     navigateToExternalHttpChatSettings = { navigateTo(ExternalHttpChatSettings) },
                     navigateToPersonaCardGeneration = { navigateTo(PersonaCardGeneration) },
-                    navigateToWaifuModeSettings = { navigateTo(WaifuModeSettings) },
                     navigateToTokenUsageStatistics = { navigateTo(TokenUsageStatistics) },
                     navigateToPerformanceMonitor = { navigateTo(PerformanceMonitor) },
                     navigateToContextSummarySettings = { navigateTo(ContextSummarySettings) },
@@ -926,26 +925,6 @@ sealed class Screen(
         }
     }
 
-    // 新增：Waifu模式设置页面
-    data object WaifuModeSettings :
-        Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_waifu_mode_settings) {
-        @Composable
-        override fun Content(
-            navController: NavController,
-            navigateTo: ScreenNavigationHandler,
-            onGoBack: () -> Unit,
-            hasBackgroundImage: Boolean,
-            onLoading: (Boolean) -> Unit,
-            onError: (String) -> Unit,
-            onGestureConsumed: (Boolean) -> Unit
-        ) {
-            com.ai.assistance.operit.ui.features.settings.screens.WaifuModeSettingsScreen(
-                onNavigateBack = onGoBack,
-                onNavigateToCustomEmoji = { navigateTo(CustomEmojiManagement) }
-            )
-        }
-    }
-    
     // 自定义表情管理页面
     data object CustomEmojiManagement :
         Screen(navItem = NavItem.Settings, titleRes = R.string.manage_custom_emoji) {

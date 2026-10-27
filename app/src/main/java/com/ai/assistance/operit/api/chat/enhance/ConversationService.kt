@@ -579,12 +579,7 @@ class ConversationService(
                 // Waifu 模式已移除：不再注入任何 waifu 规则
                 val waifuRulesText = ""
                 // 语音头像模式：添加 <mood> 标签协议
-                val avatarMoodRulesText =
-                    if (shouldInjectMoodRules(promptFunctionType)) {
-                        buildAvatarMoodRulesText(useEnglish)
-                    } else {
-                        ""
-                    }
+                val avatarMoodRulesText = ""
                 AppLogger.d("petRules", avatarMoodRulesText)
 
                 // 构建最终的系统提示词

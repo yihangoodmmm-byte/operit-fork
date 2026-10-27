@@ -96,37 +96,19 @@ class UpdateManager private constructor(private val context: Context) {
 
         /** 检查更新，返回更新状态 用于从MainActivity直接检查更新 */
         suspend fun checkForUpdates(context: Context, currentVersion: String): UpdateStatus {
-            val manager = getInstance(context)
-            return manager.checkForUpdatesInternal(currentVersion)
+            // 联网更新检查已移除
+            return UpdateStatus.Initial
         }
     }
 
     suspend fun checkForUpdatesSilently(currentVersion: String) {
-        AppLogger.d(TAG, "checkForUpdatesSilently() start: currentVersion=$currentVersion")
-        try {
-            val result = checkForUpdatesInternal(currentVersion)
-            AppLogger.d(TAG, "checkForUpdatesSilently() done: status=${result::class.java.simpleName}")
-            if (result is UpdateStatus.Available || result is UpdateStatus.PatchAvailable) {
-                _updateStatus.postValue(result)
-            }
-        } catch (e: Exception) {
-            AppLogger.w(TAG, "checkForUpdatesSilently() failed", e)
-        }
+        // 联网更新检查已移除
     }
 
     /** 开始更新检查流程 */
     suspend fun checkForUpdates(currentVersion: String) {
-        AppLogger.d(TAG, "checkForUpdates() start: currentVersion=$currentVersion")
-        _updateStatus.postValue(UpdateStatus.Checking)
-
-        try {
-            val result = checkForUpdatesInternal(currentVersion)
-            AppLogger.d(TAG, "checkForUpdates() done: status=${result::class.java.simpleName}")
-            _updateStatus.postValue(result)
-        } catch (e: Exception) {
-            AppLogger.e(TAG, "Update check failed", e)
-            _updateStatus.postValue(UpdateStatus.Error(context.getString(R.string.update_check_failed, e.message)))
-        }
+        // 联网更新检查已移除
+        _updateStatus.postValue(UpdateStatus.Initial)
     }
 
     /** 检查更新的内部实现 */

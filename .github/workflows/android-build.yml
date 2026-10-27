@@ -216,7 +216,7 @@ jobs:
             app/build/reports/**
             build/reports/**
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 3
 
       - name: Upload successful Android outputs
         if: success()
@@ -227,4 +227,4 @@ jobs:
             app/build/outputs/apk/**/*.apk
             app/build/outputs/bundle/**/*.aab
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3

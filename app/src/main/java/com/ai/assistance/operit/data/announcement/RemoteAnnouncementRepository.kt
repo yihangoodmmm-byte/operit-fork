@@ -94,17 +94,8 @@ class RemoteAnnouncementRepository(
         .build()
 
     suspend fun fetchDisplayableAnnouncement(locale: Locale = Locale.getDefault()): RemoteAnnouncementDisplay? {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                val pointer = fetchPointer()
-                if (pointer.latestFile.isBlank()) return@runCatching null
-
-                val payload = fetchPayload(pointer.latestFile)
-                toDisplay(payload, locale)
-            }.onFailure { error ->
-                AppLogger.w(TAG, "fetchDisplayableAnnouncement failed", error)
-            }.getOrNull()
-        }
+        // 联网公告已移除
+        return null
     }
 
     private fun fetchPointer(): AnnouncementPointer {

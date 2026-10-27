@@ -51,7 +51,6 @@ fun SettingsScreen(
         navigateToSpeechServicesSettings: () -> Unit,
         navigateToExternalHttpChatSettings: () -> Unit,
         navigateToPersonaCardGeneration: () -> Unit,
-        navigateToWaifuModeSettings: () -> Unit,
         navigateToTokenUsageStatistics: () -> Unit,
         navigateToPerformanceMonitor: () -> Unit,
         navigateToContextSummarySettings: () -> Unit,
@@ -88,48 +87,6 @@ fun SettingsScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .verticalScroll(scrollState)
         ) {
-                // ======= 账号 =======
-                SettingsSection(
-                        title = stringResource(id = R.string.settings_section_account),
-                        icon = Icons.Default.AccountCircle,
-                        containerColor = cardContainerColor
-                ) {
-                        CompactSettingsItem(
-                                title = stringResource(R.string.github_account),
-                                subtitle = if (isGitHubLoggedIn && gitHubUser != null) {
-                                        "@${gitHubUser!!.login}"
-                                } else {
-                                        stringResource(R.string.github_account_not_logged_in)
-                                },
-                                icon = Icons.Default.Person,
-                                onClick = navigateToGitHubAccount
-                        )
-
-                        if (isGitHubLoggedIn) {
-                                CompactSettingsItem(
-                                        title = stringResource(R.string.logout),
-                                        subtitle = stringResource(R.string.github_account_logout_desc),
-                                        icon = Icons.Default.Logout,
-                                        onClick = {
-                                                scope.launch { githubAuth.logout() }
-                                        }
-                                )
-                        } else {
-                                CompactSettingsItem(
-                                        title = stringResource(R.string.login_github),
-                                        subtitle = stringResource(R.string.github_account_login_desc),
-                                        icon = Icons.Default.Login,
-                                        onClick = { showGitHubLogin = true }
-                                )
-                        }
-                }
-
-                if (showGitHubLogin) {
-                        GitHubLoginDialog(
-                                onDismissRequest = { showGitHubLogin = false }
-                        )
-                }
-
                 // ======= 个性化配置 =======
                 SettingsSection(
                         title = stringResource(id = R.string.settings_section_personalization),
@@ -190,13 +147,6 @@ fun SettingsScreen(
                                 subtitle = stringResource(id = R.string.settings_functional_model_subtitle),
                                 icon = Icons.Default.Tune,
                                 onClick = navigateToFunctionalConfig
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_speech_services),
-                                subtitle = stringResource(id = R.string.settings_speech_services_subtitle),
-                                icon = Icons.Default.RecordVoiceOver,
-                                onClick = navigateToSpeechServicesSettings
                         )
                         
                 }
