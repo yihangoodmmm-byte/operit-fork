@@ -119,7 +119,8 @@ class TerminalManager private constructor(
         }
 
         private const val TAG = "TerminalManager"
-        private const val UBUNTU_FILENAME = "ubuntu-noble-aarch64-pd-v4.18.0.tar.xz"
+        // 多个环境包：rootfs-packs/<env>.tar.xz
+        private const val ROOTFS_PACKS_DIR = "rootfs-packs"
         private const val MAX_HISTORY_ITEMS = 500
         private const val MAX_OUTPUT_LINES_PER_ITEM = 1000
         private const val TERMINAL_ENTER = "\r"
@@ -725,42 +726,52 @@ class TerminalManager private constructor(
         Files.createSymbolicLink(linkFile.toPath(), targetPath)
     }
 
+    /** 环境包目录：每个 "<环境名>.tar.xz" 都是一个可安装环境 */
+    private fun rootfsPacksDir(): File = File(filesDir, ROOTFS_PACKS_DIR).apply { mkdirs() }
+
+    /** 当前选中的环境：优先 rootfs-packs/CURRENT，其次按名字排序的第一个包 */
+    private fun selectedRootfsEnv(): String {
+        val packs = rootfsPacksDir().listFiles()
+            ?.filter { it.isFile && it.name.endsWith(".tar.xz") && it.length() > 1_000_000L }
+            ?.map { it.name.removeSuffix(".tar.xz") }
+            ?.sorted()
+            .orEmpty()
+        if (packs.isEmpty()) return "ubuntu"
+        val currentFile = File(rootfsPacksDir(), "CURRENT")
+        val wanted = runCatching { currentFile.readText().trim() }.getOrNull().orEmpty()
+        val chosen = if (wanted.isNotEmpty() && packs.contains(wanted)) wanted else packs.first()
+        runCatching { currentFile.writeText(chosen) }
+        return chosen
+    }
+
     private fun extractAssets() {
         try {
-            val assets = listOf(
-                UBUNTU_FILENAME,
-                "setup_fake_sysdata.sh"
-            )
-            assets.forEach { assetName ->
-                val assetFile = File(filesDir, assetName)
-                // 强制更新脚本文件，大文件只在不存在时提取
-                val shouldExtract = !assetFile.exists() || assetName == "setup_fake_sysdata.sh"
+            // 1. 启动辅助脚本（每次覆盖）
+            val scriptFile = File(filesDir, "setup_fake_sysdata.sh")
+            context.assets.open("setup_fake_sysdata.sh").use { input ->
+                val text = input.readBytes().toString(Charsets.UTF_8)
+                scriptFile.writeText(
+                    text.removePrefix("\uFEFF").replace("\r\n", "\n").replace("\r", "\n"),
+                    Charsets.UTF_8
+                )
+            }
 
-                if (shouldExtract) {
-                    if (assetName == UBUNTU_FILENAME) {
-                        importRootfsPack(assetFile)
-                    } else if (assetName.endsWith(".sh")) {
-                        context.assets.open(assetName).use { input ->
-                            val raw = input.readBytes()
-                            val text = raw.toString(Charsets.UTF_8)
-                            val normalized =
-                                text
-                                    .removePrefix("\uFEFF")
-                                    .replace("\r\n", "\n")
-                                    .replace("\r", "\n")
-                            assetFile.writeText(normalized, Charsets.UTF_8)
-                        }
-                    } else {
-                        context.assets.open(assetName).use { input ->
-                            assetFile.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    }
-                    Log.d(TAG, "Extracted $assetName")
-                } else {
-                    Log.d(TAG, "Asset $assetName already exists.")
+            // 2. 环境包：从 rootfs-packs/<env>.tar.xz 拷贝到 files/<env>.tar.xz
+            val env = selectedRootfsEnv()
+            val target = File(filesDir, "$env.tar.xz")
+            if (!target.exists()) {
+                val pack = File(rootfsPacksDir(), "$env.tar.xz")
+                val legacy = File(filesDir, "operit-rootfs.tar.xz")
+                val source = when {
+                    pack.isFile && pack.length() > 1_000_000L -> pack
+                    legacy.isFile && legacy.length() > 1_000_000L -> legacy
+                    else -> throw IllegalStateException(
+                        "未找到环境包：请把 <环境名>.tar.xz 放到 " + rootfsPacksDir().absolutePath +
+                            "（或在 " + filesDir.absolutePath + " 放 operit-rootfs.tar.xz）"
+                    )
                 }
+                source.copyTo(target, overwrite = true)
+                Log.d(TAG, "Imported rootfs pack from " + source.absolutePath)
             }
         } catch (e: IOException) {
             Log.e(TAG, "Failed to extract assets", e)
@@ -768,35 +779,15 @@ class TerminalManager private constructor(
         }
     }
 
-    /**
-     * rootfs 包不随 APK 分发，也不联网或自动抓取：
-     * 手动把 operit-rootfs.tar.xz 放进应用私有目录（filesDir）后重启终端即可生效。
-     */
-    private fun importRootfsPack(target: File) {
-        val manualPack = File(filesDir, "operit-rootfs.tar.xz")
-        if (manualPack.isFile && manualPack.length() > 1_000_000L) {
-            if (!manualPack.renameTo(target)) {
-                target.outputStream().use { output ->
-                    manualPack.inputStream().use { input -> input.copyTo(output) }
-                }
-            }
-            Log.d(TAG, "Imported rootfs pack from " + manualPack.absolutePath)
-            return
-        }
-        throw IllegalStateException(
-            "未找到 rootfs 包：请把 operit-rootfs.tar.xz 放到 " + filesDir.absolutePath +
-                " 后重新打开终端。"
-        )
-    }
-
     private fun generateStartScript(): String {
-        val ubuntuName = UBUNTU_FILENAME.replace(Regex("-pd.*"), "")
         val tmpDir = File(filesDir, "tmp").absolutePath
         val binDir = binDir.absolutePath
         val homeDir = filesDir.absolutePath
         val usrDir = usrDir.absolutePath
         val prootDistroPath = "$usrDir/var/lib/proot-distro"
-        val ubuntuPath = "$prootDistroPath/installed-rootfs/ubuntu"
+        val rootfsEnv = selectedRootfsEnv()
+        val ubuntuName = rootfsEnv
+        val ubuntuPath = "$prootDistroPath/installed-rootfs/$rootfsEnv"
         val operitPackage = context.packageName
         val operitDataDir = context.applicationInfo.dataDir
         val currentEmulatedStoragePath = PRootMountMapping.currentEmulatedStoragePath()
@@ -815,7 +806,7 @@ class TerminalManager private constructor(
         export BIN=$binDir
         export HOME=$homeDir
         export UBUNTU_PATH=$ubuntuPath
-        export UBUNTU=$UBUNTU_FILENAME
+        export UBUNTU=$rootfsEnv.tar.xz
         export UBUNTU_NAME=$ubuntuName
         export USE_CHROOT=${if (prefs.getBoolean("chroot_enabled", false)) "1" else "0"}
         export OPERIT_UID=$(id -u)
