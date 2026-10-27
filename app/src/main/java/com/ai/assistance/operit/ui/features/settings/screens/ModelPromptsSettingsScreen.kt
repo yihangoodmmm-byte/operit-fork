@@ -61,6 +61,7 @@ import com.ai.assistance.operit.data.preferences.ActivePromptManager
 import com.ai.assistance.operit.data.model.ActivePrompt
 import com.ai.assistance.operit.data.preferences.PromptTagManager
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
+import com.ai.assistance.operit.data.preferences.ApiPreferences
 import com.ai.assistance.operit.util.FileUtils
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
@@ -815,6 +816,7 @@ fun ModelPromptsSettingsScreen(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
+                SystemPromptEditorSection(context)
                 // 标签栏（移除旧配置选项）
                 TabRow(selectedTabIndex = currentTab) {
                     Tab(
@@ -3529,3 +3531,78 @@ private fun centerCropSquare(src: Bitmap, size: Int): Bitmap {
 }
 
 // 旧配置查看对话框已废弃
+
+
+/**
+ * 系统级提示词编辑器：人设的唯一来源。
+ * 为空时身份区整段不注入，交由模型自身默认行为。
+ */
+@Composable
+private fun SystemPromptEditorSection(context: Context) {
+    val scope = rememberCoroutineScope()
+    val apiPreferences = remember { ApiPreferences.getInstance(context) }
+    var text by remember { mutableStateOf("") }
+    var loaded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        text = apiPreferences.systemPersonaPromptFlow.first()
+        loaded = true
+    }
+
+    androidx.compose.material3.Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("系统提示词", fontWeight = FontWeight.Bold)
+                    Text(
+                        if (text.isBlank()) {
+                            "当前为空：不注入任何人设，使用模型自身训练默认"
+                        } else {
+                            "已设置 " + text.length + " 字，作为系统级提示词注入"
+                        },
+                        fontSize = 12.sp
+                    )
+                }
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) "收起" else "编辑")
+                }
+            }
+            if (expanded) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    minLines = 6,
+                    maxLines = 20,
+                    enabled = loaded,
+                    placeholder = { Text("留空 = 不注入任何人设") }
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { text = "" }) { Text("清空") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        scope.launch {
+                            apiPreferences.saveSystemPersonaPrompt(text)
+                            Toast.makeText(context, "已保存，下一条消息生效", Toast.LENGTH_SHORT).show()
+                        }
+                    }) { Text("保存") }
+                }
+            }
+        }
+    }
+}
