@@ -51,6 +51,7 @@ import com.ai.assistance.operit.ui.features.settings.screens.ContextSummarySetti
 import com.ai.assistance.operit.ui.features.settings.screens.ExternalHttpChatSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigEntryMode
+import com.ai.assistance.operit.ui.features.settings.screens.PromptLayersSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SystemPromptSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SpeechServicesSettingsScreen
@@ -598,6 +599,7 @@ sealed class Screen(
                     navigateToThemeSettings = { navigateTo(ThemeSettings) },
                     navigateToGlobalDisplaySettings = {},
                     navigateToModelPrompts = { navigateTo(SystemPromptSettings) },
+                    navigateToPromptLayers = { navigateTo(PromptLayersSettings) },
                     navigateToFunctionalConfig = {},
                     navigateToChatHistorySettings = { navigateTo(ChatHistorySettings) },
                     navigateToChatBackupSettings = {},
@@ -882,6 +884,22 @@ sealed class Screen(
     // 新增：人设卡生成页面
     // 自定义表情管理页面
     
+    data object PromptLayersSettings :
+            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_prompt_layers) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            PromptLayersSettingsScreen(onBackPressed = onGoBack)
+        }
+    }
+
     data object SystemPromptSettings :
             Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_system_prompt_settings) {
         @Composable

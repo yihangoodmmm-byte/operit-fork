@@ -4335,6 +4335,9 @@
     <string name="screen_title_tag_market">标签市场</string>
     <string name="screen_title_model_prompts_settings">角色卡编辑</string>
     <string name="screen_title_system_prompt_settings">系统提示词</string>
+    <string name="screen_title_prompt_layers">提示词分层</string>
+    <string name="settings_prompt_layers">提示词分层</string>
+    <string name="settings_prompt_layers_subtitle">控制内置层是否进入提示词，并查看组装预览</string>
     <string name="screen_title_functional_config">功能模型配置</string>
     <string name="screen_title_theme_settings">主题设置</string>
     <string name="screen_title_global_display_settings">显示与行为</string>

@@ -23,6 +23,10 @@ import com.ai.assistance.operit.data.model.ToolParameter
 import com.ai.assistance.operit.core.tools.UIPageResultData
 import com.ai.assistance.operit.core.tools.SimplifiedUINode
 import com.ai.assistance.operit.core.config.FunctionalPrompts
+import com.ai.assistance.operit.core.prompt.PromptComposeContext
+import com.ai.assistance.operit.core.prompt.PromptComposer
+import com.ai.assistance.operit.core.prompt.PromptLayerConfig
+import com.ai.assistance.operit.core.prompt.PromptLayerOverride
 import com.ai.assistance.operit.data.preferences.ApiPreferences
 import com.ai.assistance.operit.data.preferences.DisplayPreferencesManager
 import com.ai.assistance.operit.data.preferences.WaifuPreferences
@@ -517,7 +521,22 @@ class ConversationService(
                     characterCardManager.getCharacterCardFlow(it).first()
                 }
                 // 人设唯一来源 = 系统级提示词；为空时身份区整段不注入，交由模型自身默认行为。
-                val introPrompt = apiPreferences.systemPersonaPromptFlow.first().trim()
+                // 非空时交给 14 层引擎渲染：人格作为 identity 层，其余内置层可按开关剔除。
+                val personaPrompt = apiPreferences.systemPersonaPromptFlow.first().trim()
+                val disabledLayers = apiPreferences.promptDisabledLayersFlow.first()
+                val introPrompt = if (personaPrompt.isEmpty()) {
+                    ""
+                } else {
+                    PromptComposer.compose(
+                        context = PromptComposeContext(
+                            useEnglish = !LocaleUtils.usesChineseContent(context),
+                            userPersona = personaPrompt
+                        ),
+                        config = PromptLayerConfig(
+                            overrides = disabledLayers.associateWith { PromptLayerOverride(enabled = false) }
+                        )
+                    ).finalPrompt
+                }
 
                 // 获取自定义系统提示模板
                 val finalCustomSystemPromptTemplate = customSystemPromptTemplate ?: apiPreferences.customSystemPromptTemplateFlow.first()

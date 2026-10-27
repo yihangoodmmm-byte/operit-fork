@@ -146,6 +146,7 @@ class ApiPreferences private constructor(private val context: Context) {
 
         // 系统级人格提示词（空 = 不注入任何人设，使用模型自身默认行为）
         val SYSTEM_PERSONA_PROMPT = stringPreferencesKey("system_persona_prompt")
+        val PROMPT_DISABLED_LAYERS = stringPreferencesKey("prompt_disabled_layers")
 
         val MAX_IMAGE_HISTORY_USER_TURNS = intPreferencesKey("max_image_history_user_turns")
         val MAX_MEDIA_HISTORY_USER_TURNS = intPreferencesKey("max_media_history_user_turns")
@@ -339,6 +340,16 @@ class ApiPreferences private constructor(private val context: Context) {
                 preferences[SYSTEM_PERSONA_PROMPT] ?: DEFAULT_SYSTEM_PERSONA_PROMPT
             }
 
+    /** 被用户关闭的提示词层 id 集合（JSON 数组字符串存储） */
+    val promptDisabledLayersFlow: Flow<Set<String>> =
+            context.apiDataStore.data.map { preferences ->
+                val raw = preferences[PROMPT_DISABLED_LAYERS].orEmpty()
+                if (raw.isBlank()) emptySet() else runCatching {
+                    val arr = org.json.JSONArray(raw)
+                    (0 until arr.length()).mapNotNull { arr.optString(it).takeIf(String::isNotBlank) }.toSet()
+                }.getOrDefault(emptySet())
+            }
+
     val maxImageHistoryUserTurnsFlow: Flow<Int> =
         context.apiDataStore.data.map { preferences ->
             preferences[MAX_IMAGE_HISTORY_USER_TURNS] ?: DEFAULT_MAX_IMAGE_HISTORY_USER_TURNS
@@ -485,6 +496,15 @@ class ApiPreferences private constructor(private val context: Context) {
     suspend fun saveCustomSystemPromptTemplate(template: String) {
         context.apiDataStore.edit { preferences ->
             preferences[CUSTOM_SYSTEM_PROMPT_TEMPLATE] = template
+        }
+    }
+
+    /** 保存被关闭的提示词层 id 集合 */
+    suspend fun savePromptDisabledLayers(disabled: Set<String>) {
+        context.apiDataStore.edit { preferences ->
+            val arr = org.json.JSONArray()
+            disabled.sorted().forEach { arr.put(it) }
+            preferences[PROMPT_DISABLED_LAYERS] = arr.toString()
         }
     }
 

@@ -44,6 +44,7 @@ fun SettingsScreen(
         navigateToThemeSettings: () -> Unit,
         navigateToGlobalDisplaySettings: () -> Unit,
         navigateToModelPrompts: () -> Unit,
+        navigateToPromptLayers: () -> Unit,
         navigateToFunctionalConfig: () -> Unit,
         navigateToChatHistorySettings: () -> Unit,
         navigateToChatBackupSettings: () -> Unit,
@@ -128,6 +129,13 @@ fun SettingsScreen(
                                 subtitle = stringResource(id = R.string.settings_system_prompts_subtitle),
                                 icon = Icons.Default.ChatBubble,
                                 onClick = navigateToModelPrompts
+                        )
+                        
+                        CompactSettingsItem(
+                                title = stringResource(R.string.settings_prompt_layers),
+                                subtitle = stringResource(R.string.settings_prompt_layers_subtitle),
+                                icon = Icons.Default.Layers,
+                                onClick = navigateToPromptLayers
                         )
                         
                 }
