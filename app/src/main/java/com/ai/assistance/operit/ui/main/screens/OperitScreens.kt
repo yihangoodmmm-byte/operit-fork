@@ -46,16 +46,10 @@ import com.ai.assistance.operit.ui.features.packages.screens.toArtifactPublishCl
 import com.ai.assistance.operit.ui.features.packages.market.ArtifactPublishClusterContext
 import com.ai.assistance.operit.ui.features.packages.market.MarketStatsType
 import com.ai.assistance.operit.ui.features.packages.market.PluginCreationIntent
-import com.ai.assistance.operit.ui.features.settings.screens.ChatBackupSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ChatHistorySettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ContextSummarySettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ExternalHttpChatSettingsScreen
-import com.ai.assistance.operit.ui.features.settings.screens.FunctionalConfigScreen
-import com.ai.assistance.operit.ui.features.settings.screens.GlobalDisplaySettingsScreen
-import com.ai.assistance.operit.ui.features.performance.PerformanceMonitorScreen
 import com.ai.assistance.operit.ui.features.settings.screens.GitHubAccountScreen
-import com.ai.assistance.operit.ui.features.settings.screens.LanguageSettingsScreen
-import com.ai.assistance.operit.ui.features.settings.screens.LayoutAdjustmentSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigEntryMode
 import com.ai.assistance.operit.ui.features.settings.screens.ModelPromptsSettingsScreen
@@ -67,7 +61,6 @@ import com.ai.assistance.operit.ui.features.settings.screens.ThemeSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ToolPermissionSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.MnnModelDownloadScreen
 import com.ai.assistance.operit.ui.features.settings.screens.UserPreferencesSettingsScreen
-import com.ai.assistance.operit.ui.features.tokenstats.TokenUsageStatisticsScreen
 import com.ai.assistance.operit.ui.features.token.TokenConfigWebViewScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.AppPermissionsToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.FileManagerToolScreen
@@ -606,19 +599,19 @@ sealed class Screen(
                     navigateToGitHubAccount = { navigateTo(GitHubAccount) },
                     navigateToModelConfig = { navigateTo(ModelConfig) },
                     navigateToThemeSettings = { navigateTo(ThemeSettings) },
-                    navigateToGlobalDisplaySettings = { navigateTo(GlobalDisplaySettings) },
+                    navigateToGlobalDisplaySettings = {},
                     navigateToModelPrompts = { navigateTo(SystemPromptSettings) },
-                    navigateToFunctionalConfig = { navigateTo(FunctionalConfig) },
+                    navigateToFunctionalConfig = {},
                     navigateToChatHistorySettings = { navigateTo(ChatHistorySettings) },
-                    navigateToChatBackupSettings = { navigateTo(ChatBackupSettings) },
-                    navigateToLanguageSettings = { navigateTo(LanguageSettings) },
+                    navigateToChatBackupSettings = {},
+                    navigateToLanguageSettings = {},
                     navigateToSpeechServicesSettings = { navigateTo(SpeechServicesSettings) },
                     navigateToExternalHttpChatSettings = { navigateTo(ExternalHttpChatSettings) },
-                    navigateToPersonaCardGeneration = { navigateTo(PersonaCardGeneration) },
-                    navigateToTokenUsageStatistics = { navigateTo(TokenUsageStatistics) },
-                    navigateToPerformanceMonitor = { navigateTo(PerformanceMonitor) },
+                    navigateToPersonaCardGeneration = {},
+                    navigateToTokenUsageStatistics = {},
+                    navigateToPerformanceMonitor = {},
                     navigateToContextSummarySettings = { navigateTo(ContextSummarySettings) },
-                    navigateToLayoutAdjustmentSettings = { navigateTo(LayoutAdjustmentSettings) }
+                    navigateToLayoutAdjustmentSettings = {}
             )
         }
     }
@@ -905,26 +898,6 @@ sealed class Screen(
     }
     
     // 新增：人设卡生成页面
-    data object PersonaCardGeneration :
-        Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_persona_card_generation) {
-        @Composable
-        override fun Content(
-            navController: NavController,
-            navigateTo: ScreenNavigationHandler,
-            onGoBack: () -> Unit,
-            hasBackgroundImage: Boolean,
-            onLoading: (Boolean) -> Unit,
-            onError: (String) -> Unit,
-            onGestureConsumed: (Boolean) -> Unit
-        ) {
-            com.ai.assistance.operit.ui.features.settings.screens.PersonaCardGenerationScreen(
-                onNavigateToSettings = { navigateTo(Settings) },
-                onNavigateToModelConfig = { navigateTo(ModelConfig) },
-                onNavigateToModelPrompts = { navigateTo(SystemPromptSettings) }
-            )
-        }
-    }
-
     // 自定义表情管理页面
     data object CustomEmojiManagement :
         Screen(navItem = NavItem.Settings, titleRes = R.string.manage_custom_emoji) {
@@ -991,27 +964,8 @@ sealed class Screen(
             ModelPromptsSettingsScreen(
                 onBackPressed = onGoBack,
                 onNavigateToMarket = { navigateTo(TagMarket) },
-                onNavigateToPersonaGeneration = { navigateTo(PersonaCardGeneration) },
+                onNavigateToPersonaGeneration = {},
                 onNavigateToChatManagement = { navigateTo(ChatHistorySettings) }
-            )
-        }
-    }
-
-    data object FunctionalConfig :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_functional_config) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            FunctionalConfigScreen(
-                    onBackPressed = onGoBack,
-                    onNavigateToModelConfig = { navigateTo(ModelConfig) }
             )
         }
     }
@@ -1032,38 +986,6 @@ sealed class Screen(
         }
     }
 
-    data object GlobalDisplaySettings :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_global_display_settings) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            GlobalDisplaySettingsScreen(onBackPressed = onGoBack)
-        }
-    }
-
-    data object LayoutAdjustmentSettings :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_layout_adjustment) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            LayoutAdjustmentSettingsScreen(onNavigateBack = onGoBack)
-        }
-    }
-
     data object ChatHistorySettings :
             Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_chat_history_settings) {
         @Composable
@@ -1077,79 +999,6 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             ChatHistorySettingsScreen()
-        }
-    }
-
-    data object ChatBackupSettings :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_chat_backup_settings) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            ChatBackupSettingsScreen()
-        }
-    }
-
-    data object LanguageSettings :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_language_settings) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            LanguageSettingsScreen(onBackPressed = onGoBack)
-        }
-    }
-
-    data object TokenUsageStatistics :
-            Screen(
-                    navItem = NavItem.Settings,
-                    titleRes = R.string.settings_token_usage_stats,
-                    usesRouteViewModelStore = true
-            ) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            TokenUsageStatisticsScreen(
-                    onBackPressed = onGoBack,
-            )
-        }
-    }
-
-    data object PerformanceMonitor :
-            Screen(
-                    navItem = NavItem.Settings,
-                    titleRes = R.string.screen_title_performance_monitor
-            ) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            PerformanceMonitorScreen()
         }
     }
 

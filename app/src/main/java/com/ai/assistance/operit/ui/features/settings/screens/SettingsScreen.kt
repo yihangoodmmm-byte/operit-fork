@@ -100,33 +100,6 @@ fun SettingsScreen(
                                 onClick = navigateToUserPreferences
                         )
 
-                        CompactSettingsItem(
-                                title = stringResource(R.string.language_settings),
-                                subtitle = stringResource(id = R.string.settings_language_subtitle),
-                                icon = Icons.Default.Language,
-                                onClick = navigateToLanguageSettings
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_theme_appearance),
-                                subtitle = stringResource(id = R.string.settings_theme_subtitle),
-                                icon = Icons.Default.Palette,
-                                onClick = navigateToThemeSettings
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(R.string.settings_global_display),
-                                subtitle = stringResource(R.string.settings_global_display_subtitle),
-                                icon = Icons.Default.Visibility,
-                                onClick = navigateToGlobalDisplaySettings
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(R.string.layout_adjustment),
-                                subtitle = stringResource(R.string.layout_adjustment_subtitle),
-                                icon = Icons.Default.AspectRatio,
-                                onClick = navigateToLayoutAdjustmentSettings
-                        )
                 }
 
                 // ======= AI模型配置 =======
@@ -140,13 +113,6 @@ fun SettingsScreen(
                                 subtitle = stringResource(id = R.string.settings_model_params_subtitle),
                                 icon = Icons.Default.Api,
                                 onClick = navigateToModelConfig
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_functional_model),
-                                subtitle = stringResource(id = R.string.settings_functional_model_subtitle),
-                                icon = Icons.Default.Tune,
-                                onClick = navigateToFunctionalConfig
                         )
                         
                 }
@@ -164,84 +130,6 @@ fun SettingsScreen(
                                 onClick = navigateToModelPrompts
                         )
                         
-                        // 新增：人设卡生成
-                        CompactSettingsItem(
-                                title = stringResource(R.string.persona_card_generation),
-                                subtitle = stringResource(R.string.persona_card_generation_desc),
-                                icon = Icons.Default.Face,
-                                onClick = navigateToPersonaCardGeneration
-                        )
-                        
-                }
-
-                // ======= 上下文和总结设置 =======
-                SettingsSection(
-                        title = stringResource(id = R.string.settings_section_context_summary),
-                        icon = Icons.Default.Analytics,
-                        containerColor = cardContainerColor
-                ) {
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_section_context_summary),
-                                subtitle = stringResource(id = R.string.settings_context_summary_subtitle),
-                                icon = Icons.Default.Tune,
-                                onClick = navigateToContextSummarySettings
-                        )
-                }
-
-                // ======= 数据和权限 =======
-                SettingsSection(
-                        title = stringResource(id = R.string.settings_data_permissions),
-                        icon = Icons.Default.Security,
-                        containerColor = cardContainerColor
-                ) {
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_tool_permissions),
-                                subtitle = stringResource(id = R.string.settings_tool_permissions_subtitle),
-                                icon = Icons.Default.AdminPanelSettings,
-                                onClick = navigateToToolPermissions
-                        )
-
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_data_backup),
-                                subtitle = stringResource(id = R.string.settings_data_backup_desc),
-                                icon = Icons.Default.CloudUpload,
-                                onClick = navigateToChatBackupSettings
-                        )
-                        
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_chat_history_management),
-                                subtitle = stringResource(id = R.string.settings_chat_history_management_subtitle),
-                                icon = Icons.Default.ManageHistory,
-                                onClick = navigateToChatHistorySettings
-                        )
-
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_token_usage_stats),
-                                subtitle = stringResource(id = R.string.settings_token_usage_subtitle),
-                                icon = Icons.Default.Analytics,
-                                onClick = navigateToTokenUsageStatistics
-                        )
-
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_performance_monitor),
-                                subtitle = stringResource(id = R.string.settings_performance_monitor_subtitle),
-                                icon = Icons.Default.Speed,
-                                onClick = navigateToPerformanceMonitor
-                        )
-                }
-
-                // ======= 隐私与数据清理 =======
-                SettingsSection(
-                        title = stringResource(id = R.string.settings_privacy_data_cleanup),
-                        icon = Icons.Default.DeleteSweep,
-                        containerColor = cardContainerColor
-                ) {
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_clear_cookies),
-                                subtitle = stringResource(id = R.string.settings_clear_cookies_subtitle),
-                                icon = Icons.Default.DeleteSweep,
-                                onClick = { showClearCookieConfirm = true }
-                        )
                 }
 
                 // ======= 外部调用 =======
