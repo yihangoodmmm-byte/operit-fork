@@ -49,12 +49,9 @@ import com.ai.assistance.operit.ui.features.packages.market.PluginCreationIntent
 import com.ai.assistance.operit.ui.features.settings.screens.ChatHistorySettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ContextSummarySettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ExternalHttpChatSettingsScreen
-import com.ai.assistance.operit.ui.features.settings.screens.GitHubAccountScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ModelConfigEntryMode
-import com.ai.assistance.operit.ui.features.settings.screens.ModelPromptsSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SystemPromptSettingsScreen
-import com.ai.assistance.operit.ui.features.settings.screens.TagMarketScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.SpeechServicesSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ThemeSettingsScreen
@@ -596,7 +593,7 @@ sealed class Screen(
             SettingsScreen(
                     navigateToUserPreferences = { navigateTo(UserPreferencesSettings) },
                     navigateToToolPermissions = { navigateTo(ToolPermission) },
-                    navigateToGitHubAccount = { navigateTo(GitHubAccount) },
+                    navigateToGitHubAccount = {},
                     navigateToModelConfig = { navigateTo(ModelConfig) },
                     navigateToThemeSettings = { navigateTo(ThemeSettings) },
                     navigateToGlobalDisplaySettings = {},
@@ -613,21 +610,6 @@ sealed class Screen(
                     navigateToContextSummarySettings = { navigateTo(ContextSummarySettings) },
                     navigateToLayoutAdjustmentSettings = {}
             )
-        }
-    }
-
-    data object GitHubAccount : Screen(navItem = NavItem.Settings, titleRes = R.string.github_account) {
-        @Composable
-        override fun Content(
-            navController: NavController,
-            navigateTo: ScreenNavigationHandler,
-            onGoBack: () -> Unit,
-            hasBackgroundImage: Boolean,
-            onLoading: (Boolean) -> Unit,
-            onError: (String) -> Unit,
-            onGestureConsumed: (Boolean) -> Unit
-        ) {
-            GitHubAccountScreen()
         }
     }
 
@@ -899,40 +881,7 @@ sealed class Screen(
     
     // 新增：人设卡生成页面
     // 自定义表情管理页面
-    data object CustomEmojiManagement :
-        Screen(navItem = NavItem.Settings, titleRes = R.string.manage_custom_emoji) {
-        @Composable
-        override fun Content(
-            navController: NavController,
-            navigateTo: ScreenNavigationHandler,
-            onGoBack: () -> Unit,
-            hasBackgroundImage: Boolean,
-            onLoading: (Boolean) -> Unit,
-            onError: (String) -> Unit,
-            onGestureConsumed: (Boolean) -> Unit
-        ) {
-            com.ai.assistance.operit.ui.features.settings.screens.CustomEmojiManagementScreen(
-                onNavigateBack = onGoBack
-            )
-        }
-    }
     
-    data object TagMarket :
-        Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_tag_market) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            TagMarketScreen(onBackPressed = onGoBack)
-        }
-    }
-
     data object SystemPromptSettings :
             Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_system_prompt_settings) {
         @Composable
@@ -946,27 +895,6 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             SystemPromptSettingsScreen(onBackPressed = onGoBack)
-        }
-    }
-
-    data object ModelPromptsSettings :
-            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_model_prompts_settings) {
-        @Composable
-        override fun Content(
-                navController: NavController,
-                navigateTo: ScreenNavigationHandler,
-                onGoBack: () -> Unit,
-                hasBackgroundImage: Boolean,
-                onLoading: (Boolean) -> Unit,
-                onError: (String) -> Unit,
-                onGestureConsumed: (Boolean) -> Unit
-        ) {
-            ModelPromptsSettingsScreen(
-                onBackPressed = onGoBack,
-                onNavigateToMarket = { navigateTo(TagMarket) },
-                onNavigateToPersonaGeneration = {},
-                onNavigateToChatManagement = { navigateTo(ChatHistorySettings) }
-            )
         }
     }
 
