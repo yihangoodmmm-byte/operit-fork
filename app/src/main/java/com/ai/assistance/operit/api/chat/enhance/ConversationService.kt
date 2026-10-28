@@ -684,7 +684,9 @@ class ConversationService(
     fun normalizeConversationHistoryForModel(
         chatHistory: List<PromptTurn>
     ): List<PromptTurn> {
-        return chatHistory.map { turn ->
+        // 先补悬空工具调用：进程中断会留下「有调用没结果」的断口，
+        // 直接发给模型会报错或让它空等。
+        return com.ai.assistance.operit.core.chat.DanglingToolCallRepair.repair(chatHistory).map { turn ->
             when (turn.kind) {
                 PromptTurnKind.ASSISTANT,
                 PromptTurnKind.TOOL_CALL,
