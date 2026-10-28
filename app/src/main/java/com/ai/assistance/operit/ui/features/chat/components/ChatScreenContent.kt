@@ -1234,6 +1234,7 @@ fun ChatHistorySelectorPanel(
                     actualViewModel.showChatHistorySelector(false)
                 },
                 onDeleteChat = { chatId -> actualViewModel.deleteChatHistory(chatId) },
+                onForkChat = { chatId -> actualViewModel.forkChat(chatId) },
                 onUpdateChatTitle = { chatId, newTitle ->
                     actualViewModel.updateChatTitle(chatId, newTitle)
                 },

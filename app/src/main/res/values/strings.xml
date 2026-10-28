@@ -4335,6 +4335,7 @@
     <string name="screen_title_tag_market">标签市场</string>
     <string name="screen_title_model_prompts_settings">角色卡编辑</string>
     <string name="screen_title_system_prompt_settings">系统提示词</string>
+    <string name="fork_chat">分叉会话</string>
     <string name="screen_title_prompt_layers">提示词分层</string>
     <string name="settings_prompt_layers">提示词分层</string>
     <string name="settings_prompt_layers_subtitle">控制内置层是否进入提示词，并查看组装预览</string>

@@ -428,6 +428,7 @@ fun ChatHistorySelector(
         onNewChat: (characterCardName: String?, characterGroupId: String?) -> Unit,
         onSelectChat: (String) -> Unit,
         onDeleteChat: (String) -> Unit,
+        onForkChat: (String) -> Unit,
         onUpdateChatTitle: (chatId: String, newTitle: String) -> Unit,
         onUpdateChatBinding: (chatId: String, characterCardName: String?, characterGroupId: String?) -> Unit,
         onCreateGroup: (groupName: String, characterCardName: String?, characterGroupId: String?) -> Unit,
@@ -1018,6 +1019,40 @@ fun ChatHistorySelector(
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.clearAndSetSemantics {}
+                            )
+                        }
+                    }
+
+                    // 分叉会话：复制整份会话，原会话不动
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .clip(MaterialTheme.shapes.medium)
+                            .clickable {
+                                val targetChat = resolvedTargetChat ?: chatItemActionTarget
+                                if (targetChat != null) onForkChat(targetChat.id)
+                                chatItemActionTarget = null
+                            },
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CallSplit,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                stringResource(R.string.fork_chat),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

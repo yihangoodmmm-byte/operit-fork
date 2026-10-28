@@ -107,6 +107,23 @@ class ChatViewModel(private val context: Context) : ViewModel() {
         private const val SPEECH_PREVIEW_MAX = 48
     }
 
+    /**
+     * 从会话列表分叉：复制整份会话，原会话不动。
+     *
+     * 复制而不是引用：Operit 的消息是值对象，复制一份之后两边互不影响，
+     * 在分叉里删消息不会动到原会话。
+     */
+    fun forkChat(chatId: String) {
+        val source = chatHistories.value.firstOrNull { it.id == chatId } ?: return
+        viewModelScope.launch {
+            runCatching {
+                com.ai.assistance.operit.data.session.SessionForkService.fork(context, source)
+            }.onFailure { error ->
+                android.util.Log.e(TAG, "分叉会话失败: " + chatId, error)
+            }
+        }
+    }
+
     private data class ActiveMentionTrigger(
         val triggerChar: Char,
         val triggerIndex: Int,
