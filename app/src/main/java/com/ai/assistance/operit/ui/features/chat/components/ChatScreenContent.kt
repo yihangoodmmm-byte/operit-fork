@@ -374,6 +374,13 @@ fun ChatScreenContent(
                         chatHeaderPipIconColor = chatHeaderPipIconColor,
                         onCharacterSwitcherClick = { onShowCharacterSelectorChange(true) }
                 )
+                TaskPreviewBar(
+                        steps = remember(chatHistory) {
+                            com.ai.assistance.operit.core.chat.TaskStepExtractor.extractFrom(
+                                    chatHistory.lastOrNull { it.sender == "ai" }?.content.orEmpty()
+                            )
+                        }
+                )
                 ChatArea(
                         chatHistory = chatHistory,
                         currentChatId = currentChatId,
