@@ -27,6 +27,7 @@ import com.ai.assistance.operit.core.application.ActivityLifecycleManager
 import com.ai.assistance.operit.core.tools.AIToolHandler
 import com.ai.assistance.operit.core.tools.StringResultData
 import com.ai.assistance.operit.core.context.ConversationCompactor
+import com.ai.assistance.operit.core.tools.FailureMemoryStore
 import com.ai.assistance.operit.core.tools.ToolOutputSpillStore
 import com.ai.assistance.operit.core.tools.climode.CliToolModeSupport
 import com.ai.assistance.operit.core.tools.climode.ToolExposureMode
@@ -2229,13 +2230,25 @@ class EnhancedAIService private constructor(private val context: Context) {
         // 工具输出落盘：超过阈值的正文写进文件，只回预览 + 路径，避免长输出被截断后信息全丢。
         val spillDir = java.io.File(this.context.filesDir, "artifacts")
         val resultsForModel = results.map { result ->
+            // 同类失败重复出现时，把「别再原样重试」的提示放在结果最前面。
+            val withHint = if (!result.success) {
+                val errorText = (result.error.orEmpty() + " " + result.result.toString()).trim()
+                val hint = FailureMemoryStore.observe(spillDir, result.toolName, errorText)
+                if (hint == null) {
+                    result
+                } else {
+                    result.copy(result = StringResultData(hint + "\n" + result.result.toString()))
+                }
+            } else {
+                result
+            }
             val spilled = ToolOutputSpillStore.spillIfNeeded(
-                raw = result.result.toString(),
-                toolName = result.toolName,
+                raw = withHint.result.toString(),
+                toolName = withHint.toolName,
                 baseDir = spillDir
             )
-            if (spilled == null) result else result.copy(
-                result = StringResultData(spilled.toModelText(result.toolName))
+            if (spilled == null) withHint else withHint.copy(
+                result = StringResultData(spilled.toModelText(withHint.toolName))
             )
         }
         val toolResultMessage =
