@@ -1043,7 +1043,7 @@ fun ChatHistorySelector(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.CallSplit,
+                                imageVector = Icons.Default.ContentCopy,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
