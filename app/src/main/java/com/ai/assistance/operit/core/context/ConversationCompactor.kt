@@ -93,8 +93,7 @@ object ConversationCompactor {
     private fun buildSummary(older: List<PromptTurn>): String = buildString {
         append("[较早的 ")
         append(older.size)
-        append(" 轮对话已压缩，以下是骨架]
-")
+        append(" 轮对话已压缩，以下是骨架]\n")
         older.forEach { turn ->
             val label = when (turn.kind) {
                 PromptTurnKind.USER -> "用户"
@@ -108,8 +107,7 @@ object ConversationCompactor {
             append(label)
             append("：")
             append(if (body.length > SUMMARY_CHARS_PER_TURN) body.substring(0, SUMMARY_CHARS_PER_TURN) else body)
-            append("
-")
+            append("\n")
         }
         append("[压缩结束]")
     }
