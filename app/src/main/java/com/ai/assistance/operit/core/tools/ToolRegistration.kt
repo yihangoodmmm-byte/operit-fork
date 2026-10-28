@@ -2661,6 +2661,41 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             executor = { tool -> runBlocking(Dispatchers.IO) { uiTools.runUiSubAgent(tool) } }
     )
 
+    // 受限子分析器：单次问答 + 只读文件，没有写权限、不能执行命令
+    handler.registerTool(
+            name = "run_subagent",
+            descriptionGenerator = { tool ->
+                val task = tool.parameters.find { it.name == "task" }?.value.orEmpty()
+                "在独立子会话里分析给定材料并只返回结论。子会话没有写权限、不能执行命令。" +
+                    "参数：task（任务描述，必填）、file（可重复，要阅读的绝对路径）。当前任务：" + task
+            },
+            executor = { tool ->
+                val task = tool.parameters.find { it.name == "task" }?.value.orEmpty()
+                val files = tool.parameters.filter { it.name == "file" }.map { it.value }
+                runBlocking(Dispatchers.IO) {
+                    runCatching {
+                        com.ai.assistance.operit.core.agent.SubagentRunner.run(context, task, files)
+                    }.fold(
+                        onSuccess = { summary ->
+                            ToolResult(
+                                toolName = tool.name,
+                                success = true,
+                                result = StringResultData(summary)
+                            )
+                        },
+                        onFailure = { error ->
+                            ToolResult(
+                                toolName = tool.name,
+                                success = false,
+                                result = StringResultData(""),
+                                error = error.message ?: "子分析器执行失败"
+                            )
+                        }
+                    )
+                }
+            }
+    )
+
     // 在输入框中设置文本
     handler.registerTool(
             name = "set_input_text",
