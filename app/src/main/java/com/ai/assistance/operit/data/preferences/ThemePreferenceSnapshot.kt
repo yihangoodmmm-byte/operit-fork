@@ -51,6 +51,7 @@ data class ThemePreferenceValues(
             ThemePreferenceValues(
                 strings = mapOf(
                     "theme_mode" to UserPreferencesManager.THEME_MODE_LIGHT,
+                    "app_theme_family" to "ios_light",
                     "background_media_type" to UserPreferencesManager.MEDIA_TYPE_IMAGE,
                     "app_bar_content_color_mode" to
                         UserPreferencesManager.APP_BAR_CONTENT_COLOR_MODE_LIGHT,

@@ -507,6 +507,7 @@ fun OperitTheme(content: @Composable () -> Unit) {
                 MaterialTheme(
                     colorScheme = colorScheme,
                     typography = customTypography,
+                    shapes = AppShapes,
                     content = content,
                 )
             }
