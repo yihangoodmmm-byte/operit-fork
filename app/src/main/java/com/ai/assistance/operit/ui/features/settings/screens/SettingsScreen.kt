@@ -95,6 +95,13 @@ fun SettingsScreen(
                         containerColor = cardContainerColor
                 ) {
                         CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_theme_appearance),
+                                subtitle = stringResource(id = R.string.settings_theme_subtitle),
+                                icon = Icons.Default.Palette,
+                                onClick = navigateToThemeSettings
+                        )
+
+                        CompactSettingsItem(
                                 title = stringResource(id = R.string.settings_user_preferences),
                                 subtitle = stringResource(id = R.string.settings_user_preferences_subtitle),
                                 icon = Icons.Default.Face,
