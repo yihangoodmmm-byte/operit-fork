@@ -153,19 +153,15 @@ fun OperitTheme(content: @Composable () -> Unit) {
                 themeMode == UserPreferencesManager.THEME_MODE_DARK
             }
 
-    // Dynamic color is available on Android 12+
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    // 内置三套配色：iOS 白 / iOS 黑 / Claude。
+    // 不再跟随系统动态取色（Material You）：苹果风要求界面有自己的确定性格，
+    // 跟随壁纸会让每个用户的配色都不同，排版与对比度就无法保证。
+    val themeFamily = AppThemeFamily.entries.firstOrNull { family ->
+        family.id == themeSnapshot.values.string("app_theme_family")
+    } ?: AppThemeFamily.IOS_LIGHT
 
     // 基础主题色调
-    var colorScheme =
-            when {
-                dynamicColor -> {
-                    if (darkTheme) dynamicDarkColorScheme(context)
-                    else dynamicLightColorScheme(context)
-                }
-                darkTheme -> DarkColorScheme
-                else -> LightColorScheme
-            }
+    var colorScheme = AppThemes.schemeOf(themeFamily)
 
     // 应用自定义颜色和文本颜色
     if (useCustomColors) {
