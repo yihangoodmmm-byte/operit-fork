@@ -1067,6 +1067,28 @@ class ConversationService(
      * @param aiName The actual AI name to replace {{char}}.
      * @return The prompt with placeholders replaced.
      */
+    /** 星期中文名，供 {{weekday}} 使用。 */
+    private fun weekdayText(calendar: java.util.Calendar): String {
+        return when (calendar.get(java.util.Calendar.DAY_OF_WEEK)) {
+            java.util.Calendar.MONDAY -> "星期一"
+            java.util.Calendar.TUESDAY -> "星期二"
+            java.util.Calendar.WEDNESDAY -> "星期三"
+            java.util.Calendar.THURSDAY -> "星期四"
+            java.util.Calendar.FRIDAY -> "星期五"
+            java.util.Calendar.SATURDAY -> "星期六"
+            else -> "星期日"
+        }
+    }
+
+    /** 当前生效模型名；读不到时给占位符本身，避免把空串塞进提示词。 */
+    private suspend fun currentModelLabel(): String = runCatching {
+        val config = EnhancedAIService.getModelConfigForFunction(
+            context,
+            com.ai.assistance.operit.data.model.FunctionType.CHAT
+        )
+        config.modelName.takeIf { it.isNotBlank() } ?: "{{model}}"
+    }.getOrElse { "{{model}}" }
+
     private suspend fun replacePromptPlaceholders(prompt: String, aiName: String): String {
         var finalPrompt = prompt
         
@@ -1075,7 +1097,30 @@ class ConversationService(
         // 替换占位符
         finalPrompt = finalPrompt.replace("{{user}}", globalUserName)
         finalPrompt = finalPrompt.replace("{{char}}", aiName)
-        
+
+        // 动态变量：时间在每轮组装时求值，避免提示词里的日期停在创建时
+        val now = java.util.Calendar.getInstance()
+        val dateText = String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            now.get(java.util.Calendar.YEAR),
+            now.get(java.util.Calendar.MONTH) + 1,
+            now.get(java.util.Calendar.DAY_OF_MONTH)
+        )
+        val timeText = String.format(
+            java.util.Locale.US,
+            "%02d:%02d",
+            now.get(java.util.Calendar.HOUR_OF_DAY),
+            now.get(java.util.Calendar.MINUTE)
+        )
+        finalPrompt = finalPrompt.replace("{{date}}", dateText)
+        finalPrompt = finalPrompt.replace("{{time}}", timeText)
+        finalPrompt = finalPrompt.replace("{{datetime}}", dateText + " " + timeText)
+        finalPrompt = finalPrompt.replace("{{weekday}}", weekdayText(now))
+        finalPrompt = finalPrompt.replace("{{model}}", currentModelLabel())
+        finalPrompt = finalPrompt.replace("{{pkg}}", context.packageName)
+        finalPrompt = finalPrompt.replace("{{newline}}", "\n")
+
         return finalPrompt
     }
 

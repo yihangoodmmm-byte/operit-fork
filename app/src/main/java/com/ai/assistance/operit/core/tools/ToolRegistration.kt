@@ -2765,6 +2765,32 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             }
     )
 
+    // 联网搜索：模型自带的搜索在部分中转站不可用，这里提供一个独立的
+    handler.registerTool(
+            name = "web_search",
+            descriptionGenerator = { tool ->
+                val query = tool.parameters.find { it.name == "query" }?.value.orEmpty()
+                "联网搜索，返回标题/链接/摘要（最多 10 条）。参数：query（必填）、max_results（可选）。当前查询：" + query
+            },
+            executor = { tool ->
+                val query = tool.parameters.find { it.name == "query" }?.value.orEmpty()
+                val max = tool.parameters.find { it.name == "max_results" }?.value?.toIntOrNull()
+                    ?: com.ai.assistance.operit.core.tools.WebSearchToolkit.MAX_RESULTS
+                val (results, error) = runBlocking(Dispatchers.IO) {
+                    com.ai.assistance.operit.core.tools.WebSearchToolkit.search(query, max)
+                }
+                if (error != null) {
+                    ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = error)
+                } else {
+                    ToolResult(
+                            toolName = tool.name,
+                            success = true,
+                            result = StringResultData(com.ai.assistance.operit.core.tools.WebSearchToolkit.render(results))
+                    )
+                }
+            }
+    )
+
     // ===== 纯计算类实用工具（参考 Android-Guru-Agent 的 builtin 实现，按本项目形式重写）=====
 
     // 文本 diff：agent 的「改完读回来确认」回路需要它，否则只能把两段文本都塞给模型比对
