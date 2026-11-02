@@ -2661,6 +2661,110 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             executor = { tool -> runBlocking(Dispatchers.IO) { uiTools.runUiSubAgent(tool) } }
     )
 
+    // 正则提取：从大段日志/配置里按模式取内容，避免模型肉眼数
+    handler.registerTool(
+            name = "regex_extract",
+            descriptionGenerator = { tool ->
+                val pattern = tool.parameters.find { it.name == "pattern" }?.value.orEmpty()
+                "按正则提取匹配内容（最多 100 条，单条截断 400 字）。参数：text、pattern（必填），ignore_case、group（可选）。当前模式：" + pattern
+            },
+            executor = { tool ->
+                val text = tool.parameters.find { it.name == "text" }?.value.orEmpty()
+                val pattern = tool.parameters.find { it.name == "pattern" }?.value.orEmpty()
+                val ignoreCase = tool.parameters.find { it.name == "ignore_case" }?.value?.toBoolean() ?: false
+                val group = tool.parameters.find { it.name == "group" }?.value?.toIntOrNull()
+                when {
+                    pattern.isEmpty() -> ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "pattern 不能为空")
+                    text.length > com.ai.assistance.operit.core.tools.TextQueryToolkit.MAX_REGEX_INPUT ->
+                        ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "输入超过 1MB 上限")
+                    else -> runCatching {
+                        com.ai.assistance.operit.core.tools.TextQueryToolkit.regexExtract(text, pattern, ignoreCase, group)
+                    }.fold(
+                            onSuccess = { lines ->
+                                ToolResult(
+                                        toolName = tool.name,
+                                        success = true,
+                                        result = StringResultData(
+                                                com.ai.assistance.operit.core.tools.TextQueryToolkit.renderMatches(lines, group == null)
+                                        )
+                                )
+                            },
+                            onFailure = { e ->
+                                ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "正则错误：" + e.message)
+                            }
+                    )
+                }
+            }
+    )
+
+    // 正则替换：支持 $0/$1 分组引用
+    handler.registerTool(
+            name = "regex_replace",
+            descriptionGenerator = { tool ->
+                val pattern = tool.parameters.find { it.name == "pattern" }?.value.orEmpty()
+                "按正则替换文本，replacement 支持 \$0/\$1 分组引用。参数：text、pattern、replacement（必填），ignore_case（可选）。当前模式：" + pattern
+            },
+            executor = { tool ->
+                val text = tool.parameters.find { it.name == "text" }?.value.orEmpty()
+                val pattern = tool.parameters.find { it.name == "pattern" }?.value.orEmpty()
+                val replacement = tool.parameters.find { it.name == "replacement" }?.value.orEmpty()
+                val ignoreCase = tool.parameters.find { it.name == "ignore_case" }?.value?.toBoolean() ?: false
+                when {
+                    pattern.isEmpty() -> ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "pattern 不能为空")
+                    text.length > com.ai.assistance.operit.core.tools.TextQueryToolkit.MAX_REGEX_INPUT ->
+                        ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "输入超过 1MB 上限")
+                    else -> runCatching {
+                        com.ai.assistance.operit.core.tools.TextQueryToolkit.regexReplace(text, pattern, replacement, ignoreCase)
+                    }.fold(
+                            onSuccess = { (result, count) ->
+                                ToolResult(
+                                        toolName = tool.name,
+                                        success = true,
+                                        result = StringResultData("替换 " + count + " 处\n---\n" + result)
+                                )
+                            },
+                            onFailure = { e ->
+                                ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "正则错误：" + e.message)
+                            }
+                    )
+                }
+            }
+    )
+
+    // JSON 路径：从大 JSON 里取字段，避免整份塞进上下文
+    handler.registerTool(
+            name = "json_path",
+            descriptionGenerator = { tool ->
+                val path = tool.parameters.find { it.name == "path" }?.value.orEmpty()
+                "按路径取 JSON 里的值，支持 a.b[0].c 与 \$.a.b。参数：json、path（必填）。当前路径：" + path
+            },
+            executor = { tool ->
+                val json = tool.parameters.find { it.name == "json" }?.value.orEmpty()
+                val path = tool.parameters.find { it.name == "path" }?.value.orEmpty()
+                val (value, error) = com.ai.assistance.operit.core.tools.JsonQueryToolkit.query(json, path)
+                if (value == null) {
+                    ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = error ?: "未找到")
+                } else {
+                    ToolResult(toolName = tool.name, success = true, result = StringResultData(value))
+                }
+            }
+    )
+
+    // 可取消等待：等 UI 稳定 / 等下载完成，比盲目 sleep 精确
+    handler.registerTool(
+            name = "wait",
+            descriptionGenerator = { tool ->
+                val ms = tool.parameters.find { it.name == "duration_ms" }?.value ?: "1000"
+                "等待指定毫秒后再继续，上限 300000。用于等界面动画、页面加载、命令完成。当前：" + ms + " ms"
+            },
+            executor = { tool ->
+                val ms = (tool.parameters.find { it.name == "duration_ms" }?.value?.toLongOrNull() ?: 1000L)
+                    .coerceIn(0L, 300_000L)
+                runBlocking(Dispatchers.IO) { kotlinx.coroutines.delay(ms) }
+                ToolResult(toolName = tool.name, success = true, result = StringResultData("已等待 " + ms + " ms"))
+            }
+    )
+
     // ===== 纯计算类实用工具（参考 Android-Guru-Agent 的 builtin 实现，按本项目形式重写）=====
 
     // 文本 diff：agent 的「改完读回来确认」回路需要它，否则只能把两段文本都塞给模型比对
