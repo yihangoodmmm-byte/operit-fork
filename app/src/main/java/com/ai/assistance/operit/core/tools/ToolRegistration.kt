@@ -2661,6 +2661,116 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             executor = { tool -> runBlocking(Dispatchers.IO) { uiTools.runUiSubAgent(tool) } }
     )
 
+    // ===== 纯计算类实用工具（参考 Android-Guru-Agent 的 builtin 实现，按本项目形式重写）=====
+
+    // 文本 diff：agent 的「改完读回来确认」回路需要它，否则只能把两段文本都塞给模型比对
+    handler.registerTool(
+            name = "text_diff",
+            descriptionGenerator = { tool ->
+                val format = tool.parameters.find { it.name == "format" }?.value ?: "unified"
+                "比较两段文本的行级差异（Myers 算法）。参数：text1、text2（必填），format=unified|stat（默认 unified），contextLines（默认 3）。当前 format=" + format
+            },
+            executor = { tool ->
+                val text1 = tool.parameters.find { it.name == "text1" }?.value.orEmpty()
+                val text2 = tool.parameters.find { it.name == "text2" }?.value.orEmpty()
+                val format = tool.parameters.find { it.name == "format" }?.value ?: "unified"
+                val context = (tool.parameters.find { it.name == "contextLines" }?.value?.toIntOrNull() ?: 3).coerceIn(0, 20)
+                val ops = com.ai.assistance.operit.core.tools.UtilityToolkit.diff(
+                        com.ai.assistance.operit.core.tools.UtilityToolkit.lineSplit(text1),
+                        com.ai.assistance.operit.core.tools.UtilityToolkit.lineSplit(text2)
+                )
+                val output = if (format == "stat") {
+                    com.ai.assistance.operit.core.tools.UtilityToolkit.renderDiffStat(ops)
+                } else {
+                    com.ai.assistance.operit.core.tools.UtilityToolkit.renderDiffUnified(ops, "text1", "text2", context)
+                }
+                ToolResult(toolName = tool.name, success = true, result = StringResultData(output))
+            }
+    )
+
+    // 版本比较：1.10.0 与 1.9.0 的字符串比较会给出错误答案
+    handler.registerTool(
+            name = "version_compare",
+            descriptionGenerator = { tool ->
+                val a = tool.parameters.find { it.name == "a" }?.value.orEmpty()
+                val b = tool.parameters.find { it.name == "b" }?.value.orEmpty()
+                "按语义化版本规则比较两个版本号（支持 v 前缀、预发布、build 元数据）。当前比较：" + a + " vs " + b
+            },
+            executor = { tool ->
+                val a = tool.parameters.find { it.name == "a" }?.value.orEmpty().trim()
+                val b = tool.parameters.find { it.name == "b" }?.value.orEmpty().trim()
+                if (a.isEmpty() || b.isEmpty()) {
+                    ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "a 和 b 都不能为空")
+                } else {
+                    val left = com.ai.assistance.operit.core.tools.UtilityToolkit.parseVersion(a)
+                    val right = com.ai.assistance.operit.core.tools.UtilityToolkit.parseVersion(b)
+                    val verdict = when (com.ai.assistance.operit.core.tools.UtilityToolkit.compareVersion(left, right)) {
+                        -1 -> a + " 比 " + b + " 旧"
+                        1 -> a + " 比 " + b + " 新"
+                        else -> a + " 与 " + b + " 等价"
+                    }
+                    ToolResult(
+                            toolName = tool.name,
+                            success = true,
+                            result = StringResultData(verdict + "\n" + a + " -> core=" + left.core + " pre=" + left.pre + "\n" + b + " -> core=" + right.core + " pre=" + right.pre)
+                    )
+                }
+            }
+    )
+
+    // 单位换算
+    handler.registerTool(
+            name = "unit_convert",
+            descriptionGenerator = { tool ->
+                val value = tool.parameters.find { it.name == "value" }?.value.orEmpty()
+                val from = tool.parameters.find { it.name == "from" }?.value.orEmpty()
+                val to = tool.parameters.find { it.name == "to" }?.value.orEmpty()
+                "换算 length(mass/data/temperature/speed) 单位，符号大小写敏感（KB=1000、KiB=1024）。当前：" + value + " " + from + " -> " + to
+            },
+            executor = { tool ->
+                val value = tool.parameters.find { it.name == "value" }?.value?.toDoubleOrNull()
+                val from = tool.parameters.find { it.name == "from" }?.value.orEmpty().trim()
+                val to = tool.parameters.find { it.name == "to" }?.value.orEmpty().trim()
+                val category = tool.parameters.find { it.name == "category" }?.value?.trim()?.takeIf { it.isNotEmpty() }
+                val result = if (value == null) null else com.ai.assistance.operit.core.tools.UtilityToolkit.convertUnit(value, from, to, category)
+                if (result == null) {
+                    ToolResult(
+                            toolName = tool.name,
+                            success = false,
+                            result = StringResultData(""),
+                            error = "无法换算 " + from + " -> " + to + "：单位未知、跨类别或存在歧义；可显式传 category=length|mass|data|temperature|speed"
+                    )
+                } else {
+                    ToolResult(toolName = tool.name, success = true, result = StringResultData(result))
+                }
+            }
+    )
+
+    // 文件哈希
+    handler.registerTool(
+            name = "file_hash",
+            descriptionGenerator = { tool ->
+                val path = tool.parameters.find { it.name == "path" }?.value.orEmpty()
+                val algorithm = tool.parameters.find { it.name == "algorithm" }?.value ?: "sha256"
+                "计算文件的 MD5/SHA-1/SHA-256/SHA-512（流式一遍算完）。当前：" + path + " (" + algorithm + ")"
+            },
+            executor = { tool ->
+                val path = tool.parameters.find { it.name == "path" }?.value.orEmpty()
+                val algorithm = (tool.parameters.find { it.name == "algorithm" }?.value ?: "sha256").lowercase()
+                val algorithms = if (algorithm == "all") listOf("md5", "sha1", "sha256", "sha512") else listOf(algorithm)
+                val file = java.io.File(path)
+                val digests = com.ai.assistance.operit.core.tools.UtilityToolkit.hashFile(file, algorithms)
+                if (digests == null) {
+                    ToolResult(toolName = tool.name, success = false, result = StringResultData(""), error = "文件不存在或无法读取：" + path)
+                } else {
+                    val text = digests.entries.joinToString("\n") { (name, hex) ->
+                        hex + "  " + path + "  (" + file.length() + " bytes, " + name + ")"
+                    }
+                    ToolResult(toolName = tool.name, success = true, result = StringResultData(text))
+                }
+            }
+    )
+
     // 受限子分析器：单次问答 + 只读文件，没有写权限、不能执行命令
     handler.registerTool(
             name = "run_subagent",
