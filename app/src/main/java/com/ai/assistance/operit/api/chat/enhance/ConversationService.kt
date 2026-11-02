@@ -1081,13 +1081,16 @@ class ConversationService(
     }
 
     /** 当前生效模型名；读不到时给占位符本身，避免把空串塞进提示词。 */
-    private suspend fun currentModelLabel(): String = runCatching {
-        val config = EnhancedAIService.getModelConfigForFunction(
-            context,
-            com.ai.assistance.operit.data.model.FunctionType.CHAT
-        )
-        config.modelName.takeIf { it.isNotBlank() } ?: "{{model}}"
-    }.getOrElse { "{{model}}" }
+    private suspend fun currentModelLabel(): String {
+        val label = runCatching {
+            val config = com.ai.assistance.operit.api.chat.EnhancedAIService.getModelConfigForFunction(
+                context,
+                com.ai.assistance.operit.data.model.FunctionType.CHAT
+            )
+            config.modelName
+        }.getOrNull()
+        return if (label.isNullOrBlank()) "{{model}}" else label
+    }
 
     private suspend fun replacePromptPlaceholders(prompt: String, aiName: String): String {
         var finalPrompt = prompt
