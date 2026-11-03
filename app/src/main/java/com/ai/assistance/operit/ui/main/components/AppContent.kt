@@ -381,9 +381,9 @@ fun AppContent(
                         }
                     )
                     .fillMaxSize(),
-                color =
-                if (hasBackgroundImage) Color.Transparent
-                else MaterialTheme.colorScheme.background
+                // 根部已经铺了壁纸层（渐变 + 光晕）。这里再盖一层纯色会把壁纸整个盖住：
+                // 玻璃没有可折射的内容，三套主题看起来也只差一个色号。所以始终透明。
+                color = Color.Transparent
             ) {
                 if (isLoading) {
                     // 加载中状态

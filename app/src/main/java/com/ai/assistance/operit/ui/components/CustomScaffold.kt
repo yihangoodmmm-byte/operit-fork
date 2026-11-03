@@ -19,8 +19,15 @@ fun CustomScaffold(
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.End,
-    containerColor: Color = MaterialTheme.colorScheme.background,
-    contentColor: Color = contentColorFor(containerColor),
+    // 默认透明，让根部的壁纸层（渐变 + 光晕）透上来；文字颜色仍按主题背景色取，
+    // 避免透明色取不到 contentColor 导致深色主题下黑字黑底。
+    containerColor: Color = Color.Transparent,
+    contentColor: Color =
+        if (containerColor == Color.Transparent) {
+            contentColorFor(MaterialTheme.colorScheme.background)
+        } else {
+            contentColorFor(containerColor)
+        },
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(

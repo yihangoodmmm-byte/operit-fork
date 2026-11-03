@@ -436,6 +436,10 @@ android {
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("debug")
             resValue("string", "app_name", "Operit Debug")
+            // 调试包默认带 android:debuggable=true，ART 只做 verify 不生成 AOT 代码，
+            // 整个应用（Compose 每一帧）都跑在解释器上，实测滑动时只有 ~10fps。
+            // 这个分支只用来出给自己装的可用包，不需要调试器，所以关掉 debuggable。
+            isDebuggable = false
         }
         create("clone") {
             initWith(getByName("debug"))

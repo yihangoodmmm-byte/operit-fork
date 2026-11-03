@@ -33,7 +33,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -332,8 +337,70 @@ fun OperitTheme(content: @Composable () -> Unit) {
 
     // 应用主题和自定义背景
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val liquidGlassBackdrop = rememberLayerBackdrop()
-        val waterGlassState = if (isWaterGlassSupported()) rememberLiquidState() else null
+        // 玻璃必须「有东西可折射」才看得出来：纯色背景上的玻璃只是一块半透明色。
+        // 所以这里给背景加一层很淡的渐变 + 两团光晕（不带动画、不额外离屏缓冲，几乎零成本），
+        // 玻璃开启时才有可模糊/可折射的内容。
+        val hasBackgroundImage = useBackgroundImage && backgroundImageUri != null
+        val baseBackground = colorScheme.background
+        val isDarkBackground = baseBackground.luminance() < 0.5f
+        val wallpaperModifier =
+            if (hasBackgroundImage) {
+                Modifier.background(if (darkTheme) Color.Black else Color.White)
+            } else {
+                Modifier.drawWithCache {
+                    val topColor =
+                        lerp(baseBackground, Color.White, if (isDarkBackground) 0.05f else 0.05f)
+                    val bottomColor =
+                        lerp(baseBackground, Color.Black, if (isDarkBackground) 0.12f else 0.03f)
+                    val vertical = Brush.verticalGradient(listOf(topColor, bottomColor))
+                    val glowAlpha = if (isDarkBackground) 0.22f else 0.14f
+                    val glowTop =
+                        Brush.radialGradient(
+                            colors =
+                                listOf(
+                                    colorScheme.primary.copy(alpha = glowAlpha),
+                                    Color.Transparent,
+                                ),
+                            center = Offset(size.width * 0.12f, size.height * 0.02f),
+                            radius = size.width * 1.05f,
+                        )
+                    val glowBottom =
+                        Brush.radialGradient(
+                            colors =
+                                listOf(
+                                    colorScheme.tertiary.copy(alpha = glowAlpha * 0.7f),
+                                    Color.Transparent,
+                                ),
+                            center = Offset(size.width * 1.02f, size.height * 0.96f),
+                            radius = size.width * 0.9f,
+                        )
+                    onDrawBehind {
+                        drawRect(vertical)
+                        drawRect(glowTop)
+                        drawRect(glowBottom)
+                    }
+                }
+            }
+
+        // layerBackdrop / liquefiable 会给整个应用再加一层全屏离屏缓冲。
+        // 只在真的打开了玻璃（气泡 / 输入框 / 抽屉）时才装上，关掉时保持普通绘制，
+        // 否则每帧都白付一次全屏采样，全应用都会掉帧。
+        val liquidGlassActive =
+            isLiquidGlassSupported() &&
+                (themeSnapshot.bubbleUserBubbleLiquidGlass ||
+                    themeSnapshot.bubbleAiBubbleLiquidGlass ||
+                    themeSnapshot.cursorUserBubbleLiquidGlass ||
+                    themeSnapshot.chatInputLiquidGlass ||
+                    themeSnapshot.navigationDrawerButtonLiquidGlass)
+        val waterGlassActive =
+            isWaterGlassSupported() &&
+                (themeSnapshot.bubbleUserBubbleWaterGlass ||
+                    themeSnapshot.bubbleAiBubbleWaterGlass ||
+                    themeSnapshot.cursorUserBubbleWaterGlass ||
+                    themeSnapshot.chatInputWaterGlass ||
+                    themeSnapshot.navigationDrawerWaterGlass)
+        val liquidGlassBackdrop = if (liquidGlassActive) rememberLayerBackdrop() else null
+        val waterGlassState = if (waterGlassActive) rememberLiquidState() else null
 
         CompositionLocalProvider(
             LocalThemePreferenceSnapshot provides themeSnapshot,
@@ -341,13 +408,20 @@ fun OperitTheme(content: @Composable () -> Unit) {
             LocalWaterGlassState provides waterGlassState,
         ) {
             Box(
-                modifier = Modifier.fillMaxSize().layerBackdrop(liquidGlassBackdrop)
+                modifier =
+                    Modifier.fillMaxSize().then(
+                        if (liquidGlassBackdrop != null) {
+                            Modifier.layerBackdrop(liquidGlassBackdrop)
+                        } else {
+                            Modifier
+                        },
+                    )
             ) {
                 Box(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .background(if (darkTheme) Color.Black else Color.White)
+                            .then(wallpaperModifier)
                             .then(
                                 if (waterGlassState != null) {
                                     Modifier.liquefiable(waterGlassState)
