@@ -575,6 +575,7 @@ fun OperitTheme(content: @Composable () -> Unit) {
                                 colorScheme.surfaceContainerLowest.copy(alpha = 1f),
                         ),
                     typography = customTypography,
+                    shapes = AppShapes,
                     content = content,
                 )
             } else {
