@@ -500,8 +500,32 @@ class LocalTerminalProvider(
 
     private fun buildHiddenExecStartupCommand(): Array<String> {
         val bash = File(binDir, "bash").absolutePath
+        // proot 在应用进程身份下 execve 会被系统拦截（ENOSYS），有 root 时让整条启动脚本以 root 运行；
+        // 隐藏执行与可见终端必须走同一条路，否则 agent 的工具调用会起不来。
         val startScript = "source \$HOME/common.sh && login_ubuntu '/bin/bash --noprofile --norc'"
-        return arrayOf(bash, "-c", startScript)
+        if (!isSuAvailable()) {
+            return arrayOf(bash, "-c", startScript)
+        }
+        val envPrefix = "export HOME='${filesDir.absolutePath}'; " +
+            "export TMPDIR='${File(filesDir, "tmp").absolutePath}'; " +
+            "export PROOT_LOADER='${File(binDir, "loader").absolutePath}'; " +
+            "export PROOT_TMP_DIR='${File(filesDir, "tmp").absolutePath}'; "
+        val quotedScript = startScript.replace("'", "'\\''")
+        Log.d(TAG, "Hidden exec will run under root")
+        return arrayOf("su", "-c", envPrefix + "'$bash' -c '$quotedScript'")
+    }
+
+    private fun isSuAvailable(): Boolean = try {
+        val process = ProcessBuilder("su", "-c", "id -u").redirectErrorStream(true).start()
+        if (!process.waitFor(6, java.util.concurrent.TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            false
+        } else {
+            process.exitValue() == 0
+        }
+    } catch (e: Exception) {
+        Log.w(TAG, "isSuAvailable failed", e)
+        false
     }
 
     private fun buildHiddenExecEnvelope(command: String, token: String): String {

@@ -28,6 +28,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.delay
 import com.ai.assistance.operit.terminal.data.PackageManagerType
 import com.ai.assistance.operit.terminal.data.SessionInitState
 import com.ai.assistance.operit.terminal.utils.SourceManager
@@ -61,6 +62,29 @@ class TerminalManager private constructor(
     
     // SharedPreferences for reading settings
     private val prefs = context.getSharedPreferences("terminal_settings", Context.MODE_PRIVATE)
+
+    /**
+     * root 启动路径的状态。
+     * 背景：proot 在 app 进程身份（untrusted_app + seccomp）下 execve 直系子进程会返回 ENOSYS，
+     * 只有以 root 身份启动 proot 才能正常工作，因此本地终端优先经 su -c 进入 rootfs。
+     * 这里只在同一进程内探测一次并缓存，避免反复触发授权弹窗、也避免未授权时被系统直接杀进程。
+     */
+    private object RootLaunchState {
+        const val UNKNOWN = 0
+        const val GRANTED = 1
+        const val DENIED = 2
+    }
+
+    @Volatile
+    private var rootLaunchState: Int = RootLaunchState.UNKNOWN
+
+    /** 面向 UI 的提示：null 表示没有阻塞性问题 */
+    private val _environmentBlocker = MutableSharedFlow<String>(extraBufferCapacity = 8, replay = 1)
+    val environmentBlocker: SharedFlow<String> = _environmentBlocker.asSharedFlow()
+
+    private fun publishEnvironmentBlocker(message: String?) {
+        _environmentBlocker.tryEmit(message.orEmpty())
+    }
 
     // 核心组件
     private val sessionManager = SessionManager(this)
@@ -183,7 +207,9 @@ class TerminalManager private constructor(
             Log.e(TAG, "Session initialization timeout for session: ${newSession.id}")
             // 初始化失败，移除会话
             sessionManager.closeSession(newSession.id)
-            throw Exception("Session initialization timeout")
+            // 优先给出可读的阻塞原因（无 root 授权 / 环境包损坏），排队中的会话也能拿到
+            val blocker = environmentBlocker.replayCache.firstOrNull().orEmpty()
+            throw Exception(blocker.ifEmpty { describeInitFailure() })
         }
 
         Log.d(TAG, "Session ${newSession.id} initialized successfully")
@@ -425,9 +451,32 @@ class TerminalManager private constructor(
 
     private fun initializeSession(sessionId: String) {
         coroutineScope.launch {
+            // 前置检查：没有 root 就不要进入安装/登录流程，否则用户只能看到一个泛化的初始化超时
+            if (!ensureRootLaunch()) {
+                Log.e(TAG, "Root launch unavailable, aborting session $sessionId")
+                sessionManager.closeSession(sessionId)
+                return@launch
+            }
+
+            // 上一次安装失败过：不要反复输出一屏日志，直接给出可读原因
+            val stamp = installFailureStamp()
+            if (stamp.isFile) {
+                val reason = runCatching { stamp.readText().trim() }.getOrDefault("")
+                if (reason.isNotEmpty()) {
+                    Log.e(TAG, "Install failure stamp present: $reason")
+                    publishEnvironmentBlocker("上一次内置环境安装失败：$reason")
+                }
+            }
+
             val success = initializeEnvironment()
             if (success) {
                 startSession(sessionId)
+            } else {
+                // 环境初始化失败也要让等待者立刻退出，否则只能干等到 30 秒超时
+                publishEnvironmentBlocker(
+                    "内置环境初始化失败：请检查 files/rootfs-packs 下的环境包，或使用「修复内置环境」。"
+                )
+                sessionManager.closeSession(sessionId)
             }
         }
     }
@@ -537,6 +586,40 @@ class TerminalManager private constructor(
             }
         }
         return terminalProvider!!
+    }
+
+    /**
+     * 内置环境一键修复：清掉损坏的安装残留、缓存副本和失败标记，下次开终端会重新解压。
+     * 不删除用户数据（rootfs-packs 下的环境包会被保留）。
+     */
+    suspend fun repairEnvironment(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            prepareForMaintenance()
+            delay(300)
+            val env = selectedRootfsEnv()
+            deleteRecursivelyQuietly(File(filesDir, "$env.tar.xz"))
+            deleteRecursivelyQuietly(File(filesDir, "$env.install.tmp"))
+            deleteRecursivelyQuietly(File(filesDir, "$env.install.lock"))
+            deleteRecursivelyQuietly(File(filesDir, "usr/var/lib/proot-distro/installed-rootfs/$env"))
+            deleteRecursivelyQuietly(File(filesDir, "extract.log"))
+            clearInstallFailureStamp()
+            rootLaunchState = RootLaunchState.UNKNOWN
+            publishEnvironmentBlocker(null)
+            Log.d(TAG, "repairEnvironment done for env=$env")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "repairEnvironment failed", e)
+            false
+        }
+    }
+
+    private fun deleteRecursivelyQuietly(file: File) {
+        runCatching {
+            if (file.exists()) {
+                file.deleteRecursively()
+                Log.d(TAG, "removed ${file.absolutePath}")
+            }
+        }.onFailure { Log.w(TAG, "failed to remove ${file.absolutePath}", it) }
     }
 
     suspend fun initializeEnvironment(): Boolean {
@@ -729,6 +812,67 @@ class TerminalManager private constructor(
     /** 环境包目录：每个 "<环境名>.tar.xz" 都是一个可安装环境 */
     private fun rootfsPacksDir(): File = File(filesDir, ROOTFS_PACKS_DIR).apply { mkdirs() }
 
+    /**
+     * 判断 su 是否可用且已授权。
+     * 注意：必须放在启动会话之前执行——未授权时 su 会直接拒绝，某些 ROM 会连带杀掉调用进程，
+     * 所以这里只探测一次并缓存结果，探测失败就不要进入安装/登录流程。
+     */
+    private fun probeSuAccess(): Boolean = try {
+        val process = ProcessBuilder("su", "-c", "id -u")
+            .redirectErrorStream(true)
+            .start()
+        when {
+            !process.waitFor(8, java.util.concurrent.TimeUnit.SECONDS) -> {
+                process.destroyForcibly()
+                false
+            }
+            process.exitValue() != 0 -> false
+            else -> process.inputStream.bufferedReader().use { it.readText() }.trim() == "0"
+        }
+    } catch (e: Exception) {
+        Log.w(TAG, "probeSuAccess failed", e)
+        false
+    }
+
+    private fun ensureRootLaunch(): Boolean {
+        if (rootLaunchState == RootLaunchState.UNKNOWN) {
+            val granted = probeSuAccess()
+            rootLaunchState = if (granted) RootLaunchState.GRANTED else RootLaunchState.DENIED
+            Log.d(TAG, "Root launch probe result: granted=$granted")
+        }
+        if (rootLaunchState != RootLaunchState.GRANTED) {
+            publishEnvironmentBlocker(
+                "内置 Linux 环境需要 root：proot 在应用进程下会被系统拦截（execve 返回 ENOSYS）。\n" +
+                    "请给本应用 root 授权后重开终端，或改用系统 Termux。"
+            )
+            return false
+        }
+        publishEnvironmentBlocker(null)
+        return true
+    }
+
+    /** 把「会话初始化超时」细分成可读原因，避免用户只看到 Session initialization timeout */
+    private fun describeInitFailure(): String {
+        if (rootLaunchState == RootLaunchState.DENIED) {
+            return "内置 Linux 环境需要 root 授权：proot 在应用进程下会被系统拦截（execve 返回 ENOSYS）。请在 root 管理器中给本应用授权后重开终端。"
+        }
+        val stamp = installFailureStamp()
+        if (stamp.isFile) {
+            val reason = runCatching { stamp.readText().trim() }.getOrDefault("")
+            if (reason.isNotEmpty()) {
+                return "内置环境安装失败：$reason"
+            }
+        }
+        return "Session initialization timeout"
+    }
+
+    /** 安装流程失败时写入的标记文件：内容非空代表上一次解压/校验失败 */
+    private fun installFailureStamp(): File = File(filesDir, "linux_env_install_failed.txt")
+
+    private fun clearInstallFailureStamp() {
+        runCatching { installFailureStamp().delete() }
+    }
+
     /** 当前选中的环境：优先 rootfs-packs/CURRENT，其次按名字排序的第一个包 */
     private fun selectedRootfsEnv(): String {
         val packs = rootfsPacksDir().listFiles()
@@ -869,10 +1013,49 @@ EOF
             PROOT_BIND_ARGS="${'$'}PROOT_BIND_ARGS -b ${'$'}bind_source:${'$'}bind_target"
           fi
         }
+        # 把任意参数安全地包成单层 shell 单引号字面量（su -c 只接受单个字符串）
+        sq(){
+          printf "'%s'" "$(printf '%s' "${'$'}1" | sed "s/'/'\\\\''/g")"
+        }
+        # 把整组参数逐个单引号化后拼接成一条命令
+        sq_all(){
+          sq_all_out=""
+          for sq_all_arg in "${'$'}@"; do
+            sq_all_out="${'$'}sq_all_out $(sq "${'$'}sq_all_arg")"
+          done
+          printf '%s' "${'$'}sq_all_out"
+        }
+        # su -c 启动 proot 的唯一入口。参数先以「单引号字面量」拼接成一条命令，
+        # 避免 su 把后续参数拆成它自己的参数。
+        probe_root_proot(){
+          command -v su >/dev/null 2>&1 || return 1
+          su -c 'id -u' 2>/dev/null | grep -qx 0 || return 1
+          return 0
+        }
+        root_proot_works(){
+          command -v su >/dev/null 2>&1 || return 1
+          su -c "PROOT_TMP_DIR=${'$'}TMPDIR PROOT_LOADER=${'$'}PROOT_LOADER LD_LIBRARY_PATH= $(sq "${'$'}BIN/proot") -0 -r $(sq "${'$'}UBUNTU_PATH") -w /root /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash --noprofile --norc -c 'exit 0'" >/dev/null 2>&1
+        }
         run_proot_binary(){
-          LD_LIBRARY_PATH= "${'$'}BIN/proot" "${'$'}@"
+          if [ "${'$'}PROOT_AS_ROOT" = "1" ]; then
+            su -c "PROOT_TMP_DIR=${'$'}TMPDIR PROOT_LOADER=${'$'}PROOT_LOADER LD_LIBRARY_PATH= $(sq "${'$'}BIN/proot") $(sq_all "${'$'}@")"
+          else
+            LD_LIBRARY_PATH= "${'$'}BIN/proot" "${'$'}@"
+          fi
+        }
+        # 以 root 身份启动 proot，失败时自动回退到直连（并给出原因）
+        try_root_proot(){
+          if [ "${'$'}PROOT_AS_ROOT" != "1" ]; then
+            return 1
+          fi
+          PROOT_TMP_DIR="${'$'}TMPDIR" PROOT_LOADER="${'$'}PROOT_LOADER" LD_LIBRARY_PATH= \
+            exec su -c "$(sq "${'$'}BIN/proot") $(sq_all "${'$'}@")"
         }
         exec_proot_binary(){
+          if [ "${'$'}PROOT_AS_ROOT" = "1" ]; then
+            try_root_proot "${'$'}@"
+            echo "PRoot 以 root 身份启动失败，回退到应用身份。" >&2
+          fi
           LD_LIBRARY_PATH= exec "${'$'}BIN/proot" "${'$'}@"
         }
         LAST_PROOT_PROBE_STATUS=0
@@ -943,6 +1126,33 @@ EOF
           fi
           echo "--- proot stdout/stderr end ---"
         }
+        # 诊断：以 root 身份跑一次探测，失败时把 stderr 打出来
+        print_root_proot_tail_failure(){
+          root_probe_output="$(su -c "PROOT_TMP_DIR=${'$'}TMPDIR PROOT_LOADER=${'$'}PROOT_LOADER LD_LIBRARY_PATH= $(sq "${'$'}BIN/proot") -0 -r $(sq "${'$'}UBUNTU_PATH") -w /root /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash --noprofile --norc -c 'exit 0'" 2>&1)"
+          root_probe_status="${'$'}?"
+          if [ "${'$'}root_probe_status" != "0" ]; then
+            echo "root 身份启动 proot 失败（exit=${'$'}root_probe_status）："
+            printf '%s\n' "${'$'}root_probe_output"
+            return 0
+          fi
+          return 1
+        }
+        # root 身份启动时，尽量把 Android 侧目录带进 guest；缺了运行时库就自动补一个只读绑定
+        auto_enable_system_paths(){
+          if [ "${'$'}PROOT_AS_ROOT" != "1" ]; then
+            return 0
+          fi
+          if [ -n "${'$'}PROOT_BIND_ARGS" ]; then
+            case "${'$'}PROOT_BIND_ARGS" in
+              *"/system"*) return 0 ;;
+            esac
+          fi
+          if [ -d /system ]; then
+            PROOT_BIND_ARGS="${'$'}PROOT_BIND_ARGS -b /system"
+            echo "已为 root 模式追加只读绑定：/system"
+          fi
+          return 0
+        }
         probe_proot_link2symlink(){
           run_proot_binary \
             -v 1 \
@@ -982,15 +1192,33 @@ EOF
         resolve_proot_runtime(){
           PROOT_LINK2SYMLINK=0
           PROOT_BIND_ARGS=""
+          PROOT_AS_ROOT=0
+
+          # 先判定是否以 root 身份启动 proot：
+          # app 进程下 proot 派生的子进程会被系统拦截（execve 返回 ENOSYS），
+          # 在有 root 的机器上只有走 su 才能正常工作。
+          if probe_root_proot; then
+            PROOT_AS_ROOT=1
+            if print_root_proot_tail_failure; then
+              :
+            fi
+          else
+            PROOT_AS_ROOT=0
+            progress_echo "未检测到可用的 root：proot 在应用身份下会被系统拦截（execve 返回 ENOSYS）。"
+          fi
 
           if ! run_proot_probe; then
             print_last_proot_probe_failure
+            if [ "${'$'}PROOT_AS_ROOT" != "1" ]; then
+              echo "提示：本机 proot 需要 root 身份运行；当前未获得 root 授权。"
+            fi
             return 1
           fi
 
           if probe_proot_link2symlink; then
             PROOT_LINK2SYMLINK=1
           fi
+          auto_enable_system_paths
           return 0
         }
         """.trimIndent()
@@ -1055,6 +1283,8 @@ EOF
             else
               progress_echo "Ubuntu ${'$'}L_NOT_INSTALLED, ${'$'}L_INSTALLING..."
               if [ ! -f "${'$'}HOME/${'$'}UBUNTU" ]; then
+                echo "未找到环境包：请把 <环境名>.tar.xz 放到 ${'$'}HOME/rootfs-packs/ 后重开终端" > "${'$'}HOME/linux_env_install_failed.txt"
+                progress_echo "未找到环境包"
                 cleanup_install
                 trap - EXIT INT TERM
                 return 1
@@ -1062,12 +1292,38 @@ EOF
               rm -rf "${'$'}TMP_DIR" 2>/dev/null
               mkdir -p "${'$'}TMP_DIR" 2>/dev/null
               progress_echo "Extracting Ubuntu rootfs..."
-              busybox tar xf "${'$'}HOME/${'$'}UBUNTU" -C "${'$'}TMP_DIR"/ >/dev/null 2>&1
+              # 校验环境包：有 .sha256 就核对，再解压到临时目录；失败写到 files/ 下的标记文件，
+              # 让下一次启动能直接告诉用户原因，而不是只报一个初始化超时。
+              ENV_PACK="${'$'}HOME/${'$'}UBUNTU"
+              if [ -f "${'$'}ENV_PACK.sha256" ] && command -v sha256sum >/dev/null 2>&1; then
+                if ! ( cd "${'$'}HOME" && sha256sum -c "${'$'}UBUNTU.sha256" >/dev/null 2>&1 ); then
+                  echo "环境包校验失败（sha256 不匹配）" > "${'$'}HOME/linux_env_install_failed.txt"
+                  progress_echo "环境包校验失败（sha256 不匹配）"
+                  cleanup_install
+                  trap - EXIT INT TERM
+                  return 1
+                fi
+              fi
+              busybox tar xf "${'$'}ENV_PACK" -C "${'$'}TMP_DIR"/ >"${'$'}HOME/extract.log" 2>&1
               if [ ${'$'}? -ne 0 ]; then
+                echo "环境包解压失败（压缩流可能损坏），详见 ${'$'}HOME/extract.log" > "${'$'}HOME/linux_env_install_failed.txt"
+                progress_echo "环境包解压失败，详见 ${'$'}HOME/extract.log"
                 cleanup_install
                 trap - EXIT INT TERM
                 return 1
               fi
+              EXTR_OK=1
+              for EXTR_F in usr/bin/env etc/os-release; do
+                if [ ! -e "${'$'}TMP_DIR/${'$'}EXTR_F" ]; then EXTR_OK=0; fi
+              done
+              if [ "${'$'}EXTR_OK" != "1" ]; then
+                echo "环境包不完整：缺少 usr/bin/env 或 etc/os-release" > "${'$'}HOME/linux_env_install_failed.txt"
+                progress_echo "环境包不完整（缺少关键文件）"
+                cleanup_install
+                trap - EXIT INT TERM
+                return 1
+              fi
+              rm -f "${'$'}HOME/linux_env_install_failed.txt" 2>/dev/null
               echo "Extraction complete"
               if [ -d "${'$'}TMP_DIR/${'$'}UBUNTU_NAME" ]; then
                 mv "${'$'}TMP_DIR/${'$'}UBUNTU_NAME"/* "${'$'}TMP_DIR"/ 2>/dev/null

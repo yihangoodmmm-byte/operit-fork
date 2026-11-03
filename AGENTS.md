@@ -37,3 +37,8 @@ ts的报错catch后需要log出来
 代码的更改应维护相称的文档，注意docs\doc-src\before_docing.md
 debug的时候注释记录你的修改意图（为什么，不这么做后果是什么）
 完成初步计划后，使用docs\TODO\README.md来细化计划
+
+## 本 fork 的构建 / 安装
+- 出包只能走 GitHub Actions（设备上没有 Gradle）。完整流程、踩坑清单、脚本用法见 `docs/54-CI构建与安装.md`。
+- 配套脚本：`tools/ci/fetch_apk.sh`（取产物）、`tools/ci/android_install_and_aot.sh`（装包 + 强制 AOT）。
+- 装完包必须跑一次 `cmd package compile -m speed -f <pkg>`，否则 ART 停在 verify，Compose 全解释执行，整个应用会掉到 10fps 级别。
