@@ -209,7 +209,9 @@ fun OperitTheme(content: @Composable () -> Unit) {
                     statusBarTransparent -> Color.Transparent.toArgb()
                     useBackgroundImage && backgroundImageUri != null -> Color.Transparent.toArgb()  // 有背景时透明
                     useCustomStatusBarColor && customStatusBarColorValue != null -> customStatusBarColorValue!!.toInt()
-                    else -> colorScheme.primary.toArgb()
+                    // AiCode：顶栏已改成与页面同色，状态栏若仍用 primary 就会在顶部留一条彩色带，
+                    // 与下方顶栏脱节。这里统一跟随页面底色，和导航栏（下面那段）保持一致。
+                    else -> colorScheme.background.toArgb()
                 }
                 window.statusBarColor = statusBarColor
 
