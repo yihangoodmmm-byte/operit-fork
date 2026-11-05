@@ -28,6 +28,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.Icon
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.features.chat.webview.workspace.WorkspaceBackupManager
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 enum class WorkspaceChangeConfirmMode {
     ROLLBACK,
@@ -197,7 +198,7 @@ fun WorkspaceChangeConfirmDialog(
                         Text(text = stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(
+                    CcButton(
                         onClick = onConfirm,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error

@@ -52,6 +52,8 @@ import java.util.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 // 目录条目数据类
 data class DirectoryEntry(
@@ -757,8 +759,8 @@ fun FileBrowser(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(onClick = onCancel) { Text(if (isManageMode) stringResource(R.string.file_manager_return) else stringResource(R.string.file_manager_cancel)) }
-                    Button(
+                    CcOutlinedButton(onClick = onCancel) { Text(if (isManageMode) stringResource(R.string.file_manager_return) else stringResource(R.string.file_manager_cancel)) }
+                    CcButton(
                         onClick = {
                             AppLogger.d(
                                 "WorkspaceFileBrowser",

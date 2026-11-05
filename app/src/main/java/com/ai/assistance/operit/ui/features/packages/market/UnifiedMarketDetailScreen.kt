@@ -88,6 +88,8 @@ import com.ai.assistance.operit.ui.main.components.LocalIsCurrentScreen
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 data class UnifiedMarketDetailHeader(
     val title: String,
@@ -746,7 +748,7 @@ private fun UnifiedMarketDetailPrimaryButton(
     modifier: Modifier = Modifier,
     compact: Boolean = false
 ) {
-    Button(
+    CcButton(
         onClick = action.onClick,
         enabled = action.enabled,
         colors =
@@ -798,7 +800,7 @@ private fun UnifiedMarketDetailSecondaryButton(
     modifier: Modifier = Modifier,
     compact: Boolean = false
 ) {
-    OutlinedButton(
+    CcOutlinedButton(
         onClick = action.onClick,
         enabled = action.enabled,
         modifier = modifier.heightIn(min = if (compact) 36.dp else 42.dp),

@@ -86,6 +86,7 @@ import com.ai.assistance.operit.ui.permissions.PermissionLevel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun ClassicChatSettingsBar(
@@ -888,7 +889,7 @@ private fun SettingItem(
                 .clearAndSetSemantics {}
         )
         // 开关
-        Switch(
+        CcSwitch(
             checked = isChecked,
             onCheckedChange = null, // 由Row的toggleable处理
             enabled = isEnabled,
@@ -1185,7 +1186,7 @@ private fun ThinkingSettingsItem(
                     color = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp).clearAndSetSemantics {}
                 )
-                Switch(
+                CcSwitch(
                     checked = isChecked,
                     onCheckedChange = null,
                     modifier =

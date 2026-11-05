@@ -105,6 +105,8 @@ import com.ai.assistance.operit.ui.features.packages.screens.market.viewmodel.Un
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 enum class MarketHomeTab(@StringRes val labelRes: Int) {
     ALL(R.string.market_tab_all),
@@ -967,7 +969,7 @@ private fun MarketAccountCard(
                     )
                 }
 
-                OutlinedButton(onClick = onLogout) {
+                CcOutlinedButton(onClick = onLogout) {
                     Icon(
                         imageVector = Icons.Default.Logout,
                         contentDescription = null,
@@ -1006,7 +1008,7 @@ private fun MarketAccountCard(
                     }
                 }
 
-                Button(onClick = onLogin) {
+                CcButton(onClick = onLogin) {
                     Icon(
                         imageVector = Icons.Default.Login,
                         contentDescription = null,

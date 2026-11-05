@@ -49,6 +49,9 @@ import com.ai.assistance.operit.data.model.MemoryScoreMode
 import com.ai.assistance.operit.data.model.MemorySearchConfig
 import com.ai.assistance.operit.data.preferences.MemorySearchSettingsPreferences
 import kotlin.math.roundToInt
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun MemorySearchSettingsDialog(
@@ -205,7 +208,7 @@ fun MemorySearchSettingsDialog(
                                 color = if (editedCloudConfig.isReady()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Switch(
+                        CcSwitch(
                             checked = cloudEnabled,
                             onCheckedChange = { cloudEnabled = it }
                         )
@@ -277,7 +280,7 @@ fun MemorySearchSettingsDialog(
                         dimensions = dimensionUsage.chunkDimensions
                     )
 
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onRebuild,
                         enabled = rebuildEnabled,
                         modifier = Modifier.fillMaxWidth()
@@ -320,7 +323,7 @@ fun MemorySearchSettingsDialog(
                 }
 
                 SettingsSection(title = stringResource(R.string.memory_search_debug_tools)) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onSimulateSearch,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -330,7 +333,7 @@ fun MemorySearchSettingsDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val endpointValidationError = validateCloudEmbeddingEndpoint(
                         endpoint = endpoint,
@@ -340,7 +343,7 @@ fun MemorySearchSettingsDialog(
                     )
                     if (cloudEnabled && endpointValidationError != null) {
                         cloudEndpointError = endpointValidationError
-                        return@Button
+                        return@CcButton
                     }
 
                     cloudEndpointError = null
@@ -364,7 +367,7 @@ fun MemorySearchSettingsDialog(
         },
         dismissButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
+                CcOutlinedButton(
                     onClick = {
                         scoreMode = MemoryScoreMode.BALANCED
                         keywordWeight = 10.0f
@@ -379,7 +382,7 @@ fun MemorySearchSettingsDialog(
                 ) {
                     Text(stringResource(R.string.memory_search_reset_default))
                 }
-                OutlinedButton(onClick = onDismiss) {
+                CcOutlinedButton(onClick = onDismiss) {
                     Text(stringResource(R.string.memory_cancel))
                 }
             }

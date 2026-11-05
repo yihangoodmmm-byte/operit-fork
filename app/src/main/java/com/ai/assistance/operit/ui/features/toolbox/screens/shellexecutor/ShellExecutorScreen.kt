@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 /** 命令执行记录数据类 */
 data class CommandRecord(
@@ -261,7 +262,7 @@ fun ShellExecutorScreen(navController: NavController? = null) {
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     // 执行按钮
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = { executeCommand(commandInput) },
                         enabled = commandInput.trim().isNotEmpty(),
                         shape = CircleShape,

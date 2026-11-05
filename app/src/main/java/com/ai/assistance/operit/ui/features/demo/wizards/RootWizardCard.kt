@@ -32,6 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * Root权限设置向导卡片
@@ -244,7 +246,7 @@ fun RootWizardCard(
                                                 Spacer(modifier = Modifier.height(16.dp))
 
                                                 // 测试命令按钮
-                                                OutlinedButton(
+                                                CcOutlinedButton(
                                                         onClick = {
                                                                 // 这里直接使用 onRequestRoot 来执行一个示例命令
                                                                 onRequestRoot()
@@ -343,7 +345,7 @@ fun RootWizardCard(
 
                                                         Spacer(modifier = Modifier.height(16.dp))
 
-                                                        Button(
+                                                        CcButton(
                                                                 onClick = onRequestRoot,
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 shape = RoundedCornerShape(8.dp),
@@ -363,7 +365,7 @@ fun RootWizardCard(
 
                                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                                        OutlinedButton(
+                                                        CcOutlinedButton(
                                                                 onClick = onWatchTutorial,
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 shape = RoundedCornerShape(8.dp),

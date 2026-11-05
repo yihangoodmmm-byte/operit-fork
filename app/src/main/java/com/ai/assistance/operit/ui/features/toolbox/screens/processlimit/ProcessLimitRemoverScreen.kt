@@ -34,6 +34,8 @@ import com.ai.assistance.operit.core.tools.system.AndroidShellExecutor
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 进程限制操作记录
@@ -283,7 +285,7 @@ fun ProcessLimitRemoverScreen(navController: NavController? = null) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // 解除限制按钮
-                    Button(
+                    CcButton(
                         onClick = { executeAction(ProcessLimitAction.REMOVE) },
                         enabled = !isExecuting,
                         modifier = Modifier
@@ -320,7 +322,7 @@ fun ProcessLimitRemoverScreen(navController: NavController? = null) {
                     }
                     
                     // 恢复限制按钮
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = { executeAction(ProcessLimitAction.RESTORE) },
                         enabled = !isExecuting,
                         modifier = Modifier

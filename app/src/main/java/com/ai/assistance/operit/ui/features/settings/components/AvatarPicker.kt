@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun AvatarPicker(
@@ -65,7 +66,7 @@ fun AvatarPicker(
             }
         }
 
-        OutlinedButton(
+        CcOutlinedButton(
             onClick = onAvatarReset,
             enabled = avatarUri != null,
             modifier = Modifier

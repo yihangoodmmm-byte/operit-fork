@@ -60,6 +60,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 private fun ConditionOperator.toDisplayText(): String {
@@ -1319,7 +1321,7 @@ fun NodeDialog(
                             }
                         }
 
-                        Button(
+                        CcButton(
                             onClick = {
                                 actionConfigPairs = actionConfigPairs + ParameterConfig("", false, "")
                             },
@@ -1733,7 +1735,7 @@ fun NodeDialog(
                                         }
                                     }
 
-                                    Button(
+                                    CcButton(
                                         onClick = {
                                             extractOthers = extractOthers + ParameterConfig("", false, "")
                                         },
@@ -1750,7 +1752,7 @@ fun NodeDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Switch(
+                                    CcSwitch(
                                         checked = extractUseFixed,
                                         onCheckedChange = { extractUseFixed = it }
                                     )
@@ -1796,7 +1798,7 @@ fun NodeDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Switch(
+                                    CcSwitch(
                                         checked = extractUseFixed,
                                         onCheckedChange = { extractUseFixed = it }
                                     )
@@ -1952,7 +1954,7 @@ fun NodeDialog(
                         }
 
                         if (triggerType == "schedule") {
-                            Button(
+                            CcButton(
                                 onClick = { showScheduleDialog = true },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -2276,7 +2278,7 @@ fun EditWorkflowDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(stringResource(R.string.workflow_enabled_label))
-                    Switch(
+                    CcSwitch(
                         checked = enabled,
                         onCheckedChange = { enabled = it }
                     )

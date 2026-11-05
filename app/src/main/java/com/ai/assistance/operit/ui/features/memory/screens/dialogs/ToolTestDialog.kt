@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun ToolTestDialog(
@@ -69,12 +71,12 @@ fun ToolTestDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onExecute(query) }, enabled = !isLoading) {
+            CcButton(onClick = { onExecute(query) }, enabled = !isLoading) {
                 Text(stringResource(R.string.memory_create_link))
             }
         },
         dismissButton = {
-            OutlinedButton(onClick = onDismiss) {
+            CcOutlinedButton(onClick = onDismiss) {
                 Text(stringResource(R.string.memory_close))
             }
         }

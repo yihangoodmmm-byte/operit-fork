@@ -91,6 +91,7 @@ import com.ai.assistance.operit.ui.features.packages.market.marketDetailInitial
 import com.ai.assistance.operit.ui.features.packages.market.resolveCurrentAppVersionCompatibility
 import com.ai.assistance.operit.ui.features.packages.market.resolveMarketReviewSnapshot
 import com.ai.assistance.operit.ui.features.packages.screens.market.viewmodel.UnifiedMarketDetailViewModel
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun UnifiedMarketDetailEntryScreen(
@@ -367,7 +368,7 @@ fun UnifiedMarketDetailEntryScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(
+                        CcButton(
                             onClick = { onPublishNewVersion(entry) },
                             modifier = Modifier.fillMaxWidth()
                         ) {

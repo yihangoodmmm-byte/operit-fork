@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -134,7 +135,7 @@ fun BackupFilesStatisticsCard(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = onRefresh,
                         modifier = Modifier.size(40.dp),
                         contentPadding = PaddingValues(0.dp)

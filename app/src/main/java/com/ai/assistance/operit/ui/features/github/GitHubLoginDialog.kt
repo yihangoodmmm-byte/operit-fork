@@ -46,6 +46,8 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 private enum class GitHubLoginMode {
     CHOOSER,
@@ -90,7 +92,7 @@ private fun GitHubLoginMethodDialog(
             Column {
                 Text(stringResource(R.string.github_login_method_description))
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
+                CcButton(
                     onClick = onUseEmbeddedLogin,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -99,7 +101,7 @@ private fun GitHubLoginMethodDialog(
                     Text(stringResource(R.string.github_login_method_embedded))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedButton(
+                CcOutlinedButton(
                     onClick = onUseExternalLogin,
                     modifier = Modifier.fillMaxWidth()
                 ) {

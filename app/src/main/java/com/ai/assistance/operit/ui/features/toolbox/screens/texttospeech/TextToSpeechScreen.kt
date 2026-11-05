@@ -36,6 +36,8 @@ import java.net.ProtocolException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import com.ai.assistance.operit.api.voice.TtsException
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /** 文本转语音演示屏幕 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -443,7 +445,7 @@ fun TextToSpeechScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                        Button(
+                        CcButton(
                                 onClick = { speakText() },
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                                 enabled = isInitialized && !isSpeaking && inputText.isNotBlank(),
@@ -463,7 +465,7 @@ fun TextToSpeechScreen(navController: NavController) {
                                 Text(stringResource(R.string.tts_play_speech), style = MaterialTheme.typography.titleMedium)
                         }
 
-                        Button(
+                        CcButton(
                                 onClick = { stopSpeaking() },
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                                 enabled = isSpeaking,
@@ -623,7 +625,7 @@ fun TextToSpeechScreen(navController: NavController) {
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.End
                                         ) {
-                                                OutlinedButton(
+                                                CcOutlinedButton(
                                                         onClick = {
                                                                 error = null
                                                                 errorDetails = null

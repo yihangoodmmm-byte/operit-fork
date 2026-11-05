@@ -13,6 +13,8 @@ import androidx.compose.ui.res.stringResource
 import com.ai.assistance.operit.R
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun AutoGlmToolScreen(
@@ -72,7 +74,7 @@ private fun AutoGlmToolContent(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Switch(
+                CcSwitch(
                     checked = useVirtualScreen,
                     onCheckedChange = { onUseVirtualScreenChange(it) },
                     enabled = !uiState.isLoading
@@ -81,7 +83,7 @@ private fun AutoGlmToolContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
+            CcButton(
                 onClick = {
                     if (uiState.isLoading) {
                         onCancel()

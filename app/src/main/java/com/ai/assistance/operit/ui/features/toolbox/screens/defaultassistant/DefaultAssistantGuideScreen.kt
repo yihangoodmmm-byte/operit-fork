@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.components.CustomScaffold
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 默认助手设置引导屏幕
@@ -404,7 +405,7 @@ private fun GuideStepCard(
 
                     // 操作按钮
                     if (actionButtonText != null && onActionClick != null) {
-                        Button(
+                        CcButton(
                             onClick = onActionClick,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)

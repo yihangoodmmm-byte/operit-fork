@@ -28,6 +28,7 @@ import com.ai.assistance.operit.data.mnn.MnnModel
 import com.ai.assistance.operit.data.mnn.MnnModelDownloadManager
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +116,7 @@ fun MnnModelDownloadScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        CcButton(
                             onClick = {
                                 scope.launch {
                                     isLoading = true
@@ -391,7 +392,7 @@ private fun ModelCard(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(
+                            CcButton(
                                 onClick = {
                                     scope.launch {
                                         downloadManager.downloadModel(model.modelName, downloadUrl)
@@ -524,7 +525,7 @@ private fun ModelCard(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 // 继续下载按钮
-                                Button(
+                                CcButton(
                                     onClick = {
                                         scope.launch {
                                             downloadManager.downloadModel(model.modelName, downloadUrl)
@@ -618,7 +619,7 @@ private fun ModelCard(
                             
                             Spacer(modifier = Modifier.width(8.dp))
                             
-                            Button(
+                            CcButton(
                                 onClick = {
                                     scope.launch {
                                         downloadManager.downloadModel(model.modelName, downloadUrl)

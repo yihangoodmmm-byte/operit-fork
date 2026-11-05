@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.ai.assistance.operit.core.tools.packTool.ToolPkgComposeDslNode
 import com.ai.assistance.operit.core.tools.packTool.ToolPkgComposeDslParser
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 /**
  * AUTO-GENERATED from Compose Material3/Foundation component bindings.
@@ -664,7 +665,7 @@ internal fun renderSwitchNode(
         } else {
             androidx.compose.material3.SwitchDefaults.colors()
         }
-    Switch(
+    CcSwitch(
         checked = props.bool("checked", false),
         onCheckedChange = { checked ->
             if (!actionId.isNullOrBlank()) {

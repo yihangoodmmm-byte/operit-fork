@@ -45,6 +45,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.*
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun AdvancedSettingsSection(
@@ -361,7 +364,7 @@ fun AdvancedSettingsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useApiKeyPool,
                     onCheckedChange = {
                         useApiKeyPool = it
@@ -453,7 +456,7 @@ fun AdvancedSettingsSection(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Button(
+                            CcButton(
                                 onClick = {
                                     scope.launch {
                                         val concurrency = 5
@@ -483,7 +486,7 @@ fun AdvancedSettingsSection(
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = { keyAvailabilityTester.pause() },
                                 enabled = keyAvailabilityTester.isRunning(),
                                 modifier = Modifier.weight(1f)
@@ -494,7 +497,7 @@ fun AdvancedSettingsSection(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 apiKeyPool = apiKeyPool.map {
                                     it.copy(availabilityStatus = ApiKeyAvailabilityStatus.UNTESTED)
@@ -510,7 +513,7 @@ fun AdvancedSettingsSection(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (!isLargeKeyPool) {
-                        Button(
+                        CcButton(
                             onClick = { editingKey = null; showAddKeyDialog = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -522,7 +525,7 @@ fun AdvancedSettingsSection(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = {
                             val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                                 type = "text/*"
@@ -537,7 +540,7 @@ fun AdvancedSettingsSection(
                         Text(stringResource(R.string.batch_import_keys))
                     }
 
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = {
                             exportFileLauncher.launch("api_keys.txt")
                         },
@@ -551,7 +554,7 @@ fun AdvancedSettingsSection(
                     if (apiKeyPool.isNotEmpty() && isLargeKeyPool) {
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { showClearPoolConfirmDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
@@ -580,7 +583,7 @@ fun AdvancedSettingsSection(
             title = { Text(stringResource(R.string.clear_api_key_pool)) },
             text = { Text(stringResource(R.string.clear_api_key_pool_confirm_message, apiKeyPool.size)) },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = {
                         apiKeyPool = emptyList()
                         saveChanges()
@@ -705,7 +708,7 @@ private fun ApiKeyEditDialog(
             )
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val finalName = "API Key ${key.takeLast(4)}"
                     val newKeyInfo = keyInfo?.copy(name = finalName, key = key)

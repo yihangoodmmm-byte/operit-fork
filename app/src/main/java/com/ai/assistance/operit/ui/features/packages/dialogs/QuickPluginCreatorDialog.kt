@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.ToolResult
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @Composable
 fun QuickPluginCreatorDialog(
@@ -57,7 +58,7 @@ fun QuickPluginCreatorDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = onRunSetup,
                             enabled = !setupRunning
                         ) {

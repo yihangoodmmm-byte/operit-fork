@@ -88,6 +88,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
 import org.json.JSONObject
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 /** Tool for web page visiting and content extraction */
 class StandardWebVisitTool(private val context: Context) : ToolExecutor {
@@ -1281,7 +1283,7 @@ class StandardWebVisitTool(private val context: Context) : ToolExecutor {
                                 verticalAlignment = Alignment.CenterVertically
                         ) {
                             // 左侧按钮 - 根据状态变化
-                            FilledTonalButton(
+                            CcFilledTonalButton(
                                     onClick = {
                                         if (autoCountdownActive.value) {
                                             // 如果正在倒计时，则取消倒计时
@@ -1325,7 +1327,7 @@ class StandardWebVisitTool(private val context: Context) : ToolExecutor {
                             }
 
                             // 右侧按钮 - 根据状态变化
-                            Button(
+                            CcButton(
                                     onClick = {
                                         if (autoCountdownActive.value) {
                                             // 如果正在倒计时，立即继续

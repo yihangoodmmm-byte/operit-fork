@@ -78,6 +78,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 val TAG = "ModelApiSettings"
 
@@ -1194,12 +1198,12 @@ fun ModelApiSettingsSection(
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                     ) {
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                                 onClick = { showModelsDialog = false },
                                 modifier = Modifier.height(36.dp)
                         ) { Text(stringResource(R.string.close), fontSize = 14.sp) }
                         
-                        Button(
+                        CcButton(
                                 onClick = {
                                     // 将选中的模型用逗号连接
                                     val orderedSelection = modelsList.map { it.id }
@@ -1252,7 +1256,7 @@ private fun CodexAuthSettingsBlock(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Button(onClick = onLogin, modifier = Modifier.fillMaxWidth()) {
+            CcButton(onClick = onLogin, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.Login, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.codex_login_action))
@@ -1303,7 +1307,7 @@ private fun CodexAuthSettingsBlock(
                 nowEpochSeconds = usageNowEpochSeconds,
             )
 
-            OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
+            CcOutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.Logout, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.codex_logout_action))
@@ -1782,7 +1786,7 @@ internal fun SettingsSwitchRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+            CcSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
         }
     }
 }
@@ -1799,7 +1803,7 @@ private fun MnnSettingsBlock(
         SettingsInfoBanner(text = stringResource(R.string.mnn_local_model_tip))
 
         navigateToMnnModelDownload?.let { navigate ->
-            Button(
+            CcButton(
                     onClick = navigate,
                     modifier = Modifier.fillMaxWidth(),
                     colors =

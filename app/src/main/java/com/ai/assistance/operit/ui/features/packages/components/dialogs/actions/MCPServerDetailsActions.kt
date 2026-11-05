@@ -24,6 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.mcp.MCPLocalServer
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * Actions component for the MCP server details diaAppLogger.
@@ -50,7 +52,7 @@ fun MCPServerDetailsActions(
     ) {
         // Repository link button (if available)
         if (server.repoUrl.isNotBlank()) {
-            OutlinedButton(
+            CcOutlinedButton(
                 onClick = {
                     try {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(server.repoUrl))
@@ -72,7 +74,7 @@ fun MCPServerDetailsActions(
 
         // Install/Uninstall button
         if (isInstalled) {
-            Button(
+            CcButton(
                 onClick = { onUninstall(server) },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
@@ -87,7 +89,7 @@ fun MCPServerDetailsActions(
                 Text(text = stringResource(R.string.uninstall))
             }
         } else {
-            Button(
+            CcButton(
                 onClick = { onInstall(server) },
                 modifier = Modifier.weight(1f)
             ) {

@@ -36,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.core.subpack.ApkEditor
@@ -51,6 +50,7 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /** 导出选择对话框，用于选择导出平台 */
 @Composable
@@ -393,7 +393,7 @@ fun AndroidExportDialog(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
+                    CcButton(
                             onClick = { onExport(packageName, appName, iconUri, versionName, versionCode) },
                             enabled = packageName.isNotEmpty() && !isPackageNameError && appName.isNotEmpty() && versionName.isNotEmpty() && !isVersionNameError && versionCode.isNotEmpty()
                     ) { Text(context.getString(R.string.export)) }
@@ -559,7 +559,7 @@ fun WindowsExportDialog(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
+                    CcButton(
                             onClick = { onExport(appName, iconUri) },
                             enabled = appName.isNotEmpty()
                     ) { Text(context.getString(R.string.export)) }
@@ -745,7 +745,7 @@ fun ExportCompleteDialog(
                     if (success && filePath != null) {
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        Button(onClick = { onOpenFile(filePath) }) { Text(context.getString(R.string.open_file)) }
+                        CcButton(onClick = { onOpenFile(filePath) }) { Text(context.getString(R.string.open_file)) }
                     }
                 }
             }

@@ -45,6 +45,7 @@ import com.ai.assistance.operit.ui.theme.AppThemes
 import com.ai.assistance.operit.ui.theme.isLiquidGlassSupported
 import com.ai.assistance.operit.ui.theme.rememberActiveThemePreferenceSnapshot
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 /**
  * 极简主题页：三套配色 + 两个玻璃开关。
@@ -96,7 +97,12 @@ fun ThemeSettingsSimpleScreen(onBackPressed: () -> Unit = {}) {
             Spacer(Modifier.height(16.dp))
 
             AppThemeFamily.entries.forEach { family ->
-                val scheme = AppThemes.schemeOf(family)
+                // AICODE / CC 有浅深两套，预览固定展示深色板（与浅色差异最明显）；
+                // 其余家族本身写死明暗，传了也不会变。
+                val scheme = AppThemes.schemeOf(
+                    family,
+                    dark = family == AppThemeFamily.AICODE || family == AppThemeFamily.CC
+                )
                 val selected = family == currentFamily
                 Row(
                     modifier = Modifier
@@ -140,6 +146,8 @@ fun ThemeSettingsSimpleScreen(onBackPressed: () -> Unit = {}) {
                             text = when (family) {
                                 AppThemeFamily.CLAUDE -> "暖纸底 · 陶土橙"
                                 AppThemeFamily.IOS_DARK -> "深色 · 系统蓝"
+                                AppThemeFamily.AICODE -> "冷灰底 · 品牌蓝（AiCode）"
+                                AppThemeFamily.CC -> "暖中性 · 陶土橙（cccodroid）"
                                 else -> "系统灰底 · 纯白卡片"
                             },
                             color = scheme.onSurfaceVariant,
@@ -209,6 +217,6 @@ private fun GlassRow(
             Text(title, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             Text(subtitle, fontSize = 12.sp)
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        CcSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

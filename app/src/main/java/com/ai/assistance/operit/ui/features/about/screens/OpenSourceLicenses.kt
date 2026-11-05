@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 data class OpenSourceLibrary(
     val name: String,
@@ -186,7 +187,7 @@ fun LicenseDialog(onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss) {
+            CcButton(onClick = onDismiss) {
                 Text(stringResource(id = R.string.ok))
             }
         }

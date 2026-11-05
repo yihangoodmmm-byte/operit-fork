@@ -41,6 +41,8 @@ import com.ai.assistance.operit.ui.features.settings.components.ChatStyleOption
 import com.ai.assistance.operit.ui.features.settings.screens.theme.ThemeEditorSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 internal fun ThemeSettingsFontSection(
@@ -77,7 +79,7 @@ internal fun ThemeSettingsFontSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useCustomFontInput,
                     onCheckedChange = { editorSession.setBoolean("use_custom_font", it) },
                 )
@@ -200,7 +202,7 @@ internal fun ThemeSettingsFontSection(
                             }
 
                             if (!customFontPathInput.isNullOrEmpty()) {
-                                OutlinedButton(
+                                CcOutlinedButton(
                                     onClick = {
                                         editorSession.setOptionalString("custom_font_path", null)
                                     },
@@ -422,7 +424,7 @@ internal fun ThemeSettingsAvatarSection(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 val newValue =
                                     (avatarCornerRadiusInput - 1f).coerceIn(0f, 16f)
@@ -446,7 +448,7 @@ internal fun ThemeSettingsAvatarSection(
                             modifier = Modifier.padding(horizontal = 24.dp),
                         )
 
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 val newValue =
                                     (avatarCornerRadiusInput + 1f).coerceIn(0f, 16f)

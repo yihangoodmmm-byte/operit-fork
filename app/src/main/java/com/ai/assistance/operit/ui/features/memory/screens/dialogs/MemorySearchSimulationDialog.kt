@@ -23,6 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.MemorySearchDebugInfo
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun MemorySearchSimulationDialog(
@@ -75,7 +77,7 @@ fun MemorySearchSimulationDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = onRun,
                 enabled = !isRunning
             ) {
@@ -83,7 +85,7 @@ fun MemorySearchSimulationDialog(
             }
         },
         dismissButton = {
-            OutlinedButton(onClick = onDismiss) {
+            CcOutlinedButton(onClick = onDismiss) {
                 Text(stringResource(R.string.memory_close))
             }
         }

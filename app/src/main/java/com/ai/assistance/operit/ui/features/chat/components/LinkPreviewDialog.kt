@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 链接预览弹窗组件
@@ -132,7 +134,7 @@ fun LinkPreviewDialog(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -145,7 +147,7 @@ fun LinkPreviewDialog(
                             Text(context.getString(R.string.cancel))
                         }
 
-                        Button(
+                        CcButton(
                             onClick = openLink,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -164,7 +166,7 @@ fun LinkPreviewDialog(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // 取消按钮
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -178,7 +180,7 @@ fun LinkPreviewDialog(
                         }
 
                         // 访问按钮
-                        Button(
+                        CcButton(
                             onClick = openLink,
                             modifier = Modifier.weight(1f)
                         ) {

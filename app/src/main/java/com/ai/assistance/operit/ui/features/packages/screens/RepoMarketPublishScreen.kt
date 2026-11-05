@@ -53,6 +53,9 @@ import com.ai.assistance.operit.data.api.MarketV2ManifestCategory
 import com.ai.assistance.operit.ui.features.packages.market.MarketStatsType
 import com.ai.assistance.operit.ui.features.packages.screens.market.viewmodel.RepoMarketPublishViewModel
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -211,7 +214,7 @@ fun RepoMarketPublishScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = allowPublicUpdates,
                         onCheckedChange = { allowPublicUpdates = it }
                     )
@@ -261,11 +264,11 @@ fun RepoMarketPublishScreen(
         }
 
         if (isEditMode && !isVersionMode && editingEntry != null) {
-            Button(
+            CcButton(
                 onClick = {
                     if (title.isBlank() || description.isBlank() || repositoryUrl.isBlank() || category.isBlank()) {
                         errorMessage = context.getString(R.string.please_fill_all_required_fields)
-                        return@Button
+                        return@CcButton
                     }
                     scope.launch {
                         isPublishing = true
@@ -309,11 +312,11 @@ fun RepoMarketPublishScreen(
         }
 
         if (!isEditMode || isVersionMode) {
-            Button(
+            CcButton(
                 onClick = {
                     if (title.isBlank() || description.isBlank() || repositoryUrl.isBlank() || version.isBlank() || category.isBlank()) {
                         errorMessage = context.getString(R.string.please_fill_all_required_fields)
-                        return@Button
+                        return@CcButton
                     }
                     showConfirmationDialog = true
                 },
@@ -336,7 +339,7 @@ fun RepoMarketPublishScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedButton(
+        CcOutlinedButton(
             onClick = onNavigateBack,
             modifier = Modifier.fillMaxWidth()
         ) {

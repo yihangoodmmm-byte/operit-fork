@@ -53,6 +53,7 @@ import com.ai.assistance.operit.core.tools.system.AndroidShellExecutor
 import com.ai.assistance.operit.data.preferences.androidPermissionPreferences
 import com.ai.assistance.operit.util.AppLogger
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -207,7 +208,7 @@ fun PermissionLevelCard(
             Box(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
                 // 当显示的权限级别与当前活动级别不同时显示设置按钮
                 if (displayedPermissionLevel != preferredPermissionLevel.value) {
-                    Button(
+                    CcButton(
                             onClick = {
                                 // 将当前选择的权限级别设置为激活状态
                                 coroutineScope.launch {

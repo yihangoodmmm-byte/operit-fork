@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import kotlinx.coroutines.yield
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 internal enum class ThemeSettingsTab(val titleRes: Int) {
     BASIC(R.string.theme_tab_basic),
@@ -117,7 +119,7 @@ internal fun ThemeSettingsFooter(
     onSave: () -> Unit,
     onReset: () -> Unit,
 ) {
-    Button(
+    CcButton(
         onClick = onSave,
         enabled = saveEnabled,
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
@@ -131,7 +133,7 @@ internal fun ThemeSettingsFooter(
         Text(stringResource(id = R.string.save_action))
     }
 
-    OutlinedButton(
+    CcOutlinedButton(
         onClick = onReset,
         enabled = !isSaving,
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),

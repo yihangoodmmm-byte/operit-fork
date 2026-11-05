@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /** Command result dialog that shows command execution output with scrollable content */
 @Composable
@@ -159,7 +160,7 @@ fun SampleCommandsCard(commands: List<Pair<String, String>>, onCommandSelected: 
             Spacer(modifier = Modifier.height(8.dp))
 
             commands.forEach { (command, description) ->
-                OutlinedButton(
+                CcOutlinedButton(
                         onClick = { onCommandSelected(command) },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {

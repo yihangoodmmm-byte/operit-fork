@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * Config content component for the MCP server details diaAppLogger.
@@ -118,7 +119,7 @@ fun MCPServerConfigContent(
             }
         }
 
-        Button(
+        CcButton(
             onClick = onSaveConfig,
             modifier = Modifier.align(Alignment.End),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(

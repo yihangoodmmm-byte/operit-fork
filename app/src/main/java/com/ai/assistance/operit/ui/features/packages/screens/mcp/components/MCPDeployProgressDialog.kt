@@ -24,6 +24,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.mcp.plugins.MCPDeployer.DeploymentStatus
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /** MCP插件部署进度对话框 - 简约风格 */
 @Composable
@@ -237,7 +239,7 @@ fun MCPDeployProgressDialog(
                         horizontalArrangement = Arrangement.End
                 ) {
                     if (deploymentStatus is DeploymentStatus.Error && onRetry != null) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                                 onClick = onRetry,
                                 modifier = Modifier.padding(end = 8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
@@ -255,7 +257,7 @@ fun MCPDeployProgressDialog(
                     }
 
                     if (deploymentStatus !is DeploymentStatus.InProgress) {
-                        Button(
+                        CcButton(
                                 onClick = onDismissRequest,
                                 colors = ButtonDefaults.buttonColors(
                                         containerColor = if (deploymentStatus is DeploymentStatus.Success)

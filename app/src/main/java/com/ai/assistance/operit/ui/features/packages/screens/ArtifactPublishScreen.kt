@@ -78,6 +78,9 @@ import com.ai.assistance.operit.util.AppLogger
 import com.ai.assistance.operit.util.ToolPkgArtifactMinifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 private data class ArtifactPublishEditInfo(
     val type: PublishArtifactType?,
@@ -764,7 +767,7 @@ fun ArtifactPublishScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = {
                             selectedReleaseTag = ""
                             selectedReleaseAssetName = ""
@@ -901,7 +904,7 @@ fun ArtifactPublishScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    OutlinedButton(onClick = { showMarketPreview = true }) {
+                    CcOutlinedButton(onClick = { showMarketPreview = true }) {
                         androidx.compose.material3.Icon(
                             imageVector = Icons.Default.Visibility,
                             contentDescription = null,
@@ -1019,7 +1022,7 @@ fun ArtifactPublishScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = allowPublicUpdates,
                         onCheckedChange = {
                             viewModel.clearPendingMarketRegistrationRetry()
@@ -1060,7 +1063,7 @@ fun ArtifactPublishScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = minifyArtifact,
                         onCheckedChange = {
                             viewModel.clearPendingMarketRegistrationRetry()
@@ -1159,7 +1162,7 @@ fun ArtifactPublishScreen(
             }
         }
 
-        Button(
+        CcButton(
             onClick = {
                 if (isOperit2VersionAllowed(maxSupportedAppVersion)) {
                     showOperit2WarningDialog = true
@@ -1201,7 +1204,7 @@ fun ArtifactPublishScreen(
             )
         }
 
-        OutlinedButton(onClick = onNavigateBack, modifier = Modifier.fillMaxWidth()) {
+        CcOutlinedButton(onClick = onNavigateBack, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.cancel))
         }
     }
@@ -1581,7 +1584,7 @@ private fun ArtifactPublishLogoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
+                CcButton(
                     onClick = onChoose,
                     enabled = !isLoading,
                     modifier = Modifier.weight(1f)
@@ -1603,7 +1606,7 @@ private fun ArtifactPublishLogoCard(
                     Text(stringResource(R.string.artifact_publish_logo_choose))
                 }
                 if (selectedLogoAsset != null) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onUsePackageLogo,
                         enabled = !isLoading,
                         modifier = Modifier.weight(1f)
@@ -1619,7 +1622,7 @@ private fun ArtifactPublishLogoCard(
                 }
             }
 
-            OutlinedButton(
+            CcOutlinedButton(
                 onClick = onPreview,
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()

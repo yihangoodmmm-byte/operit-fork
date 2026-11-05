@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /** 工具测试屏幕 - 最终版网格布局 + 中间弹窗详情 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +107,7 @@ fun ToolTesterScreen(navController: NavController) {
                         .testTag("tool_tester_input")
                 )
 
-                Button(
+                CcButton(
                     onClick = {
                         scope.launch {
                             isTestingAll = true
@@ -281,7 +282,7 @@ fun ToolDetailsSheet(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
             TextButton(onClick = onDismiss) { Text(context.getString(R.string.close)) }
-            Button(onClick = { onTest(toolTest) }, enabled = testResult?.status != TestStatus.RUNNING) {
+            CcButton(onClick = { onTest(toolTest) }, enabled = testResult?.status != TestStatus.RUNNING) {
                 Text(context.getString(R.string.retest))
             }
         }

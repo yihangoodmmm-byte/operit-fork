@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.ChatMessage
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * A composable function for rendering memory summarization messages as a compact divider. This
@@ -167,7 +168,7 @@ fun SummaryMessageComposable(
                         ) {
                             Text(context.getString(R.string.delete), color = MaterialTheme.colorScheme.error)
                         }
-                        Button(
+                        CcButton(
                             onClick = { showSummaryDialog = false },
                         ) { Text(context.getString(R.string.close)) }
                     }
@@ -183,7 +184,7 @@ fun SummaryMessageComposable(
             title = { Text(context.getString(R.string.confirm_delete_summary)) },
             text = { Text(context.getString(R.string.confirm_delete_summary_message)) },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = {
                         onDelete()
                         showDeleteConfirmDialog = false

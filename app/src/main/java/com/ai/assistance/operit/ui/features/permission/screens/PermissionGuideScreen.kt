@@ -79,6 +79,8 @@ import com.ai.assistance.operit.core.tools.system.AndroidPermissionLevel
 import com.ai.assistance.operit.ui.features.permission.viewmodel.PermissionGuideViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 private const val INTRO_PAGES_COUNT = 3
 private const val WELCOME_PAGE_INDEX = INTRO_PAGES_COUNT
@@ -178,7 +180,7 @@ fun PermissionGuideScreen(
                     )
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 showPermissionWarning = false
                                 scope.launch {
@@ -685,7 +687,7 @@ private fun BasicPermissionsPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         // 刷新按钮
-        OutlinedButton(
+        CcOutlinedButton(
                 onClick = {
                     refreshRotation += 360f
                     onRefresh()
@@ -887,7 +889,7 @@ private fun PermissionLevelPage(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 确认按钮
-        Button(
+        CcButton(
                 onClick = onConfirm,
                 enabled = selectedLevel != null,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),

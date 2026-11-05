@@ -22,6 +22,13 @@ api() {
     -H "Accept: application/vnd.github+json" "$@"
 }
 
+# token 预检：失效就立刻报错，别等后面 json 解析崩在 traceback 里
+if ! curl -fsS -m 20 -H "Authorization: token ${GITHUB_TOKEN}" \
+    -H "Accept: application/vnd.github+json" https://api.github.com/user >/dev/null 2>&1; then
+  echo "token 无效或已吊销（Bad credentials / 401）。请换一个新 token（fine-grained: Actions=Read, Contents=Read）。" >&2
+  exit 1
+fi
+
 sha=""
 run_id=""
 dry_run=0
@@ -72,6 +79,14 @@ for _ in $(seq 1 160); do
 done
 
 # ---------- 3. 找 artifact ----------
+# 可用环境变量覆盖：ARTIFACT_ID / ARTIFACT_NAME / ARTIFACT_BYTES
+# （API 配额耗尽时，可以从 run 页面 HTML 里拿到 data-artifact-id 直接下）
+if [ -n "${ARTIFACT_ID:-}" ]; then
+  meta="${ARTIFACT_ID} ${ARTIFACT_BYTES:-0} ${ARTIFACT_NAME:-operit-android-manual}"
+  echo "==> 使用手工指定的 artifact: $meta"
+  api_ok=1
+else
+api_ok=0
 meta=$(api "https://api.github.com/repos/$REPO/actions/runs/$run_id/artifacts" | \
   python3 -c '
 import json, sys
@@ -80,6 +95,7 @@ for a in json.load(sys.stdin)["artifacts"]:
         print(a["id"], a["size_in_bytes"], a["name"])
         break
 ')
+fi
 [ -n "$meta" ] || { echo "该 run 没有 operit-android-* 产物" >&2; exit 1; }
 set -- $meta
 artifact_id=$1
@@ -101,12 +117,19 @@ for i in $(seq 1 60); do
   curl -sL -H "Authorization: token ${GITHUB_TOKEN}" \
     "https://api.github.com/repos/$REPO/actions/artifacts/$artifact_id/zip" \
     -C - -o "$zip_path"
-  got=$(stat -c %s "$zip_path")
-  echo "    $got / $expected_bytes"
-  [ "$got" = "$expected_bytes" ] && break
+  got=$(stat -c %s "$zip_path" 2>/dev/null || echo 0)
+  echo "    $got / ${expected_bytes:-?}"
+  if [ "$expected_bytes" != "0" ] && [ "$got" = "$expected_bytes" ]; then break; fi
+  if [ "$expected_bytes" = "0" ] && [ "$got" -gt 1000000 ]; then break; fi
   sleep 3
 done
-[ "$(stat -c %s "$zip_path")" = "$expected_bytes" ] || { echo "下载未完成" >&2; exit 1; }
+got=$(stat -c %s "$zip_path" 2>/dev/null || echo 0)
+if [ "$expected_bytes" != "0" ] && [ "$got" != "$expected_bytes" ]; then
+  echo "下载未完成（$got / $expected_bytes）" >&2; exit 1
+fi
+if [ "$got" -lt 1000000 ]; then
+  echo "下载内容过小（$got 字节），可能是 404/401 响应而不是 zip" >&2; exit 1
+fi
 
 # ---------- 5. 解包 ----------
 unpack_dir="$OUT_DIR/${artifact_name}-unpacked"

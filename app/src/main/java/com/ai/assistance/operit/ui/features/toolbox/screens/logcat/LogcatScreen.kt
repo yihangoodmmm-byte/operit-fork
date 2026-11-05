@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 应用日志导出屏幕
@@ -69,7 +71,7 @@ fun LogcatScreen(navController: NavController? = null) {
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(
+                    CcButton(
                         onClick = { viewModel.saveLogsToFile() },
                         enabled = !isSaving,
                         modifier = Modifier.fillMaxWidth()
@@ -82,7 +84,7 @@ fun LogcatScreen(navController: NavController? = null) {
                             Text(stringResource(R.string.logcat_save_to_file))
                         }
                     }
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = { viewModel.clearLogs() },
                         enabled = !isSaving,
                         modifier = Modifier.fillMaxWidth(),

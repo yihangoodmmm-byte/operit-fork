@@ -57,6 +57,9 @@ import com.ai.assistance.operit.util.AppLogger
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun ShareImagePreviewDialog(
@@ -152,7 +155,7 @@ fun ShareImagePreviewDialog(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(stringResource(R.string.share_preview_expand_thinking), style = MaterialTheme.typography.bodyMedium)
-                        Switch(checked = thinkingExpanded, onCheckedChange = onThinkingExpandedChange)
+                        CcSwitch(checked = thinkingExpanded, onCheckedChange = onThinkingExpandedChange)
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -160,7 +163,7 @@ fun ShareImagePreviewDialog(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(stringResource(R.string.share_preview_expand_tools_groups), style = MaterialTheme.typography.bodyMedium)
-                        Switch(checked = expandThinkToolsGroups, onCheckedChange = onExpandThinkToolsGroupsChange)
+                        CcSwitch(checked = expandThinkToolsGroups, onCheckedChange = onExpandThinkToolsGroupsChange)
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -168,7 +171,7 @@ fun ShareImagePreviewDialog(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(stringResource(R.string.share_preview_include_background), style = MaterialTheme.typography.bodyMedium)
-                        Switch(checked = includeBackground, onCheckedChange = onIncludeBackgroundChange)
+                        CcSwitch(checked = includeBackground, onCheckedChange = onIncludeBackgroundChange)
                     }
                     Text(
                         stringResource(R.string.share_preview_border_width, borderWidth),
@@ -187,12 +190,12 @@ fun ShareImagePreviewDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(onClick = onSave, enabled = imageUri != null && !isGenerating) {
+                    CcOutlinedButton(onClick = onSave, enabled = imageUri != null && !isGenerating) {
                         Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(stringResource(R.string.save))
                     }
-                    Button(onClick = onShare, enabled = imageUri != null && !isGenerating) {
+                    CcButton(onClick = onShare, enabled = imageUri != null && !isGenerating) {
                         Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(stringResource(R.string.share_selected))

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun PackageItem(
@@ -62,7 +63,7 @@ fun PackageItem(
                         }
 
             // 开关
-                        Switch(
+                        CcSwitch(
                                 checked = isImported,
                                 onCheckedChange = onToggleImport,
                 modifier = Modifier.size(width = 32.dp, height = 20.dp),

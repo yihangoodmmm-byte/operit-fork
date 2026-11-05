@@ -57,6 +57,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 private const val GITHUB_PROJECT_URL = "https://github.com/AAswordman/Operit"
 
@@ -937,7 +939,7 @@ fun AboutScreen(
                         title = stringResource(id = R.string.beta_plan),
                         subtitleText = stringResource(id = R.string.beta_plan_desc),
                         trailing = {
-                            Switch(
+                            CcSwitch(
                                 checked = betaEnabled,
                                 onCheckedChange = { enabled ->
                                     scope.launch { preferences.saveBetaPlanEnabled(enabled) }
@@ -1113,7 +1115,7 @@ fun UpdateDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = onConfirm,
                 enabled = updateStatus !is UpdateStatus.Checking
             ) {
@@ -1667,7 +1669,7 @@ fun DownloadSourceDialog(
                     Text(stringResource(id = R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { autoSelect() }, enabled = autoEnabled) {
+                CcButton(onClick = { autoSelect() }, enabled = autoEnabled) {
                     Text(stringResource(id = R.string.auto_select))
                 }
             }
@@ -1867,7 +1869,7 @@ fun PatchDownloadSourceDialog(
                     Text(stringResource(id = R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { autoSelect() }, enabled = autoEnabled) {
+                CcButton(onClick = { autoSelect() }, enabled = autoEnabled) {
                     Text(stringResource(id = R.string.auto_select))
                 }
             }

@@ -165,8 +165,9 @@ fun OperitTheme(content: @Composable () -> Unit) {
         family.id == themeSnapshot.values.string("app_theme_family")
     } ?: AppThemeFamily.IOS_LIGHT
 
-    // 基础主题色调
-    var colorScheme = AppThemes.schemeOf(themeFamily)
+    // 基础主题色调。AICODE / CC 两套有浅深两个色板，需要把当前明暗传进去；
+    // iOS 白/黑、Claude 本身已写死明暗，传了也不变。
+    var colorScheme = AppThemes.schemeOf(themeFamily, darkTheme)
 
     // 应用自定义颜色和文本颜色
     if (useCustomColors) {

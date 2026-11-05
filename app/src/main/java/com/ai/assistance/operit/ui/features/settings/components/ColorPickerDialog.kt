@@ -27,6 +27,7 @@ import com.ai.assistance.operit.ui.theme.isHighContrast
 import com.github.skydoves.colorpicker.compose.*
 import kotlinx.coroutines.launch
 import kotlin.math.*
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * Material colors for the color picker
@@ -598,7 +599,7 @@ fun ColorPickerDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val newColor = pickedColor.toArgb()
                     when (currentColorPickerMode) {

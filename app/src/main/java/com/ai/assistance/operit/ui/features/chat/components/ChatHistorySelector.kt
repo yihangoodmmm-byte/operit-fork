@@ -133,6 +133,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOf
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 private data class GroupTarget(
     val groupName: String,
@@ -1345,7 +1347,7 @@ fun ChatHistorySelector(
                 )
             },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = {
                         if (newGroupNameText.isNotBlank() && newGroupNameText != groupToRename!!.groupName) {
                             onUpdateGroupName(
@@ -1621,7 +1623,7 @@ fun ChatHistorySelector(
                     }
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 if (newTitle != editingChat.title) {
                                     onUpdateChatTitle(editingChat.id, newTitle)
@@ -1798,7 +1800,7 @@ fun ChatHistorySelector(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Switch(
+                            CcSwitch(
                                 checked = autoSwitchCharacterCard,
                                 onCheckedChange = onAutoSwitchCharacterCardChange,
                                 modifier = Modifier.padding(start = 8.dp)
@@ -1839,7 +1841,7 @@ fun ChatHistorySelector(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Switch(
+                            CcSwitch(
                                 checked = autoSwitchChatOnCharacterSelect,
                                 onCheckedChange = onAutoSwitchChatOnCharacterSelectChange,
                                 modifier = Modifier.padding(start = 8.dp)
@@ -1873,12 +1875,12 @@ fun ChatHistorySelector(
                     )
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 if (newGroupName.isNotBlank()) {
                                     val normalizedGroupName = newGroupName.trim()
                                     if (normalizedGroupName.isBlank()) {
-                                        return@Button
+                                        return@CcButton
                                     }
                                     val (characterCardName, characterGroupId) = resolveBindingForCreate(
                                         historyDisplayMode = historyDisplayMode,
@@ -1969,7 +1971,7 @@ fun ChatHistorySelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(
+            CcButton(
                 onClick = { 
                     val (characterCardName, characterGroupId) = resolveBindingForCreate(
                         historyDisplayMode = historyDisplayMode,

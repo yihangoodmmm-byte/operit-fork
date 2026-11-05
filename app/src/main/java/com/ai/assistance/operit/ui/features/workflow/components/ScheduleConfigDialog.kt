@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import java.text.SimpleDateFormat
 import java.util.*
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 /**
  * Schedule Configuration Dialog
@@ -385,7 +386,7 @@ fun ScheduleConfigDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(stringResource(R.string.workflow_repeat_label))
-                    Switch(
+                    CcSwitch(
                         checked = repeat,
                         onCheckedChange = { repeat = it }
                     )
@@ -396,7 +397,7 @@ fun ScheduleConfigDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(stringResource(R.string.workflow_schedule_enabled_label))
-                    Switch(
+                    CcSwitch(
                         checked = enabled,
                         onCheckedChange = { enabled = it }
                     )

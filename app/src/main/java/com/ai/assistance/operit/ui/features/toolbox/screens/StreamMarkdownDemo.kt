@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import androidx.compose.ui.tooling.preview.Preview
 import android.content.Intent
 import android.net.Uri
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 private const val TAG = "StreamMarkdownDemo"
 
@@ -191,7 +192,7 @@ private fun ControlPanel(
 ) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = onStreamToggle) {
+            CcButton(onClick = onStreamToggle) {
                 Icon(
                         if (isStreaming) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isStreaming) "Pause" else "Play"
@@ -200,7 +201,7 @@ private fun ControlPanel(
                 Text(if (isStreaming) stringResource(R.string.stream_markdown_pause) else if (hasStarted) stringResource(R.string.stream_markdown_resume) else stringResource(R.string.stream_markdown_start))
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = onReset) {
+            CcButton(onClick = onReset) {
                 Icon(Icons.Default.Refresh, contentDescription = "Reset")
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.stream_markdown_reset))

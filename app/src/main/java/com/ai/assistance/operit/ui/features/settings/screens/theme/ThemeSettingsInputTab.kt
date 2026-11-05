@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import com.ai.assistance.operit.ui.features.settings.components.ChatStyleOption
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 internal fun ThemeSettingsInputTab(
@@ -139,6 +140,6 @@ private fun ThemeSettingsInputSwitch(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        CcSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

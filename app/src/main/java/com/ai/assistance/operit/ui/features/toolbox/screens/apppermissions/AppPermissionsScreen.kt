@@ -40,6 +40,7 @@ import com.ai.assistance.operit.core.tools.system.AndroidShellExecutor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 data class AppInfo(
         val name: String,
@@ -1064,7 +1065,7 @@ fun PermissionItem(permission: PermissionInfo, onToggle: () -> Unit, groupColor:
                 }
 
                 // 权限开关
-                Switch(
+                CcSwitch(
                         checked = permission.granted,
                         onCheckedChange = { onToggle() },
                         thumbContent =

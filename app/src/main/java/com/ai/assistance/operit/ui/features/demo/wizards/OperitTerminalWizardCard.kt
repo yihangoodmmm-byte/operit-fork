@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun OperitTerminalWizardCard(
@@ -190,7 +192,7 @@ fun OperitTerminalWizardCard(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Button(
+                        CcButton(
                             onClick = onOpenTerminalScreen,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
@@ -209,7 +211,7 @@ fun OperitTerminalWizardCard(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = onOpenTerminalScreen,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),

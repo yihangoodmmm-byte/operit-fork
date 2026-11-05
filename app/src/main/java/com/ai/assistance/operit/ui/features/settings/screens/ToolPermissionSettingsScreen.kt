@@ -31,6 +31,7 @@ import com.ai.assistance.operit.core.tools.AIToolHandler
 import com.ai.assistance.operit.ui.permissions.PermissionLevel
 import com.ai.assistance.operit.ui.permissions.ToolPermissionSystem
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -352,7 +353,7 @@ private fun ToolSelectorDialog(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
+                CcButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .align(Alignment.End)

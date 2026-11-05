@@ -20,6 +20,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.Memory
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,7 +160,7 @@ fun EditMemoryDialog(
                             Text(stringResource(R.string.memory_cancel))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(
+                        CcButton(
                             onClick = {
                                 onSave(
                                     memory,

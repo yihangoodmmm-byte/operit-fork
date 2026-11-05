@@ -64,6 +64,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 internal fun ThemeSettingsThemeModeSection(
@@ -102,7 +104,7 @@ internal fun ThemeSettingsThemeModeSection(
                     )
                 }
 
-                Switch(
+                CcSwitch(
                     checked = useSystemThemeInput,
                     onCheckedChange = { editorSession.setBoolean("use_system_theme", it) },
                 )
@@ -322,7 +324,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = cursorUserBubbleFollowThemeInput,
                         onCheckedChange = {
                             editorSession.setBoolean("cursor_user_bubble_follow_theme", it)
@@ -354,7 +356,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = cursorUserBubbleLiquidGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("cursor_user_bubble_liquid_glass", it)
@@ -386,7 +388,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = cursorUserBubbleWaterGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("cursor_user_bubble_water_glass", it)
@@ -544,7 +546,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleShowAvatarInput,
                         onCheckedChange = { editorSession.setBoolean("bubble_show_avatar", it) },
                     )
@@ -568,7 +570,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleWideLayoutEnabledInput,
                         onCheckedChange = {
                             editorSession.setBoolean("bubble_wide_layout_enabled", it)
@@ -600,7 +602,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleUserBubbleLiquidGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("bubble_user_bubble_liquid_glass", it)
@@ -632,7 +634,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleUserBubbleWaterGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("bubble_user_bubble_water_glass", it)
@@ -664,7 +666,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleAiBubbleLiquidGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("bubble_ai_bubble_liquid_glass", it)
@@ -696,7 +698,7 @@ internal fun ThemeSettingsChatStyleSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = bubbleAiBubbleWaterGlassInput,
                         onCheckedChange = {
                             editorSession.setBoolean("bubble_ai_bubble_water_glass", it)
@@ -778,7 +780,7 @@ internal fun ThemeSettingsChatStyleSection(
                             text = stringResource(id = R.string.chat_style_bubble_rounded_corners_user),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        Switch(
+                        CcSwitch(
                             checked = bubbleUserRoundedCornersEnabledInput,
                             onCheckedChange = {
                                 editorSession.setBoolean("bubble_rounded_corners_enabled", it)
@@ -794,7 +796,7 @@ internal fun ThemeSettingsChatStyleSection(
                             text = stringResource(id = R.string.chat_style_bubble_rounded_corners_ai),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        Switch(
+                        CcSwitch(
                             checked = bubbleAiRoundedCornersEnabledInput,
                             onCheckedChange = {
                                 editorSession.setBoolean("bubble_ai_rounded_corners_enabled", it)
@@ -1185,7 +1187,7 @@ private fun BubbleFontStyleEditor(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(checked = useCustomFont, onCheckedChange = onUseCustomFontChange)
+                CcSwitch(checked = useCustomFont, onCheckedChange = onUseCustomFontChange)
             }
 
             if (useCustomFont) {
@@ -1252,13 +1254,13 @@ private fun BubbleFontStyleEditor(
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = onPickFont,
                                 modifier = Modifier.weight(1f),
                             ) {
                                 Text(stringResource(id = R.string.select_font_file))
                             }
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = onClearFont,
                                 modifier = Modifier.weight(1f),
                             ) {
@@ -1342,7 +1344,7 @@ private fun BubbleImageStyleEditor(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = enabled,
                     enabled = switchEnabled,
                     onCheckedChange = onEnabledChange,
@@ -1354,13 +1356,13 @@ private fun BubbleImageStyleEditor(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onPickImage,
                         modifier = Modifier.weight(1f),
                     ) {
                         Text(stringResource(id = R.string.chat_style_bubble_pick_image))
                     }
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onClearImage,
                         modifier = Modifier.weight(1f),
                     ) {
@@ -2154,7 +2156,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showThinkingProcessInput,
                     onCheckedChange = { editorSession.setBoolean("show_thinking_process", it) },
                 )
@@ -2178,7 +2180,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showModelProviderInput,
                     onCheckedChange = { editorSession.setBoolean("show_model_provider", it) },
                 )
@@ -2202,7 +2204,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showModelNameInput,
                     onCheckedChange = { editorSession.setBoolean("show_model_name", it) },
                 )
@@ -2226,7 +2228,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showRoleNameInput,
                     onCheckedChange = { editorSession.setBoolean("show_role_name", it) },
                 )
@@ -2250,7 +2252,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showUserNameInput,
                     onCheckedChange = { editorSession.setBoolean("show_user_name", it) },
                 )
@@ -2274,7 +2276,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showMessageTokenStatsInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_message_token_stats", it)
@@ -2300,7 +2302,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showMessageTokenSpeedInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_message_token_speed", it)
@@ -2326,7 +2328,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showMessageTimingStatsInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_message_timing_stats", it)
@@ -2352,7 +2354,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showMessageTimestampInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_message_timestamp", it)
@@ -2378,7 +2380,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showStatusTagsInput,
                     onCheckedChange = { editorSession.setBoolean("show_status_tags", it) },
                 )
@@ -2403,7 +2405,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showInputProcessingStatusInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_input_processing_status", it)
@@ -2429,7 +2431,7 @@ internal fun ThemeSettingsDisplayOptionsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = showChatFloatingDotsAnimationInput,
                     onCheckedChange = {
                         editorSession.setBoolean("show_chat_floating_dots_animation", it)

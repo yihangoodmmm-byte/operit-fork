@@ -77,6 +77,9 @@ import com.ai.assistance.operit.ui.components.CustomScaffold
 import com.ai.assistance.operit.ui.features.settings.components.rememberMarkdownSyntaxOutputTransformation
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 /**
  * User-facing profile manager. Profile ids stay identical to memory-space ids because existing
@@ -267,7 +270,7 @@ fun UserPreferencesSettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = { selectorExpanded = true },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
@@ -465,7 +468,7 @@ fun UserPreferencesSettingsScreen(
                             label = { Text(stringResource(R.string.user_md_preview_tab)) }
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = ::saveDocument,
                             enabled =
                                 loadedProfile != null &&
@@ -620,7 +623,7 @@ fun UserPreferencesSettingsScreen(
                             text = stringResource(R.string.user_configuration_auto_update),
                             modifier = Modifier.weight(1f).padding(horizontal = 10.dp)
                         )
-                        Switch(
+                        CcSwitch(
                             checked = policyProfile.profileAutoUpdateEnabled,
                             onCheckedChange = { enabled ->
                                 persistPolicy(
@@ -640,7 +643,7 @@ fun UserPreferencesSettingsScreen(
                             text = stringResource(R.string.user_configuration_lock),
                             modifier = Modifier.weight(1f).padding(horizontal = 10.dp)
                         )
-                        Switch(
+                        CcSwitch(
                             checked = policyProfile.profileAutoUpdateLocked,
                             onCheckedChange = { locked ->
                                 persistPolicy(

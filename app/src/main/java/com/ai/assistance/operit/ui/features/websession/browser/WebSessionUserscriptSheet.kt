@@ -46,6 +46,9 @@ import com.ai.assistance.operit.core.tools.defaultTool.websession.userscript.Use
 import com.ai.assistance.operit.core.tools.defaultTool.websession.userscript.UserscriptPageRuntimeState
 import com.ai.assistance.operit.core.tools.defaultTool.websession.userscript.UserscriptPageRuntimeStatus
 import com.ai.assistance.operit.core.tools.defaultTool.websession.userscript.ui.WebSessionUserscriptUiState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @Composable
 internal fun WebSessionUserscriptSheet(
@@ -104,13 +107,13 @@ internal fun WebSessionUserscriptSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Button(
+                        CcButton(
                             onClick = { onInstallFromUrl(installUrl) },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(text = stringResource(R.string.web_session_userscript_install_action))
                         }
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = onImportLocal,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -319,7 +322,7 @@ private fun PendingInstallCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
+                CcButton(
                     onClick = onConfirmInstall,
                     modifier = Modifier.weight(1f)
                 ) {
@@ -395,7 +398,7 @@ private fun InstalledUserscriptCard(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Switch(
+                CcSwitch(
                     checked = script.enabled,
                     onCheckedChange = { enabled -> onSetScriptEnabled(script.id, enabled) }
                 )
@@ -517,7 +520,7 @@ private fun InstalledUserscriptCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = { onCheckUpdate(script.id) },
                         modifier = Modifier.weight(1f)
                     ) {

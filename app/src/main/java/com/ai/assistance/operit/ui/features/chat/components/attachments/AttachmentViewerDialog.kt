@@ -63,6 +63,7 @@ import java.io.File
 import java.io.FileInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 data class ChatAttachment(
     val id: String,
@@ -324,7 +325,7 @@ fun AttachmentViewerDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Button(
+                            CcButton(
                                 onClick = {
                                     clipboardManager.setText(AnnotatedString(textContentState.value.orEmpty()))
                                     onDismiss()
@@ -350,7 +351,7 @@ fun AttachmentViewerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        Button(
+                        CcButton(
                             onClick = {
                                 openFile(context, file, attachment.mimeType, attachment.filename)
                             }

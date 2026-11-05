@@ -78,6 +78,9 @@ import com.ai.assistance.operit.data.recovery.PreferencesHealthManager
 import com.ai.assistance.operit.data.recovery.RoomDatabaseHealthManager
 import com.ai.assistance.operit.ui.common.OperitUtilityTheme
 import com.ai.assistance.operit.util.LocaleUtils
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 class DataRecoveryActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
@@ -151,7 +154,7 @@ private fun DataRecoveryScreen() {
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(
+                        CcButton(
                             onClick = { viewModel.exportRawSnapshot() },
                             enabled = !state.isRunning
                         ) {
@@ -159,7 +162,7 @@ private fun DataRecoveryScreen() {
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(stringResource(R.string.data_recovery_export_snapshot))
                         }
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { snapshotPicker.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                             enabled = !state.isRunning
                         ) {
@@ -179,7 +182,7 @@ private fun DataRecoveryScreen() {
                     }
                     if (state.restoreCompleted) {
                         Spacer(modifier = Modifier.height(10.dp))
-                        FilledTonalButton(onClick = { restartMainApp(context) }) {
+                        CcFilledTonalButton(onClick = { restartMainApp(context) }) {
                             Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(stringResource(R.string.data_recovery_start_main_app))
@@ -241,7 +244,7 @@ private fun DataRecoveryScreen() {
                         maxLines = 8
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Button(
+                    CcButton(
                         onClick = { viewModel.runSql() },
                         enabled = !state.isRunning
                     ) {
@@ -264,7 +267,7 @@ private fun DataRecoveryScreen() {
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { viewModel.inspectStorage() },
                             enabled = !state.isRunning
                         ) {
@@ -276,7 +279,7 @@ private fun DataRecoveryScreen() {
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(stringResource(R.string.data_recovery_database_check_action))
                         }
-                        Button(
+                        CcButton(
                             onClick = { showHealthRepairConfirmation = true },
                             enabled =
                                 !state.isRunning &&
@@ -377,7 +380,7 @@ private fun DataRecoveryScreen() {
 
                     if (state.healthRepairCompleted) {
                         Spacer(modifier = Modifier.height(10.dp))
-                        FilledTonalButton(onClick = { restartMainApp(context) }) {
+                        CcFilledTonalButton(onClick = { restartMainApp(context) }) {
                             Icon(
                                 Icons.Default.RestartAlt,
                                 contentDescription = null,

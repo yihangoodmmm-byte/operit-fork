@@ -22,6 +22,8 @@ import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.ApiKeyFormatValidator
 import com.ai.assistance.operit.ui.common.input.bringIntoViewOnImeFocus
 import com.ai.assistance.operit.ui.features.chat.components.config.TokenInfoDialog
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /** 简洁风格的AI助手配置界面 */
 @Composable
@@ -147,7 +149,7 @@ fun ConfigurationScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // 主按钮 - 根据输入状态动态变化
-                        Button(
+                        CcButton(
                                 onClick = {
                                         if (hasEnteredToken) {
                                                 if (ApiKeyFormatValidator.isValid(normalizedApiKey)) {
@@ -211,7 +213,7 @@ fun ConfigurationScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        OutlinedButton(
+                        CcOutlinedButton(
                                 onClick = onNavigateToModelConfig,
                                 enabled = !isSaving,
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),

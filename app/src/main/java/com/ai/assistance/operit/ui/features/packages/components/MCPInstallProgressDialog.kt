@@ -25,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.mcp.InstallProgress
 import com.ai.assistance.operit.data.mcp.InstallResult
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * MCP 安装/卸载进度对话框
@@ -195,7 +196,7 @@ fun MCPInstallProgressDialog(
             },
             confirmButton = {
                 if (result != null || installProgress is InstallProgress.Finished) {
-                    Button(onClick = onDismissRequest) { Text(stringResource(R.string.mcp_ok)) }
+                    CcButton(onClick = onDismissRequest) { Text(stringResource(R.string.mcp_ok)) }
                 }
             },
             dismissButton = {

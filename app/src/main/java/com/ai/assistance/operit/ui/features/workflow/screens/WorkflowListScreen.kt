@@ -44,6 +44,8 @@ import com.ai.assistance.operit.ui.components.CustomScaffold
 import com.ai.assistance.operit.ui.features.workflow.viewmodel.WorkflowViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -217,7 +219,7 @@ fun WorkflowListScreen(
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = { showCreateDialog = true },
                             modifier = Modifier.height(48.dp),
                             contentPadding = PaddingValues(horizontal = 28.dp)
@@ -690,7 +692,7 @@ fun WorkflowCard(
                             onCheckedChange = { onSelectionChange(it) }
                         )
                     } else {
-                        Switch(
+                        CcSwitch(
                             checked = workflow.enabled,
                             onCheckedChange = onEnabledChange,
                             modifier = Modifier.scale(0.82f)

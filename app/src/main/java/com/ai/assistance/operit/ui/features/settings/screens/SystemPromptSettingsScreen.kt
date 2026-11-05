@@ -34,6 +34,7 @@ import com.ai.assistance.operit.data.preferences.ApiPreferences
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 系统级提示词设置页。
@@ -92,7 +93,7 @@ fun SystemPromptSettingsScreen(onBackPressed: () -> Unit = {}) {
             ) {
                 TextButton(onClick = { text = "" }) { Text("清空") }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = {
+                CcButton(onClick = {
                     scope.launch {
                         apiPreferences.saveSystemPersonaPrompt(text)
                         Toast.makeText(context, "已保存，下一条消息生效", Toast.LENGTH_SHORT).show()

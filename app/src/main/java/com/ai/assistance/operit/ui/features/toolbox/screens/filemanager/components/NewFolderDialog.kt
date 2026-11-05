@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 新建文件夹对话框
@@ -41,7 +42,7 @@ fun NewFolderDialog(
                 }
             },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = onCreateFolder,
                     enabled = folderName.isNotBlank()
                 ) {

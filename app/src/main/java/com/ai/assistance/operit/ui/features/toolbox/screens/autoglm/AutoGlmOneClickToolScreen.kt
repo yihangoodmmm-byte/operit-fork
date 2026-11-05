@@ -31,6 +31,8 @@ import com.ai.assistance.operit.data.preferences.ModelConfigManager
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import com.ai.assistance.operit.util.AppLogger
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,7 +280,7 @@ private fun AutoGlmOneClickScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(onClick = onNavigateToModelConfig) {
+                CcOutlinedButton(onClick = onNavigateToModelConfig) {
                     Text(stringResource(R.string.autoglm_go_to_model_config))
                 }
             }
@@ -297,7 +299,7 @@ private fun AutoGlmOneClickScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val apiKeyUrl = "https://open.bigmodel.cn/usercenter/apikeys"
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(apiKeyUrl))
                             context.startActivity(intent)
@@ -369,7 +371,7 @@ private fun AutoGlmOneClickScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                Button(
+                CcButton(
                     onClick = { startConfigure() },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isConfiguring
@@ -403,7 +405,7 @@ private fun AutoGlmOneClickScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedButton(
+                CcOutlinedButton(
                     onClick = { restoreOriginalAutomation() },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isConfiguring

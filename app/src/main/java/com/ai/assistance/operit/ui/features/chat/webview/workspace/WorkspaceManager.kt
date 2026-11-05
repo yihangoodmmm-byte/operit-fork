@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlinx.serialization.Serializable
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /** 可序列化的位置数据类，用于持久化FAB位置 */
 @Serializable
@@ -1661,7 +1662,7 @@ fun CommandButtonsView(
         
         // 浏览器预览按钮（可选）
         if (config.preview.showPreviewButton && config.preview.url.isNotEmpty()) {
-            Button(
+            CcButton(
                 onClick = onOpenBrowserPreview,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1706,7 +1707,7 @@ fun CommandButtonsView(
             }
         } else {
             config.commands.forEach { command ->
-                Button(
+                CcButton(
                     onClick = { onCommandExecute(command) },
                     modifier = Modifier
                         .fillMaxWidth()

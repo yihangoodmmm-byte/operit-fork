@@ -47,6 +47,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.runtime.withFrameNanos
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 private val defaultTables = listOf("chats", "messages")
 
@@ -190,7 +193,7 @@ fun SqlViewerScreen(navController: NavController? = null) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = {
                                 lastExecutedSql = sqlText
                                 viewModel.runQuery(sqlText, pageSize, 0, enablePaging, append = false)
@@ -201,7 +204,7 @@ fun SqlViewerScreen(navController: NavController? = null) {
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(stringResource(R.string.sql_viewer_run))
                         }
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 sqlText = ""
                                 lastExecutedSql = ""
@@ -233,7 +236,7 @@ fun SqlViewerScreen(navController: NavController? = null) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Switch(
+                    CcSwitch(
                         checked = enablePaging,
                         onCheckedChange = { enablePaging = it }
                     )

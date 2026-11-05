@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 消息编辑器组件，用于编辑包含XML标签的消息
@@ -306,7 +308,7 @@ fun MessageEditor(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                             ) {
                                 // Add text button
-                                OutlinedButton(
+                                CcOutlinedButton(
                                     onClick = { partsState = partsState + ParsedMessagePart(PartType.TEXT, "") },
                                     shape = RoundedCornerShape(16.dp),
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
@@ -328,7 +330,7 @@ fun MessageEditor(
                                 }
 
                                 // Add tag button
-                                OutlinedButton(
+                                CcOutlinedButton(
                                     onClick = { showCreateTagDialog = true },
                                     shape = RoundedCornerShape(16.dp),
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
@@ -376,7 +378,7 @@ fun MessageEditor(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     if (showResendButton) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = onSave,
                             shape = RoundedCornerShape(16.dp),
                             border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -392,7 +394,7 @@ fun MessageEditor(
 
                         Spacer(modifier = Modifier.width(6.dp))
 
-                        Button(
+                        CcButton(
                             onClick = onResend,
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -413,7 +415,7 @@ fun MessageEditor(
                             )
                         }
                     } else {
-                        Button(
+                        CcButton(
                             onClick = onSave,
                             shape = RoundedCornerShape(16.dp)
                         ) {
@@ -758,7 +760,7 @@ private fun TagEditorDialog(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onDismiss,
                         shape = RoundedCornerShape(16.dp),
                         border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -773,7 +775,7 @@ private fun TagEditorDialog(
                         )
                     }
 
-                    Button(
+                    CcButton(
                         onClick = {
                             onSave(ParsedMessagePart(PartType.XML, content, tagName, attributes))
                         },

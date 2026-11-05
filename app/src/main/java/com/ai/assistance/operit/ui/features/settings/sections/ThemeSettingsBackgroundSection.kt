@@ -61,6 +61,8 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import kotlinx.coroutines.flow.collect
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 private fun calculateLuminance(color: Color): Float {
     return 0.299f * color.red + 0.587f * color.green + 0.114f * color.blue
@@ -121,7 +123,7 @@ internal fun ThemeSettingsBackgroundSection(
                     )
                 }
 
-                Switch(
+                CcSwitch(
                     checked = useBackgroundImageInput,
                     onCheckedChange = {
                         onUseBackgroundImageInputChange(it)
@@ -387,7 +389,7 @@ internal fun ThemeSettingsBackgroundSection(
                     }
                 }
 
-                Button(
+                CcButton(
                     onClick = {
                         if (backgroundMediaTypeInput == UserPreferencesManager.MEDIA_TYPE_VIDEO) {
                             mediaPickerLauncher.launch(arrayOf("video/*"))
@@ -497,7 +499,7 @@ internal fun ThemeSettingsBackgroundSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = useBackgroundBlurInput,
                         onCheckedChange = {
                             onUseBackgroundBlurInputChange(it)

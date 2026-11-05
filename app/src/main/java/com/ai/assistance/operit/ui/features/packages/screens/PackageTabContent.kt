@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.core.tools.ToolPackage
 import com.ai.assistance.operit.ui.features.packages.components.EmptyState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun PackageTabContent(
@@ -320,7 +321,7 @@ private fun PackageListItemWithTag(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Switch(
+                CcSwitch(
                     checked = isImported,
                     onCheckedChange = onToggleImport,
                     modifier = Modifier.scale(0.8f)

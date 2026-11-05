@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.DocumentChunk
 import com.ai.assistance.operit.data.model.Memory
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun DocumentViewDialog(
@@ -121,7 +123,7 @@ fun DocumentViewDialog(
             }
         },
         dismissButton = {
-             OutlinedButton(onClick = onDismiss) {
+             CcOutlinedButton(onClick = onDismiss) {
                 Text(stringResource(R.string.memory_close))
             }
         },
@@ -130,10 +132,10 @@ fun DocumentViewDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
             ) {
-                Button(onClick = onSave) {
+                CcButton(onClick = onSave) {
                     Text(stringResource(R.string.memory_save_all))
                 }
-                Button(
+                CcButton(
                     onClick = onDelete,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {

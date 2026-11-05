@@ -97,6 +97,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
@@ -987,7 +989,7 @@ private fun SummaryConfigEditorHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+        CcSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
         IconButton(onClick = { onExpandedChange(!expanded) }, enabled = enabled) {
             Icon(
                 imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -1071,7 +1073,7 @@ private fun RenderHistoryRetentionSection(
         backgroundColor = componentBackgroundColor
     )
 
-    Button(
+    CcButton(
         onClick = onReset,
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         colors =
@@ -1226,7 +1228,7 @@ private fun SettingsSwitchRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+        CcSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

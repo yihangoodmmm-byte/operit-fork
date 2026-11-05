@@ -23,6 +23,7 @@ import com.ai.assistance.operit.ui.features.settings.components.ColorSelectionIt
 import com.ai.assistance.operit.ui.features.settings.components.ThemeModeOption
 import com.ai.assistance.operit.ui.features.settings.screens.theme.ThemeEditorSession
 import com.ai.assistance.operit.ui.theme.getTextColorForBackground
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 internal enum class ThemeSettingsColorContentMode {
     PALETTE,
@@ -93,7 +94,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = statusBarHiddenInput,
                     onCheckedChange = { editorSession.setBoolean("status_bar_hidden", it) },
                 )
@@ -126,7 +127,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                             },
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = statusBarTransparentInput,
                     enabled = !statusBarHiddenInput,
                     onCheckedChange = { editorSession.setBoolean("status_bar_transparent", it) },
@@ -163,7 +164,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                             },
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useCustomStatusBarColorInput,
                     enabled = !statusBarTransparentInput && !statusBarHiddenInput,
                     onCheckedChange = {
@@ -216,7 +217,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = toolbarTransparentInput,
                     onCheckedChange = { editorSession.setBoolean("toolbar_transparent", it) },
                 )
@@ -239,7 +240,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useCustomAppBarColorInput,
                     enabled = !toolbarTransparentInput,
                     onCheckedChange = { editorSession.setBoolean("use_custom_app_bar_color", it) },
@@ -287,7 +288,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = navigationDrawerWaterGlassInput,
                     onCheckedChange = {
                         editorSession.setBoolean("navigation_drawer_water_glass", it)
@@ -316,7 +317,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = navigationDrawerButtonLiquidGlassInput,
                     onCheckedChange = {
                         editorSession.setBoolean("navigation_drawer_button_liquid_glass", it)
@@ -348,7 +349,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useCustomNavigationDrawerBackgroundColorInput,
                     onCheckedChange = {
                         editorSession.setBoolean(
@@ -392,7 +393,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = useCustomNavigationDrawerAccentColorInput,
                     onCheckedChange = {
                         editorSession.setBoolean(
@@ -440,7 +441,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = chatHeaderTransparentInput,
                     onCheckedChange = { editorSession.setBoolean("chat_header_transparent", it) },
                 )
@@ -465,7 +466,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Switch(
+                    CcSwitch(
                         checked = chatHeaderOverlayModeInput,
                         onCheckedChange = {
                             editorSession.setBoolean("chat_header_overlay_mode", it)
@@ -502,7 +503,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                CcSwitch(
                     checked = forceAppBarContentColorInput,
                     onCheckedChange = {
                         editorSession.setBoolean("force_app_bar_content_color_enabled", it)
@@ -602,7 +603,7 @@ internal fun ThemeSettingsColorCustomizationSection(
                     )
                 }
 
-                Switch(
+                CcSwitch(
                     checked = useCustomColorsInput,
                     onCheckedChange = { enabled ->
                         editorSession.update { current ->

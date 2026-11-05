@@ -26,6 +26,7 @@ import com.ai.assistance.operit.data.model.AITool
 import com.ai.assistance.operit.data.model.ToolParameter
 import com.ai.assistance.operit.data.model.ToolResult
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * FFmpeg工具箱主屏幕 - 直接提供自定义命令功能
@@ -102,7 +103,7 @@ fun FFmpegToolboxScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
+                CcButton(
                     onClick = { showCommandTemplates = !showCommandTemplates },
                     modifier = Modifier.weight(1f).height(48.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -116,11 +117,11 @@ fun FFmpegToolboxScreen(navController: NavController) {
                     ) 
                 }
 
-                Button(
+                CcButton(
                     onClick = {
                         if (ffmpegCommand.isEmpty()) {
                             Toast.makeText(context, context.getString(R.string.please_input_command), Toast.LENGTH_SHORT).show()
-                            return@Button
+                            return@CcButton
                         }
 
                         isProcessing = true
@@ -240,7 +241,7 @@ fun FFmpegToolboxScreen(navController: NavController) {
                     style = MaterialTheme.typography.bodySmall
                 )
 
-                Button(
+                CcButton(
                     onClick = {
                         scope.launch {
                             val tool = AITool(name = "ffmpeg_info", parameters = listOf())

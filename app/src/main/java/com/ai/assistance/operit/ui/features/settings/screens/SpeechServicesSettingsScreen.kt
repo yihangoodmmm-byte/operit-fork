@@ -91,6 +91,7 @@ import com.ai.assistance.operit.api.voice.VoiceListFetcher
 import com.ai.assistance.operit.api.voice.VoiceService
 import com.ai.assistance.operit.api.chat.llmprovider.ModelListFetcher
 import androidx.compose.runtime.LaunchedEffect
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -2295,7 +2296,7 @@ fun SpeechServicesSettingsScreen(
                 }
 
                 if (selectedTabIndex == 0) item {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onNavigateToTextToSpeech,
                         modifier = Modifier.fillMaxWidth(),
                     ) {

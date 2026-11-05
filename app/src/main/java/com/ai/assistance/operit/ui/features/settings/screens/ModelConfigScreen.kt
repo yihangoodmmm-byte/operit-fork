@@ -86,6 +86,8 @@ import org.json.JSONObject
 import java.util.UUID
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 private data class HeaderPreset(val nameResId: Int, val headers: Map<String, String>)
 
@@ -409,7 +411,7 @@ fun ModelConfigScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
 
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = { showAddConfigDialog = true },
                                 shape = RoundedCornerShape(16.dp),
                                 border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.primary),
@@ -923,7 +925,7 @@ fun ModelConfigScreen(
                     }
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                         onClick = {
                             if (newConfigName.isNotBlank()) {
                                 scope.launch {
@@ -988,7 +990,7 @@ fun ModelConfigScreen(
                     }
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                         onClick = {
                             if (renameConfigName.isNotBlank()) {
                                 scope.launch {
@@ -2024,7 +2026,7 @@ private fun CustomHeadersSettingsSection(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            OutlinedButton(onClick = { showHeaderPresetsMenu = true }) {
+                            CcOutlinedButton(onClick = { showHeaderPresetsMenu = true }) {
                                 Icon(
                                     imageVector = Icons.Default.List,
                                     contentDescription = null,
@@ -2034,7 +2036,7 @@ private fun CustomHeadersSettingsSection(
                                 Text(stringResource(R.string.headers_load_preset))
                             }
 
-                            OutlinedButton(onClick = { headers = headers + ("" to "") }) {
+                            CcOutlinedButton(onClick = { headers = headers + ("" to "") }) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = null,

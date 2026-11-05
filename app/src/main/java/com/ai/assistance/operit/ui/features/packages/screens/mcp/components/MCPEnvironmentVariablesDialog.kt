@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 环境变量管理对话框
@@ -111,7 +112,7 @@ fun MCPEnvironmentVariablesDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Button(
+                CcButton(
                         onClick = {
                             if (newKey.isNotBlank()) {
                                 envVarsList.add(Pair(newKey, newValue))
@@ -134,7 +135,7 @@ fun MCPEnvironmentVariablesDialog(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
+                    CcButton(
                             onClick = { onConfirm(envVarsList.associate { it.first to it.second }) }
                     ) { Text(stringResource(R.string.mcp_confirm)) }
                 }

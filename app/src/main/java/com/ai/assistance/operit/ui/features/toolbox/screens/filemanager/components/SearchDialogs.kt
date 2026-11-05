@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.features.toolbox.screens.filemanager.models.FileItem
 import com.ai.assistance.operit.ui.features.toolbox.screens.filemanager.utils.getFileIcon
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 搜索对话框
@@ -76,7 +77,7 @@ fun SearchDialog(
                 }
             },
             confirmButton = {
-                Button(onClick = onSearch) {
+                CcButton(onClick = onSearch) {
                     Text(stringResource(R.string.search))
                 }
             },

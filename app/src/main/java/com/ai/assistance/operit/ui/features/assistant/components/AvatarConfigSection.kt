@@ -54,6 +54,7 @@ import com.ai.assistance.operit.ui.features.assistant.viewmodel.AssistantConfigV
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun AvatarConfigSection(
@@ -104,7 +105,7 @@ fun AvatarConfigSection(
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Switch(
+                CcSwitch(
                     checked = uiState.isVoiceCallAvatarEnabled,
                     onCheckedChange = viewModel::updateVoiceCallAvatarEnabled
                 )

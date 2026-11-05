@@ -37,6 +37,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +91,7 @@ fun HtmlPackagerScreen(onGoBack: () -> Unit) {
                         Text(stringResource(R.string.htmlpackager_step1_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { folderPickerLauncher.launch(null) }, modifier = Modifier.fillMaxWidth()) {
+                    CcButton(onClick = { folderPickerLauncher.launch(null) }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.htmlpackager_select_folder))
                     }
                     if (webProjectUri != null) {
@@ -146,7 +147,7 @@ fun HtmlPackagerScreen(onGoBack: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Step 3: Package
-            Button(
+            CcButton(
                 onClick = { showExportPlatformDialog = true },
                 enabled = selectedIndexFile != null,
                 modifier = Modifier.fillMaxWidth().height(56.dp)

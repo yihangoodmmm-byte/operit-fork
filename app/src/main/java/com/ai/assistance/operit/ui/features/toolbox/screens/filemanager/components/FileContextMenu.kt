@@ -24,6 +24,7 @@ import com.ai.assistance.operit.ui.features.toolbox.screens.filemanager.models.F
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -504,7 +505,7 @@ fun FileContextMenu(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
+                CcButton(
                         onClick = onDismissRequest,
                         modifier = Modifier.fillMaxWidth(),
                         colors =
@@ -534,7 +535,7 @@ fun FileContextMenu(
                     )
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 if (newFileName.isNotBlank() &&
                                                 newFileName != contextMenuFile!!.name
@@ -626,7 +627,7 @@ fun FileContextMenu(
                     }
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 val startNum = renameStartNumber.toIntOrNull() ?: 1
                                 batchRenameFiles(
@@ -675,7 +676,7 @@ fun FileContextMenu(
                     }
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 if (compressFileName.isNotBlank()) {
                                     // 确保文件名以.zip结尾
@@ -710,7 +711,7 @@ fun FileContextMenu(
                     )
                 },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 if (isMultiSelectMode) {
                                     selectedFiles.forEach { file -> deleteFile(file, currentPath) }

@@ -58,6 +58,8 @@ import com.ai.assistance.operit.core.tools.system.action.ActionListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 
 @Composable
@@ -201,7 +203,7 @@ fun ActivityMonitorPanel(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (isListening) {
-                        Button(
+                        CcButton(
                             onClick = onStopListening,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.error
@@ -217,7 +219,7 @@ fun ActivityMonitorPanel(
                             Text(stringResource(R.string.uidebugger_stop_monitoring))
                         }
                     } else {
-                        Button(
+                        CcButton(
                             onClick = onStartListening,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -231,7 +233,7 @@ fun ActivityMonitorPanel(
                         }
                     }
 
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onClearEvents,
                         enabled = events.isNotEmpty()
                     ) {

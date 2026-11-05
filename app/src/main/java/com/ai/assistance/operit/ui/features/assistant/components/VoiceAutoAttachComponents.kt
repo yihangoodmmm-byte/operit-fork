@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.preferences.WakeWordPreferences
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun CompactSwitchRow(
@@ -75,7 +76,7 @@ fun CompactSwitchRow(
                 )
             }
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+        CcSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

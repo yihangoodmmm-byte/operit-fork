@@ -28,6 +28,7 @@ import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.common.rememberLocal
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 文件夹展开状态的持久化数据类（与 MemoryFolderSelectionDialog 共享）
@@ -53,7 +54,7 @@ private fun ProfileSelector(
 
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Box {
-            OutlinedButton(
+            CcOutlinedButton(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth()
             ) {

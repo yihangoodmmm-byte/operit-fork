@@ -79,6 +79,8 @@ import com.ai.assistance.operit.data.model.ToolParameter
 import com.ai.assistance.operit.services.ServiceLifecycleOwner
 import com.ai.assistance.operit.ui.floating.FloatingWindowTheme
 import kotlinx.coroutines.delay
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,7 +180,7 @@ private fun PermissionRequestContent(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            OutlinedButton(
+                            CcOutlinedButton(
                                 onClick = onDeny,
                                 modifier = Modifier
                                     .weight(1f)
@@ -198,7 +200,7 @@ private fun PermissionRequestContent(
                                 modifier = Modifier.weight(1f),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Button(
+                                CcButton(
                                     onClick = onAllow,
                                     modifier = Modifier
                                         .fillMaxWidth()

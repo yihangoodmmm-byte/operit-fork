@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun ModelParametersSection(
@@ -628,14 +630,14 @@ fun ModelParametersSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(
+                        CcButton(
                             onClick = { resetParameters() },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(resetParametersText)
                         }
                         
-                        Button(
+                        CcButton(
                             onClick = { showAddParameterDialog = true },
                             modifier = Modifier.weight(1f)
                         ) {
@@ -1012,7 +1014,7 @@ private fun AddCustomParameterDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     var hasError = false
                     // Reset errors
@@ -1082,7 +1084,7 @@ private fun AddCustomParameterDialog(
                         }
                     }
 
-                    if (hasError) return@Button
+                    if (hasError) return@CcButton
 
                     val newParam =
                         com.ai.assistance.operit.data.model.CustomParameterData(
@@ -1230,7 +1232,7 @@ private fun ParameterItem(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Switch(
+                    CcSwitch(
                             checked = parameter.isEnabled,
                             onCheckedChange = { onToggle(it) },
                             colors =
@@ -1401,7 +1403,7 @@ private fun ParameterItem(
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.padding(end = 16.dp)
                             )
-                            Switch(
+                            CcSwitch(
                                     checked = boolParam.currentValue,
                                     onCheckedChange = { onValueChange(it) }
                             )

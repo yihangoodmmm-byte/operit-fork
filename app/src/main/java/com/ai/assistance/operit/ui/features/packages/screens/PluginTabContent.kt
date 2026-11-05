@@ -50,6 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun PluginTabContent(
@@ -246,7 +247,7 @@ fun PluginTabContent(
                                             overflow = TextOverflow.Ellipsis
                                         )
                                     }
-                                    Switch(
+                                    CcSwitch(
                                         checked = isEnabled,
                                         onCheckedChange = { checked -> onTogglePlugin(details, checked) },
                                         modifier = Modifier.size(width = 32.dp, height = 20.dp),

@@ -38,6 +38,8 @@ import com.ai.assistance.operit.ui.features.assistant.components.VoiceAutoAttach
 import com.ai.assistance.operit.core.avatar.impl.factory.AvatarControllerFactoryImpl
 import com.ai.assistance.operit.ui.features.assistant.viewmodel.AssistantConfigViewModel
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 /** 助手配置屏幕 提供DragonBones模型预览和相关配置 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -357,14 +359,14 @@ fun AssistantConfigScreen() {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                FilledTonalButton(
+                                CcFilledTonalButton(
                                     modifier = Modifier.weight(1f),
                                     onClick = { personalWakeConfigDialogVisible = true },
                                 ) {
                                     Text(text = stringResource(R.string.voice_wakeup_personal_configure))
                                 }
 
-                                OutlinedButton(
+                                CcOutlinedButton(
                                     modifier = Modifier.weight(1f),
                                     enabled = personalWakeTemplates.isNotEmpty(),
                                     onClick = {
@@ -624,7 +626,7 @@ fun AssistantConfigScreen() {
                                             value != null -> stringResource(R.string.voice_wakeup_personal_config_record_done)
                                             else -> stringResource(R.string.voice_wakeup_personal_config_record)
                                         }
-                                    FilledTonalButton(
+                                    CcFilledTonalButton(
                                         onClick = onRecord,
                                         enabled = recordingStep == 0,
                                     ) {

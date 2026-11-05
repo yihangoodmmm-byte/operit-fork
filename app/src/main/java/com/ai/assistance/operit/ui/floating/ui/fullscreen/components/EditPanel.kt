@@ -43,6 +43,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 编辑面板组件
@@ -125,7 +127,7 @@ fun EditPanel(
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End)
             ) {
                 // 取消按钮
-                OutlinedButton(
+                CcOutlinedButton(
                     onClick = onCancel,
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color.White
@@ -146,7 +148,7 @@ fun EditPanel(
                 }
 
                 // 发送按钮
-                Button(
+                CcButton(
                     onClick = onSend,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary

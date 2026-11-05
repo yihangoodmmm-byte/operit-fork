@@ -48,6 +48,7 @@ import com.ai.assistance.operit.ui.features.packages.market.UnifiedMarketDetailH
 import com.ai.assistance.operit.ui.features.packages.market.UnifiedMarketDetailMetric
 import com.ai.assistance.operit.ui.features.packages.market.UnifiedMarketDetailParticipant
 import com.ai.assistance.operit.ui.features.packages.market.effectiveToolPkgApiVersion
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -253,7 +254,7 @@ internal fun MarketPublishPreviewDialog(
                             shadowElevation = 8.dp,
                             color = MaterialTheme.colorScheme.surface
                         ) {
-                            Button(
+                            CcButton(
                                 onClick = {},
                                 enabled = false,
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),

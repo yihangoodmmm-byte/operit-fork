@@ -74,6 +74,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /**
  * 无绑定工作区信息
@@ -1487,7 +1489,7 @@ private fun ChatHistoryBatchSelectorCard(
                         ChatMemoryRebuildManager.Status.IDLE -> Unit
                     }
                     if (isMemoryRebuildRunning) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = memoryRebuildManager::cancel,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -1500,7 +1502,7 @@ private fun ChatHistoryBatchSelectorCard(
             }
 
             if (!isMemoryRebuildRunning && hasSelection) {
-                Button(
+                CcButton(
                     onClick = { showSelectedChatActionsDialog = true },
                     enabled = !submitting && !deleteInProgress,
                     modifier = Modifier.fillMaxWidth()
@@ -1700,9 +1702,9 @@ private fun ChatHistoryBatchSelectorCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Button(
+                    CcButton(
                         onClick = {
-                            if (!canSubmit) return@Button
+                            if (!canSubmit) return@CcButton
                             scope.launch {
                                 submitting = true
                                 val groupName = targetGroupName.takeIf { it.isNotBlank() }
@@ -2003,7 +2005,7 @@ private fun ChatHistoryBatchSelectorCard(
                             } else {
                                 context.getString(R.string.chat_memory_rebuild_time_scope_pick)
                             }
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { showMemoryDateRangePicker = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -2405,7 +2407,7 @@ private fun UnboundWorkspaceCard(
                 }
                 
                 // 删除按钮
-                Button(
+                CcButton(
                     onClick = { showDeleteConfirmDialog = true },
                     enabled = selectedWorkspaces.isNotEmpty() && !deleteInProgress,
                     modifier = Modifier.fillMaxWidth(),

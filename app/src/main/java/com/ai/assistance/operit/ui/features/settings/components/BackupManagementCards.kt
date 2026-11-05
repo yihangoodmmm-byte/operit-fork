@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import kotlin.math.roundToInt
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -433,7 +434,7 @@ fun ManagementButton(
         ButtonDefaults.filledTonalButtonColors()
     }
 
-    FilledTonalButton(
+    CcFilledTonalButton(
         onClick = onClick,
         modifier = modifier,
         colors = colors,

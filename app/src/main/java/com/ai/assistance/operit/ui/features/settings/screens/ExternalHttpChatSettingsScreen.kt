@@ -58,6 +58,8 @@ import com.ai.assistance.operit.data.preferences.ExternalHttpApiPreferences
 import com.ai.assistance.operit.integrations.http.ExternalChatHttpNetworkInfo
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun ExternalHttpChatSettingsScreen(onBackPressed: () -> Unit) {
@@ -205,7 +207,7 @@ adb shell am broadcast \
                         },
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    Switch(
+                    CcSwitch(
                         checked = enabled,
                         onCheckedChange = { checked ->
                             scope.launch {
@@ -246,7 +248,7 @@ adb shell am broadcast \
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = ::savePort) {
+                    CcButton(onClick = ::savePort) {
                         Text(stringResource(R.string.external_http_chat_save_port))
                     }
                     if (enabled) {
@@ -275,7 +277,7 @@ adb shell am broadcast \
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = ::saveToken) {
+                    CcButton(onClick = ::saveToken) {
                         Text(stringResource(R.string.external_http_chat_save_token))
                     }
                     TextButton(

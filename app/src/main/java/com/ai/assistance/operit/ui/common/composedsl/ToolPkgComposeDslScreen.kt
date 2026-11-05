@@ -213,6 +213,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 private const val TAG = "ToolPkgComposeDslScreen"
 private val composeDslFilePickerMainHandler by lazy { Handler(Looper.getMainLooper()) }
@@ -1517,7 +1518,7 @@ fun ToolPkgComposeDslToolScreen(
                             text = errorMessage.orEmpty(),
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Button(
+                        CcButton(
                             onClick = {
                                 scope.launch {
                                     hasDispatchedInitialOnLoad = false

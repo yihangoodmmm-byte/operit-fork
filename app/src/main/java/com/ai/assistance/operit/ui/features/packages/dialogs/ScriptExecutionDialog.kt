@@ -34,6 +34,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -226,11 +228,11 @@ fun ScriptExecutionDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    OutlinedButton(onClick = onDismiss) {
+                    CcOutlinedButton(onClick = onDismiss) {
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = {
                             executing = true
                             executionResults = emptyList()

@@ -19,6 +19,7 @@ import androidx.core.text.HtmlCompat
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.preferences.AgreementPreferences
 import kotlinx.coroutines.delay
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun AgreementScreen(onAgreementAccepted: () -> Unit) {
@@ -152,7 +153,7 @@ fun AgreementScreen(onAgreementAccepted: () -> Unit) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Agreement button
-                Button(
+                CcButton(
                         onClick = onAgreementAccepted,
                         enabled = isButtonEnabled,
                         modifier = Modifier.fillMaxWidth().height(56.dp),

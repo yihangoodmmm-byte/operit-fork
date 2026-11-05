@@ -30,6 +30,8 @@ import com.ai.assistance.operit.data.model.Memory
 import com.ai.assistance.operit.ui.features.memory.screens.graph.model.Edge
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -82,15 +84,15 @@ fun MemoryInfoDialog(
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                         verticalArrangement = Arrangement.Center
                 ) {
-                    Button(onClick = onEdit) { Text(stringResource(R.string.memory_edit)) }
-                    Button(
+                    CcButton(onClick = onEdit) { Text(stringResource(R.string.memory_edit)) }
+                    CcButton(
                             onClick = onDelete,
                             colors =
                                     ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.error
                                     )
                     ) { Text(stringResource(R.string.memory_delete)) }
-                    OutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_close)) }
+                    CcOutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_close)) }
                 }
             }
     )
@@ -126,12 +128,12 @@ fun EdgeInfoDialog(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalArrangement = Arrangement.Center
             ) {
-                Button(onClick = onEdit) { Text(stringResource(R.string.memory_edit)) }
-                Button(
+                CcButton(onClick = onEdit) { Text(stringResource(R.string.memory_edit)) }
+                CcButton(
                     onClick = onDelete,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) { Text(stringResource(R.string.memory_delete)) }
-                OutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_close)) }
+                CcOutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_close)) }
             }
         }
     )
@@ -158,11 +160,11 @@ fun EditEdgeDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
+            CcButton(onClick = {
                 onSave(type, weight.toFloatOrNull() ?: 1.0f, description)
             }) { Text(stringResource(R.string.memory_save)) }
         },
-        dismissButton = { OutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_cancel)) } }
+        dismissButton = { CcOutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_cancel)) } }
     )
 }
 
@@ -199,14 +201,14 @@ fun LinkMemoryDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val w = weight.toFloatOrNull() ?: 1.0f
                     onLink(type, w, description)
                 }
             ) { Text(stringResource(R.string.memory_create_link)) }
         },
-        dismissButton = { OutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_cancel)) } }
+        dismissButton = { CcOutlinedButton(onClick = onDismiss) { Text(stringResource(R.string.memory_cancel)) } }
     )
 }
 
@@ -233,7 +235,7 @@ fun BatchDeleteConfirmDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = onConfirm,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
@@ -243,7 +245,7 @@ fun BatchDeleteConfirmDialog(
             }
         },
         dismissButton = {
-            OutlinedButton(onClick = onDismiss) {
+            CcOutlinedButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
         }

@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * Dialog that explains the token usage policy before redirecting to the token configuration screen.
@@ -64,7 +65,7 @@ fun TokenInfoDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
                                                 modifier = Modifier.weight(1f)
                                         ) { Text(stringResource(id = R.string.token_info_cancel)) }
 
-                                        Button(
+                                        CcButton(
                                                 onClick = onConfirm,
                                                 modifier = Modifier.weight(1f)
                                         ) { Text(stringResource(id = R.string.token_info_confirm)) }

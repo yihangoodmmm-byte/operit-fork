@@ -19,6 +19,12 @@ enum class AppThemeFamily(val id: String, val displayName: String) {
     IOS_LIGHT("ios_light", "iOS 白"),
     IOS_DARK("ios_dark", "iOS 黑"),
     CLAUDE("claude", "Claude"),
+
+    /** AiCode 默认蓝：品牌 #2563EB + 冷中性灰阶，浅/深各一套（见 [AiCodePalette.BLUE]）。 */
+    AICODE("aicode", "AiCode 蓝"),
+
+    /** CC 暖灰：cccodroid 的暖中性 + 陶土橙，浅/深各一套（见 [AiCodePalette.CC]）。 */
+    CC("cc", "CC 暖灰"),
 }
 
 object AppThemes {
@@ -109,10 +115,24 @@ object AppThemes {
         surfaceTint = Color(0xFFC25A34),
     )
 
-    fun schemeOf(family: AppThemeFamily): ColorScheme = when (family) {
+    /**
+     * 取某套配色的色板。
+     *
+     * [dark] 只对支持明暗两套的家族（AICODE / CC）生效；iOS 白/黑、Claude 本身已经写死明暗，
+     * 传什么都返回原来的那一套，保证既有观感不变。
+     */
+    fun schemeOf(family: AppThemeFamily, dark: Boolean = false): ColorScheme = when (family) {
         AppThemeFamily.IOS_LIGHT -> IosLight
         AppThemeFamily.IOS_DARK -> IosDark
         AppThemeFamily.CLAUDE -> Claude
+        AppThemeFamily.AICODE -> AiCodePalette.derive(
+            if (dark) AiCodePalette.BLUE_DARK else AiCodePalette.BLUE,
+            dark
+        )
+        AppThemeFamily.CC -> AiCodePalette.derive(
+            if (dark) AiCodePalette.CC_DARK else AiCodePalette.CC,
+            dark
+        )
     }
 
     /** 从偏好里存的字符串恢复；未知值回落到 iOS 白。 */

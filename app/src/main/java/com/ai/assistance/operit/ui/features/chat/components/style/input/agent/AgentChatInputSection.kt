@@ -158,6 +158,7 @@ import com.ai.assistance.operit.ui.theme.waterGlass
 import com.ai.assistance.operit.util.ChatUtils
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun AgentChatInputSection(
@@ -1869,7 +1870,7 @@ private fun AgentThinkingSubSettingItem(
                     },
                 modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
             )
-            Switch(
+            CcSwitch(
                 checked = isChecked,
                 onCheckedChange = null,
                 modifier = Modifier.scale(0.65f),
@@ -1932,7 +1933,7 @@ private fun AgentMaxContextSettingItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        Switch(
+        CcSwitch(
             checked = enableMaxContextMode,
             onCheckedChange = null,
             modifier = Modifier.scale(0.65f),
@@ -2969,7 +2970,7 @@ private fun AgentSimpleToggleSettingItem(
                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             modifier = Modifier.weight(1f),
         )
-        Switch(
+        CcSwitch(
             checked = isChecked,
             onCheckedChange = null,
             enabled = isEnabled,

@@ -49,6 +49,8 @@ import com.ai.assistance.operit.ui.components.CustomScaffold
 import com.ai.assistance.operit.ui.features.packages.market.MarketReviewReason
 import com.ai.assistance.operit.ui.features.packages.market.MarketReviewState
 import com.ai.assistance.operit.ui.features.packages.market.labelResId
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun MarketManageScaffold(
@@ -524,7 +526,7 @@ private fun MarketManageLoginRequiredCard(
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onLogin) {
+            CcButton(onClick = onLogin) {
                 Text(stringResource(R.string.login_github))
             }
         }
@@ -605,7 +607,7 @@ private fun MarketManageEmptyState(
             )
             actionLabel?.let { label ->
                 Spacer(modifier = Modifier.height(16.dp))
-                OutlinedButton(onClick = onAction) {
+                CcOutlinedButton(onClick = onAction) {
                     Text(label)
                 }
             }

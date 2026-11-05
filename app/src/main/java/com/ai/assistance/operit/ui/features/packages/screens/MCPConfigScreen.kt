@@ -63,6 +63,10 @@ import kotlinx.coroutines.launch
 import com.ai.assistance.operit.data.mcp.InstallResult
 import com.ai.assistance.operit.data.mcp.InstallProgress
 import com.ai.assistance.operit.ui.features.startup.screens.LocalPluginLoadingState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 /** MCP配置屏幕 - 极简风格界面，专注于插件快速部署 */
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -889,7 +893,7 @@ fun MCPConfigScreen(
                 }
             },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = {
                         val isRemote = importTabIndex == 2
                         val isConfigImport = importTabIndex == 3
@@ -929,7 +933,7 @@ fun MCPConfigScreen(
                             val proposedId = pluginNameInput.replace(" ", "_").lowercase()
                             if (visiblePluginIds.contains(proposedId)) {
                                 Toast.makeText(context, context.getString(R.string.plugin_already_exists, pluginNameInput), Toast.LENGTH_SHORT).show()
-                                return@Button
+                                return@CcButton
                             }
 
                             isImporting = true
@@ -1039,7 +1043,7 @@ fun MCPConfigScreen(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.use_system_file_picker))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(
+                    CcButton(
                         onClick = {
                             // 触发系统文件选择器
                             val intent = android.content.Intent(android.content.Intent.ACTION_GET_CONTENT)
@@ -1678,7 +1682,7 @@ private fun PluginListItem(
                 }
 
                 // 紧凑的开关
-                Switch(
+                CcSwitch(
                     checked = isEnabled,
                     onCheckedChange = onEnabledChange,
                     enabled = isConfigValid,
@@ -1766,7 +1770,7 @@ private fun PluginListItem(
                 ) {
                     // 主要操作按钮
                     if (!isRemote) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = onDeploy,
                             modifier = Modifier.weight(1f).height(32.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp),
@@ -1783,7 +1787,7 @@ private fun PluginListItem(
                     }
                     
                     // 编辑按钮
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onEdit,
                         modifier = Modifier.weight(1f).height(32.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp)
@@ -1845,7 +1849,7 @@ fun RemoteServerEditDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = {
                             scope.launch {
                                 isRegeneratingDescription = true
@@ -1955,7 +1959,7 @@ fun RemoteServerEditDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val normalizedName = name.trim()
                     val normalizedDescription = description.trim()
@@ -2074,7 +2078,7 @@ private fun RemoteHeadersEditor(
             }
         }
 
-        OutlinedButton(
+        CcOutlinedButton(
             onClick = {
                 onHeadersChange(headers + EditableHeader())
             }

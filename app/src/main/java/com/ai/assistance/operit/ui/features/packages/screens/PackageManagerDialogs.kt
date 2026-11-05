@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.core.tools.EnvVar
 import com.ai.assistance.operit.core.tools.packTool.PackageManager
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 @Composable
 fun PackageLoadErrorsDialog(
@@ -84,7 +85,7 @@ fun PackageLoadErrorsDialog(
                     )
                     if (errorInfo.isExternalSource && errorInfo.sourcePath != null) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { onDeleteSource(errorInfo.sourcePath) }
                         ) {
                             Text(text = stringResource(R.string.package_conflict_delete_source))

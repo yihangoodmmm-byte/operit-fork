@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 无障碍服务设置向导卡片
@@ -165,7 +166,7 @@ fun AccessibilityWizardCard(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button(
+                            CcButton(
                                 onClick = { showWarningDialog = true },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
@@ -213,7 +214,7 @@ fun AccessibilityWizardCard(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button(
+                            CcButton(
                                 onClick = onOpenAccessibilitySettings,
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
@@ -326,7 +327,7 @@ fun AccessibilityWizardCard(
                 }
             },
             confirmButton = {
-                Button(
+                CcButton(
                     onClick = {
                         if (confirmText.trim().equals(expectedText, ignoreCase = true) ||
                             confirmText.trim().equals(expectedTextEn, ignoreCase = true)) {
@@ -386,7 +387,7 @@ private fun UpdateAvailableInfo(
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
+            CcButton(
                 onClick = onUpdate,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp)

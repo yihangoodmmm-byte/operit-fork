@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @Composable
 fun ShizukuWizardCard(
@@ -288,7 +291,7 @@ fun ShizukuWizardCard(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                OutlinedButton(
+                                CcOutlinedButton(
                                         onClick = onWatchTutorial,
                                         modifier = Modifier.weight(1f),
                                         contentPadding = PaddingValues(vertical = 12.dp),
@@ -300,7 +303,7 @@ fun ShizukuWizardCard(
                                     )
                                 }
 
-                                FilledTonalButton(
+                                CcFilledTonalButton(
                                         onClick = onOpenShizuku,
                                         modifier = Modifier.weight(1f),
                                         contentPadding = PaddingValues(vertical = 12.dp),
@@ -357,7 +360,7 @@ fun ShizukuWizardCard(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button(
+                            CcButton(
                                     onClick = onRequestPermission,
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(8.dp),
@@ -496,7 +499,7 @@ fun ShizukuWizardCard(
 
                                         Spacer(modifier = Modifier.height(12.dp))
 
-                                        FilledTonalButton(
+                                        CcFilledTonalButton(
                                                 onClick = onUpdateShizuku,
                                                 modifier = Modifier.fillMaxWidth(),
                                                 contentPadding = PaddingValues(vertical = 12.dp),

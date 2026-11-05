@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.features.token.model.TabConfig
 import com.ai.assistance.operit.ui.features.token.model.UrlConfig
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun UrlConfigDialog(
@@ -137,7 +138,7 @@ fun UrlConfigDialog(
             }
         },
         confirmButton = {
-            Button(
+            CcButton(
                 onClick = {
                     val newConfig = UrlConfig(
                         name = name,

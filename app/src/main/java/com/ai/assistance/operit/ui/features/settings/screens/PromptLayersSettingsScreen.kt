@@ -48,6 +48,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 提示词分层设置页。
@@ -240,7 +242,7 @@ fun PromptLayersSettingsScreen(onBackPressed: () -> Unit = {}) {
                         }) {
                             Text(if (expandedId == definition.id) "收起" else "编辑")
                         }
-                        Switch(
+                        CcSwitch(
                             checked = enabled,
                             enabled = loaded,
                             onCheckedChange = { on ->
@@ -276,7 +278,7 @@ fun PromptLayersSettingsScreen(onBackPressed: () -> Unit = {}) {
                                 }
                             }) { Text("恢复默认") }
                             Spacer(Modifier.width(8.dp))
-                            Button(onClick = {
+                            CcButton(onClick = {
                                 val next = if (draft.isBlank()) contents - definition.id else contents + (definition.id to draft)
                                 contents = next
                                 expandedId = null

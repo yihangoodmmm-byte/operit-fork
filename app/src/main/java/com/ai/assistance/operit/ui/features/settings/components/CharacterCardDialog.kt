@@ -53,6 +53,9 @@ import com.ai.assistance.operit.api.chat.EnhancedAIService
 import com.ai.assistance.operit.util.LocaleUtils
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 // 角色卡名片对话框
 @OptIn(ExperimentalLayoutApi::class)
@@ -582,7 +585,7 @@ fun CharacterCardDialog(
                                     )
                                 }
 
-                                Switch(
+                                CcSwitch(
                                     checked = chatModelBindingMode == CharacterCardChatModelBindingMode.FIXED_CONFIG,
                                     onCheckedChange = null
                                 )
@@ -710,7 +713,7 @@ fun CharacterCardDialog(
                                     )
                                 }
 
-                                Switch(
+                                CcSwitch(
                                     checked = memoryProfileBindingMode == CharacterCardMemoryProfileBindingMode.FIXED_PROFILE,
                                     onCheckedChange = null
                                 )
@@ -817,7 +820,7 @@ fun CharacterCardDialog(
                                     )
                                 }
 
-                                Switch(
+                                CcSwitch(
                                     checked = normalizedToolAccessConfig.enabled,
                                     onCheckedChange = null
                                 )
@@ -906,7 +909,7 @@ fun CharacterCardDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(6.dp)
@@ -914,7 +917,7 @@ fun CharacterCardDialog(
                         Text(stringResource(R.string.cancel), fontSize = 13.sp)
                     }
                     
-                    Button(
+                    CcButton(
                         onClick = {
                             val selectedFixedConfig = configSummaries.find { it.id == fixedChatModelConfigId }
                             val normalizedFixedModelIndex = if (selectedFixedConfig != null) {
@@ -933,7 +936,7 @@ fun CharacterCardDialog(
                                     context.getString(R.string.character_card_tool_access_requires_use_package),
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                return@Button
+                                return@CcButton
                             }
                             onSave(
                                 characterCard.copy(
@@ -1303,14 +1306,14 @@ private fun CharacterCardToolAccessDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
 
-                    Button(
+                    CcButton(
                         onClick = {
                             onConfirm(localConfig.normalized())
                             onDismiss()
@@ -1769,14 +1772,14 @@ fun FullScreenEditDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
                     
-                    Button(
+                    CcButton(
                         onClick = { onSave(editValue) },
                         modifier = Modifier.weight(1f)
                     ) {

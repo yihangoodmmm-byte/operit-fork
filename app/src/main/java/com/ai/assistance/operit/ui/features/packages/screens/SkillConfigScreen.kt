@@ -83,6 +83,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -1127,7 +1128,7 @@ private fun SkillListItem(
                 }
             }
 
-            Switch(
+            CcSwitch(
                 modifier = Modifier.scale(0.8f),
                 checked = visibleToAi,
                 onCheckedChange = { checked ->

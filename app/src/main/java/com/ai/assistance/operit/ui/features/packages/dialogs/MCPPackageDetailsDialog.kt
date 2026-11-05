@@ -73,6 +73,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @Composable
 fun MCPPackageDetailsDialog(
@@ -234,7 +235,7 @@ fun MCPPackageDetailsDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    FilledTonalButton(onClick = onDismiss) {
+                    CcFilledTonalButton(onClick = onDismiss) {
                         Text(stringResource(R.string.pkg_close))
                     }
                 }
@@ -297,7 +298,7 @@ private fun MCPPackageToolCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                FilledTonalButton(
+                CcFilledTonalButton(
                     onClick = { onExecute(tool) },
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
                 ) {
@@ -567,7 +568,7 @@ private fun MCPToolExecutionDialog(
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    FilledTonalButton(
+                    CcFilledTonalButton(
                         onClick = {
                             executing = true
                             scope.launch(Dispatchers.IO) {

@@ -27,6 +27,7 @@ import com.ai.assistance.operit.R
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.ui.features.chat.components.compactDialogHeightWhenShort
 import com.ai.assistance.operit.ui.features.chat.components.rememberCompactDialogMetrics
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
  * 通用的内容详情弹窗
@@ -144,7 +145,7 @@ fun ContentDetailDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 关闭按钮
-                Button(
+                CcButton(
                     onClick = onDismiss,
                     modifier = Modifier.align(Alignment.End),
                     colors = ButtonDefaults.buttonColors(

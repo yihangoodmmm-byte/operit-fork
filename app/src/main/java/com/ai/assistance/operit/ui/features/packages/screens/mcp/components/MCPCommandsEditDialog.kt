@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 /** MCP插件部署命令编辑对话框 允许用户在部署前编辑自动生成的部署命令 */
 @Composable
@@ -206,7 +208,7 @@ fun MCPCommandsEditDialog(
 
                 // 底部按钮
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                             onClick = onDismissRequest,
                             colors =
                                     ButtonDefaults.outlinedButtonColors(
@@ -215,7 +217,7 @@ fun MCPCommandsEditDialog(
                             modifier = Modifier.padding(end = 12.dp)
                     ) { Text(stringResource(R.string.mcp_cancel)) }
 
-                    Button(
+                    CcButton(
                             onClick = {
                                 // 将编辑后的文本拆分为命令列表，并过滤掉空行
                                 val finalCommands =

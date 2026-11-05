@@ -37,6 +37,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.ai.assistance.operit.ui.common.components.CcSwitch
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
+import com.ai.assistance.operit.ui.common.components.CcFilledTonalButton
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -165,7 +169,7 @@ fun PackageDetailsDialog(
                 title = { Text(stringResource(R.string.pkg_confirm_delete)) },
                 text = { Text(stringResource(R.string.pkg_delete_warning, packageName)) },
                 confirmButton = {
-                    Button(
+                    CcButton(
                             onClick = {
                                 scope.launch {
                                     val deleted =
@@ -541,7 +545,7 @@ fun PackageDetailsDialog(
                                                         }
                                                     }
                                                     Spacer(modifier = Modifier.width(8.dp))
-                                                    Switch(
+                                                    CcSwitch(
                                                         checked = subpackage.enabled,
                                                         onCheckedChange = { enabled -> applySubpackageToggle(enabled) },
                                                         modifier = Modifier.scale(0.8f)
@@ -673,7 +677,7 @@ fun PackageDetailsDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = { showRuntimeMonitorDialog = true }
                     ) {
                         Icon(
@@ -686,7 +690,7 @@ fun PackageDetailsDialog(
                     }
 
                     if (metaPackage != null && !metaPackage.isBuiltIn) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = { showDeleteConfirmDialog = true },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error
@@ -702,7 +706,7 @@ fun PackageDetailsDialog(
                         }
                     }
                     
-                    FilledTonalButton(onClick = onDismiss) {
+                    CcFilledTonalButton(onClick = onDismiss) {
                         Text(stringResource(R.string.pkg_close))
                     }
                 }
@@ -780,7 +784,7 @@ fun PackageDetailsDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        FilledTonalButton(
+                        CcFilledTonalButton(
                             onClick = {
                                 showSubpackageToolsDialog = false
                                 subpackageDialogPackageName = null
@@ -1114,7 +1118,7 @@ private fun ToolPkgRuntimeMonitorDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    FilledTonalButton(onClick = onDismiss) {
+                    CcFilledTonalButton(onClick = onDismiss) {
                         Text(stringResource(R.string.pkg_close))
                     }
                 }
@@ -1543,7 +1547,7 @@ private fun ToolCard(
                     )
                 }
                 
-                FilledTonalButton(
+                CcFilledTonalButton(
                     onClick = { onExecute(tool) },
                     modifier = Modifier.height(32.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp)

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 @Composable
 fun HowToImportSection() {
@@ -139,7 +140,7 @@ fun HowToImportSection() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
+                CcButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oldEditorUrl))
                         context.startActivity(intent)
@@ -148,7 +149,7 @@ fun HowToImportSection() {
                 ) {
                     Text(stringResource(R.string.download_old_editor))
                 }
-                Button(
+                CcButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(newEditorUrl))
                         context.startActivity(intent)

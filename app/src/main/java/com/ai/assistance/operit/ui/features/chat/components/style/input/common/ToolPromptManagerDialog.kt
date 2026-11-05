@@ -38,6 +38,7 @@ import com.ai.assistance.operit.core.config.SystemToolPrompts
 import com.ai.assistance.operit.util.LocaleUtils
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
 fun ToolPromptManagerDialog(
@@ -151,7 +152,7 @@ fun ToolPromptManagerDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                Switch(
+                                CcSwitch(
                                     checked = isVisible,
                                     onCheckedChange = { checked ->
                                         val updated = localToolPromptVisibility + (tool.name to checked)

@@ -65,6 +65,8 @@ import androidx.lifecycle.ViewModel
 import com.ai.assistance.operit.R
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 // ViewModel factory helper
 inline fun <VM : ViewModel> viewModelFactory(crossinline f: () -> VM) =
@@ -156,7 +158,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onRetry) {
+        CcButton(onClick = onRetry) {
             Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.action_retry))
@@ -303,7 +305,7 @@ fun UpdateCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = { onOpenRelease(updateInfo.releaseUrl) },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -323,7 +325,7 @@ fun UpdateCard(
                     }
 
                     if (updateInfo.downloadUrl.isNotEmpty()) {
-                        Button(
+                        CcButton(
                             onClick = { onOpenRelease(updateInfo.downloadUrl) },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(

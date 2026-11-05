@@ -30,6 +30,7 @@ import com.ai.assistance.operit.R
 import com.ai.assistance.operit.api.speech.SpeechService
 import com.ai.assistance.operit.api.speech.SpeechServiceFactory
 import kotlinx.coroutines.launch
+import com.ai.assistance.operit.ui.common.components.CcButton
 
 /** 语音识别演示屏幕 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +96,7 @@ fun SpeechToTextScreen(navController: NavController) {
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            Button(
+            CcButton(
                 onClick = { requestMicrophonePermission() },
                 modifier = Modifier.fillMaxWidth(0.8f),
                 colors = ButtonDefaults.buttonColors(
@@ -358,7 +359,7 @@ fun SpeechToTextScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(8.dp))
                     
                 // 切换引擎按钮单独一行
-                    Button(
+                    CcButton(
                         onClick = { switchRecognitionMode() },
                         enabled = !isListening && isInitialized,
                     modifier = Modifier.fillMaxWidth(),
@@ -423,7 +424,7 @@ fun SpeechToTextScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Button(
+            CcButton(
                 onClick = { startRecognition() },
                 modifier = Modifier.weight(1f).height(56.dp),
                 enabled = isInitialized && !isListening,
@@ -442,7 +443,7 @@ fun SpeechToTextScreen(navController: NavController) {
                 Text(stringResource(R.string.start_recognition), style = MaterialTheme.typography.titleMedium)
             }
 
-            Button(
+            CcButton(
                 onClick = { stopRecognition() },
                 modifier = Modifier.weight(1f).height(56.dp),
                 enabled = isListening,

@@ -51,6 +51,8 @@ import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ai.assistance.operit.ui.common.components.CcButton
+import com.ai.assistance.operit.ui.common.components.CcOutlinedButton
 
 class CrashReportActivity : ComponentActivity() {
 
@@ -108,7 +110,7 @@ fun CrashReportScreen(stackTrace: String) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // 主要操作按钮
-                    Button(
+                    CcButton(
                         onClick = { restartApp(context) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
@@ -127,7 +129,7 @@ fun CrashReportScreen(stackTrace: String) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 copyToClipboard(context, stackTrace)
                             },
@@ -138,7 +140,7 @@ fun CrashReportScreen(stackTrace: String) {
                             Text(stringResource(id = R.string.crash_report_copy_button))
                         }
 
-                        OutlinedButton(
+                        CcOutlinedButton(
                             onClick = {
                                 coroutineScope.launch {
                                     exportToFile(context, stackTrace)
@@ -154,7 +156,7 @@ fun CrashReportScreen(stackTrace: String) {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    OutlinedButton(
+                    CcOutlinedButton(
                         onClick = {
                             coroutineScope.launch {
                                 isExportingLogs = true
