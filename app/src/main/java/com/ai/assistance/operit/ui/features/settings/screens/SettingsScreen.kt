@@ -276,6 +276,8 @@ private fun CompactSettingsItem(
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
+                                        // 显式指定：行不再包在 Card 里，会继承到偏暗的内容色
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                 )
