@@ -39,9 +39,11 @@ fun rememberNavigationDrawerAppearance(): NavigationDrawerAppearance {
     val waterGlassEnabled = navigationDrawerWaterGlass && isWaterGlassSupported()
     val buttonLiquidGlassEnabled =
         navigationDrawerButtonLiquidGlass && isLiquidGlassSupported()
-    val defaultTitleColor = MaterialTheme.colorScheme.primary
-    val defaultStatusColor = MaterialTheme.colorScheme.primary
-    val defaultDividerColor = defaultTitleColor.copy(alpha = 0.42f)
+    // AiCode ChatDrawer：抽屉里的标题是**中性色**（onBackground），不是主题色。
+    // 原来 titleColor / dividerColor 都吃 primary，整块抽屉泛蓝，是最"像 Operit"的地方之一。
+    val defaultTitleColor = MaterialTheme.colorScheme.onBackground
+    val defaultStatusColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val defaultDividerColor = MaterialTheme.colorScheme.outlineVariant
     val defaultAppearance =
         NavigationDrawerAppearance(
             containerColor = MaterialTheme.colorScheme.surface,

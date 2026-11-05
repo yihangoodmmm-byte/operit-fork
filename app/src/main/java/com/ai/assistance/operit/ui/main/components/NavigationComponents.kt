@@ -1,6 +1,7 @@
 package com.ai.assistance.operit.ui.main.components
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,12 +27,14 @@ import com.ai.assistance.operit.ui.theme.liquidGlass
 /** Displays a header in the navigation drawer */
 @Composable
 fun NavigationDrawerItemHeader(title: String, appearance: NavigationDrawerAppearance) {
+    // AiCode ChatDrawer 的分组标签：小号、半粗、加字距、中性色（原来是大号 Bold + 主题色）
     Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.labelSmall,
             color = appearance.titleColor,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 28.dp, top = 16.dp, bottom = 8.dp)
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.8.sp,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
     )
 }
 
@@ -56,7 +59,8 @@ fun CompactNavigationDrawerItem(
             modifier =
                     Modifier.fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 4.dp)
-                            .height(40.dp)
+                            // AiCode 抽屉行高 44dp（原 40dp），比 Material 默认更松一点
+                            .height(44.dp)
                             .liquidGlass(
                                     enabled = appearance.buttonLiquidGlassEnabled,
                                     shape = itemShape,

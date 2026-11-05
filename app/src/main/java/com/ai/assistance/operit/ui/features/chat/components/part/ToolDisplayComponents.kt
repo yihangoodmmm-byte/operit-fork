@@ -75,21 +75,31 @@ fun CompactToolDisplay(
 
     val summary = remember(displayParams) { buildParamsHeadPreview(displayParams) }
 
-    CanvasToolSummaryRow(
-        toolName = displayToolName,
-        summary = summary,
-        semanticDescription = semanticDescription,
-        leadingIcon = getToolIcon(displayToolName),
-        titleColor = MaterialTheme.colorScheme.primary,
-        summaryColor = textColor.copy(alpha = 0.7f),
-        modifier = modifier,
-        onClick =
-            if (hasParams && enableDialog) {
-                { showDetailDialog = true }
-            } else {
-                null
-            },
-    )
+    // AiCode 扁平工具行：整行不套卡片，行与行之间只用 1dp 细线分隔。
+    // 行内布局（16dp 图标格 + 8dp 间距）原本就与 AiCode 一致，无需改；
+    // 这里补的是"分隔手段"——原来靠上下留白，现在靠细线，密度更高也更像文档。
+    Column(modifier = Modifier.fillMaxWidth()) {
+        CanvasToolSummaryRow(
+            toolName = displayToolName,
+            summary = summary,
+            semanticDescription = semanticDescription,
+            leadingIcon = getToolIcon(displayToolName),
+            titleColor = MaterialTheme.colorScheme.primary,
+            summaryColor = textColor.copy(alpha = 0.7f),
+            modifier = modifier,
+            onClick =
+                if (hasParams && enableDialog) {
+                    { showDetailDialog = true }
+                } else {
+                    null
+                },
+        )
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
 }
 
 /** 卡片式工具显示组件 用于显示较长内容的工具调用，支持流式渲染，美化版 */
