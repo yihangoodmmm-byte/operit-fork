@@ -277,9 +277,10 @@ fun ChatArea(
     val lastMessage = chatHistory.lastOrNull()
     val pendingTargetAnchor =
         pendingJumpToMessageTimestamp?.let { targetTimestamp -> messageAnchors[targetTimestamp] }
-    var hasLastAiMessageStartedStreaming by remember(lastMessage?.timestamp) {
-        mutableStateOf(lastMessage?.run { sender == "ai" && content.isNotBlank() } == true)
-    }
+    // 「首字是否已到达」：纯粹由内容推导即可。
+    // 原来用可变的 remember 状态 + 去消费一次流来置位，既不必要又会把流标记为关闭（见下面的说明）。
+    val hasLastAiMessageStartedStreaming: Boolean =
+        lastMessage?.let { it.sender == "ai" && it.content.isNotBlank() } == true
 
     val messagesCount = chatHistory.size
     LaunchedEffect(currentChatId, chatHistory.isEmpty()) {
@@ -336,25 +337,17 @@ fun ChatArea(
         pendingJumpToMessageTimestamp = null
     }
 
-    LaunchedEffect(lastMessage?.timestamp, lastMessage?.contentStream) {
-        val lastAiMessageHasStaticContent =
-            lastMessage?.let { it.sender == "ai" && it.content.isNotBlank() } == true
-        hasLastAiMessageStartedStreaming = lastAiMessageHasStaticContent
-
-        val shouldAwaitFirstChunk =
-            lastMessage?.let {
-                it.sender == "ai" && it.content.isBlank() && it.contentStream != null
-            } == true
-        val stream = lastMessage?.contentStream
-
-        if (!lastAiMessageHasStaticContent && shouldAwaitFirstChunk && stream != null) {
-            stream.collect { chunk ->
-                if (!hasLastAiMessageStartedStreaming && chunk.isNotEmpty()) {
-                    hasLastAiMessageStartedStreaming = true
-                }
-            }
-        }
-    }
+    // ⚠️ 这里曾经有一个「探测首个分片」的 LaunchedEffect，直接 stream.collect { ... }。
+    // 那是个致命的双重订阅：
+    //   · FlowAsStream.collect() 只有一个 activeCollector 字段，第二个人订阅会把它覆盖掉；
+    //   · 更糟的是 collect() 的 finally 会调用 markClosed()，而 LaunchedEffect 的
+    //     key（timestamp / contentStream）一变化就会取消这个协程 —— 于是**探测协程的取消
+    //     把整条流标记成了已关闭**，真正的渲染收集器随之断开，UI 以为断流了又去重连。
+    // 现象就是「AI 读取时往下翻一页就断流重连」。
+    //
+    // 这个标志位的本意只是「首字是否已经到达」，用于决定要不要显示加载指示器。
+    // 它完全可以由 lastMessage.content 推导（见上面 hasLastAiMessageStartedStreaming 的定义），
+    // 根本不需要为此消费一次流。所以这里不再订阅。
 
     LaunchedEffect(
         messagesCount,
