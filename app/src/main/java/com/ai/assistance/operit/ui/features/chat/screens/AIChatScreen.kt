@@ -523,8 +523,14 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     
 
 
+    // ── AiCode 扁平文档流 ──────────────────────────────────
+    // 原实现：AI 消息用 surface 铺一块底（就是"气泡"），用户消息用 primaryContainer。
+    // 目标形态（对齐 AiCode ChatStyle）：
+    //   · 助手正文**直接铺在页面底色上**，不套气泡 —— 底色透明；
+    //   · 用户消息是一枚浅色药丸，就是 primaryContainer（14dp 圆角在气泡侧改）；
+    //   · 分组只靠 1dp 细线（outlineVariant），不靠卡片阴影。
     val defaultUserMessageColor = MaterialTheme.colorScheme.primaryContainer
-    val defaultAiMessageColor = MaterialTheme.colorScheme.surface
+    val defaultAiMessageColor = Color.Transparent
     val cursorCustomUserMessageColor = cursorUserBubbleColorValue?.let(::Color)
     val bubbleCustomUserMessageColor = bubbleUserBubbleColorValue?.let(::Color)
     val bubbleCustomAiMessageColor = bubbleAiBubbleColorValue?.let(::Color)

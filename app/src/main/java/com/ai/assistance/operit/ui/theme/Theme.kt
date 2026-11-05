@@ -163,7 +163,7 @@ fun OperitTheme(content: @Composable () -> Unit) {
     // 跟随壁纸会让每个用户的配色都不同，排版与对比度就无法保证。
     val themeFamily = AppThemeFamily.entries.firstOrNull { family ->
         family.id == themeSnapshot.values.string("app_theme_family")
-    } ?: AppThemeFamily.IOS_LIGHT
+    } ?: AppThemeFamily.AICODE
 
     // 基础主题色调。AICODE / CC 两套有浅深两个色板，需要把当前明暗传进去；
     // iOS 白/黑、Claude 本身已写死明暗，传了也不变。

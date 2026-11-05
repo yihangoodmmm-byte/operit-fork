@@ -194,10 +194,11 @@ fun AppContent(
                 when (appBarContentColorMode) {
                     UserPreferencesManager.APP_BAR_CONTENT_COLOR_MODE_LIGHT -> Color.White
                     UserPreferencesManager.APP_BAR_CONTENT_COLOR_MODE_DARK -> Color.Black
-                    else -> MaterialTheme.colorScheme.onPrimary
+                    // AiCode：顶栏底色与页面同色，前景色只能是 onBackground，不能用 onPrimary（会在浅底上变白）
+                    else -> MaterialTheme.colorScheme.onBackground
                 }
             } else {
-                MaterialTheme.colorScheme.onPrimary
+                MaterialTheme.colorScheme.onBackground
             }
 
     // 获取聊天历史管理器
@@ -355,7 +356,8 @@ fun AppContent(
                         when {
                             toolbarTransparent -> Color.Transparent
                             useCustomAppBarColor && customAppBarColor != null -> Color(customAppBarColor)
-                            else -> MaterialTheme.colorScheme.primary
+                            // AiCode 风格：顶栏与页面同色（原来是 primary 大色块，最"像 Operit"的特征）
+                            else -> MaterialTheme.colorScheme.background
                         },
                         titleContentColor = appBarContentColor,
                         navigationIconContentColor = appBarContentColor,

@@ -135,7 +135,7 @@ object AppThemes {
         )
     }
 
-    /** 从偏好里存的字符串恢复；未知值回落到 iOS 白。 */
+    /** 从偏好里存的字符串恢复；未知值回落到 AiCode 蓝（新的默认观感）。 */
     fun fromId(id: String?): AppThemeFamily =
-        AppThemeFamily.entries.firstOrNull { it.id == id } ?: AppThemeFamily.IOS_LIGHT
+        AppThemeFamily.entries.firstOrNull { it.id == id } ?: AppThemeFamily.AICODE
 }

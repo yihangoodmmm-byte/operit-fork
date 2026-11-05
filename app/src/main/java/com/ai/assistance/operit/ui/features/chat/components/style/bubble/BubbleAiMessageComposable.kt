@@ -358,12 +358,9 @@ fun BubbleAiMessageComposable(
                         contentScale = ContentScale.Fit,
                     )
                 } else {
-                    val bubbleShape =
-                        if (bubbleRoundedCornersEnabled) {
-                            RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
-                        } else {
-                            RoundedCornerShape(0.dp)
-                        }
+                    // AiCode 扁平文档流：助手正文直接铺在页面底色上，**不再有气泡形状**。
+                    // 原实现是 RoundedCornerShape(4,20,20,20) 的"纸飞机尾巴"，那是最像 Operit 的特征之一。
+                    val bubbleShape = RoundedCornerShape(0.dp)
                     val bubbleModifier =
                         Modifier
                             .widthIn(max = maxBubbleWidth)
@@ -563,12 +560,9 @@ fun BubbleAiMessageComposable(
                     )
                 } else {
                     // Message bubble
-                    val bubbleShape =
-                        if (bubbleRoundedCornersEnabled) {
-                            RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
-                        } else {
-                            RoundedCornerShape(0.dp)
-                        }
+                    // AiCode 扁平文档流：助手正文直接铺在页面底色上，**不再有气泡形状**。
+                    // 原实现是 RoundedCornerShape(4,20,20,20) 的"纸飞机尾巴"，那是最像 Operit 的特征之一。
+                    val bubbleShape = RoundedCornerShape(0.dp)
                     val bubbleModifier =
                         Modifier
                             .widthIn(max = maxBubbleWidth)
