@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -204,6 +205,16 @@ fun SettingsScreen(
                 )
         }
 }
+/**
+ * 分区（AiCode 列表风格）。
+ *
+ * 原来是「彩色图标 + 粗标题 + 一张圆角卡片」，改成 AiCode 的做法：
+ * 分区标题是一行**小号全大写字距标签**（不配图标、不用主题色、不加粗到 Bold），
+ * 下面直接是行，行之间靠 1dp 细线分隔，**不再有卡片容器**。
+ *
+ * 这样整页看起来是一张连续的设置清单，而不是一堆卡片堆叠——这是 AiCode 与
+ * Operit 在设置页上最明显的观感差异。
+ */
 @Composable
 private fun SettingsSection(
         title: String,
@@ -211,42 +222,29 @@ private fun SettingsSection(
         containerColor: Color,
         content: @Composable ColumnScope.() -> Unit
 ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-                // 分组标题
-                Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                ) {
-                        Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                        )
-                }
-                
-                // 内容区域
-                Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                                containerColor = containerColor
-                        )
-                ) {
-                        Column(
-                                modifier = Modifier.padding(12.dp),
-                                content = content
-                        )
-                }
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 18.dp)) {
+                // 分区标签：小号、加字距、弱化色（AiCode SectionLabel）
+                Text(
+                        text = title,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.8.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, top = 10.dp, bottom = 6.dp)
+                )
+                Column(modifier = Modifier.fillMaxWidth(), content = content)
         }
 }
 
+/**
+ * 设置行（AiCode 列表风格）。
+ *
+ * 形态：52dp 行高、左右 4dp 内边距、**底部 1dp 细线**（outlineVariant）、
+ * 图标 20dp 用 onSurfaceVariant（不再用主题色聚焦注意力）、主标题 14sp、
+ * 副标题 12sp 弱化、右侧 chevron 16dp。
+ *
+ * 与原来的差别：没有圆角、没有点击底色块，整行是清单的一格。
+ */
 @Composable
 private fun CompactSettingsItem(
         title: String,
@@ -254,45 +252,56 @@ private fun CompactSettingsItem(
         icon: ImageVector,
         onClick: () -> Unit
 ) {
-        Row(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
-                        .clickable { onClick() }
-                        .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-        ) {
-                Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(12.dp))
-                
-                Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                                text = title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+        Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 52.dp)
+                                .clickable { onClick() }
+                                .padding(horizontal = 4.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                ) {
+                        Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
                         )
-                        Text(
-                                text = subtitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                        text = title,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                )
+                                if (subtitle.isNotEmpty()) {
+                                        Text(
+                                                text = subtitle,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontSize = 12.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                        )
+                                }
+                        }
+
+                        Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(16.dp)
                         )
                 }
-                
-                Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                // 行间细线：AiCode 扁平列表唯一的分隔手段
+                HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
                 )
         }
 }
