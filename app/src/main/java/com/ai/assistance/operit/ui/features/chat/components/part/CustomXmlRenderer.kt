@@ -4,6 +4,12 @@ import android.webkit.WebView
 import android.webkit.WebSettings
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -722,7 +728,18 @@ class CustomXmlRenderer(
         return "https://www.google.com/s2/favicons?sz=64&domain=$host"
     }
 
-    /** 渲染 <think> 和 <thinking> 标签内容 */
+    /**
+     * 渲染 <think> / <thinking>（照 cccodroid 的 `details.think` 移植）。
+     *
+     * cccodroid 的形态：**左侧 2px 竖线**、无底色、无圆角；折叠头是 12px 灰色小字
+     * （`▸ 思考过程` + 字符数），展开后是 12.6px 灰色正文、流式时只渲染尾部、
+     * 超长时给一个「继续渲染（还有 N）」按钮。
+     *
+     * 与 Operit 原来实现的区别（原实现已整段删除，见 git 历史）：
+     * - 原来是一张带底色、带圆角、带 shimmer 高光动画的卡片；现在是一根竖线。
+     * - 原来展开后可以自动滚动跟随；现在按 cccodroid 只渲染尾部，不滚动。
+     * - 原来的标题是「思考过程」四个字；现在附带字符数，便于判断长度。
+     */
     @Composable
     private fun renderThinkContent(
         content: String,
@@ -730,302 +747,128 @@ class CustomXmlRenderer(
         textColor: Color,
         xmlStream: Stream<String>?
     ) {
-        val tagName =
-            if (content.contains("<thinking")) "thinking" else "think"
+        val body = remember(content) { extractThinkBody(content) }
+        val isInProgress = (xmlStream != null) && !isXmlFullyClosed(content)
+        var expanded by remember { mutableStateOf(false) }
+        val thinkRailColor = MaterialTheme.colorScheme.outlineVariant
 
-        var expandThinkingProcess by rememberLocal(key = "expand_thinking_process_default", defaultValue = false)
-        // 仅在"流仍然存在"且标签未闭合时，才判定为进行中。
-        // 这样用户取消后（最终消息 contentStream = null）会自动按完成态折叠。
-        val isThinkingInProgress = (xmlStream != null) && !isXmlFullyClosed(content)
-        val thinkingTitleBaseColor = textColor.copy(alpha = 0.7f)
-        val thinkingTitleShimmerShiftPx =
-            if (isThinkingInProgress) {
-                val titleHighlightTransition =
-                    rememberInfiniteTransition(label = "thinkingTitleHighlight")
-                val highlightShift by
-                    titleHighlightTransition.animateFloat(
-                        initialValue = -140f,
-                        targetValue = 220f,
-                        animationSpec =
-                            infiniteRepeatable(
-                                animation =
-                                    tween(
-                                        durationMillis = 1400,
-                                        easing = LinearEasing
-                                    ),
-                                repeatMode = RepeatMode.Restart
-                            ),
-                        label = "thinkingTitleHighlightShift"
-                    )
-                highlightShift
-            } else {
-                null
-            }
-
-        var expanded by remember { mutableStateOf(initialThinkingExpanded) }
-        var thinkBodyFullHeight by
-            remember { mutableStateOf(allowExpandedThinkingFullHeight && initialThinkingExpanded) }
-        var thinkExpandSession by remember { mutableIntStateOf(0) }
-        var skipCollapseAnimationOnce by remember { mutableStateOf(false) }
-        val scrollState = rememberScrollState()
-        var autoScrollEnabled by remember { mutableStateOf(true) }
-        var userHasInteractedWithScroll by remember { mutableStateOf(false) }
-        var isProgrammaticScroll by remember { mutableStateOf(false) }
-        val thinkVisibilityState = remember { MutableTransitionState(initialThinkingExpanded) }
-        val thinkBodyToggleInteractionSource = remember { MutableInteractionSource() }
-
-        val accessibilityDesc = stringResource(R.string.thinking_process_block)
-
-        // 使用LaunchedEffect来初始化和同步状态，避免在快速重组时状态被意外重置
-        LaunchedEffect(isThinkingInProgress, expandThinkingProcess) {
-            val targetExpanded = if (initialThinkingExpanded && !isThinkingInProgress) {
-                true
-            } else if (isThinkingInProgress) {
-                // 思考过程中，状态由用户偏好决定
-                expandThinkingProcess
-            } else {
-                // 思考结束后，总是折叠
-                skipCollapseAnimationOnce = true
-                false
-            }
-            if (targetExpanded && !expanded) {
-                thinkExpandSession += 1
-            }
-            expanded = targetExpanded
-        }
-
-        LaunchedEffect(expanded, skipCollapseAnimationOnce) {
-            if (!expanded && skipCollapseAnimationOnce) {
-                // 仅跳过一次自动收起动画，随后恢复手动交互动画
-                skipCollapseAnimationOnce = false
-            }
-        }
-
-        LaunchedEffect(expanded) {
-            thinkVisibilityState.targetState = expanded
-        }
-
-        LaunchedEffect(expanded) {
-            if (expanded) {
-                autoScrollEnabled = true
-                userHasInteractedWithScroll = false
-            }
-        }
-
-        LaunchedEffect(expanded, scrollState.isScrollInProgress) {
-            if (!expanded) return@LaunchedEffect
-
-            if (scrollState.isScrollInProgress) {
-                if (!isProgrammaticScroll) {
-                    userHasInteractedWithScroll = true
-                }
-                return@LaunchedEffect
-            }
-
-            // 只有用户真的滚动过之后，才根据是否在底部来切换“自动贴底”。
-            // 否则在内容第一次溢出时 scrollState.value 仍为 0，会被误判为“不在底部”。
-            if (userHasInteractedWithScroll && !isProgrammaticScroll) {
-                val threshold = 80
-                val atBottom = scrollState.value >= (scrollState.maxValue - threshold)
-                autoScrollEnabled = atBottom
-            }
-        }
-
-        val shouldComposeThinkBody =
-            thinkVisibilityState.currentState || thinkVisibilityState.targetState
-        val thinkText =
-            if (shouldComposeThinkBody) {
-                extractContentFromXml(content, tagName).trim()
-            } else {
-                ""
-            }
-        val thinkMarkdownStream =
-            remember(shouldComposeThinkBody, thinkExpandSession, xmlStream, tagName) {
-                if (!shouldComposeThinkBody || thinkExpandSession <= 0) {
-                    null
-                } else {
-                    xmlStream?.let { createThinkMarkdownCharStream(it, tagName) }
-                }
-            }
-        val useStreamingThinkMarkdown = shouldComposeThinkBody && isThinkingInProgress && (thinkMarkdownStream != null)
-        val renderExpandedThinkWithFullHeight =
-            (allowExpandedThinkingFullHeight || thinkBodyFullHeight) && expanded
-
-        LaunchedEffect(expanded, thinkText) {
-            if (shouldComposeThinkBody && autoScrollEnabled) {
-                isProgrammaticScroll = true
-                try {
-                    withFrameNanos { }
-                    scrollState.scrollTo(scrollState.maxValue)
-                } finally {
-                    isProgrammaticScroll = false
-                }
-            }
-        }
+        // cccodroid 的 THINK_CAP / THINK_TAIL：默认只渲染尾部，展开后按批渲染。
+        val thinkCap = 4000
+        val thinkTail = 600
+        var shown by remember { mutableIntStateOf(thinkCap) }
 
         Column(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(start = 0.dp, top = 0.dp, end = 0.dp, bottom = 2.dp)
-                    .semantics(mergeDescendants = true) {
-                        contentDescription = if (expanded && thinkText.isNotBlank()) {
-                            "$accessibilityDesc\n$thinkText"
-                        } else {
-                            accessibilityDesc
-                        }
-                    }
-            ) {
-                val rotation by
-                    animateFloatAsState(
-                        targetValue = if (expanded) 90f else 0f,
-                        animationSpec =
-                            if (skipCollapseAnimationOnce && !expanded) snap()
-                            else tween(durationMillis = 300),
-                        label = "arrowRotation"
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .drawBehind {
+                    // 左侧 2px 竖线，cccodroid 的 .think border-inline-start
+                    val w = 2.dp.toPx()
+                    drawRect(
+                        color = thinkRailColor,
+                        topLeft = Offset(0f, 0f),
+                        size = Size(w, size.height)
                     )
-
-                CanvasExpandableHeaderRow(
-                    title = stringResource(id = R.string.thinking_process),
-                    semanticDescription =
-                        if (expanded) stringResource(R.string.common_collapse) else stringResource(R.string.common_expand),
-                    expanded = expanded,
-                    titleColor = thinkingTitleBaseColor,
-                    rotationDegrees = rotation,
-                    shimmerShiftPx = thinkingTitleShimmerShiftPx,
-                    onClick = {
-                        skipCollapseAnimationOnce = false
-                        val newExpandedValue = !expanded
-                        if (newExpandedValue) {
-                            thinkExpandSession += 1
-                        }
-                        expanded = newExpandedValue
-                        if (isThinkingInProgress) {
-                            expandThinkingProcess = newExpandedValue
-                        }
-                    },
+                }
+                .padding(start = 12.dp)
+        ) {
+            // 折叠头：▸ 思考过程 + 字符数
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { expanded = !expanded }
+                        .padding(vertical = 6.dp, horizontal = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val rotation by animateFloatAsState(
+                    targetValue = if (expanded) 90f else 0f,
+                    animationSpec = tween(150),
+                    label = "think-chevron"
                 )
+                Text(
+                    text = "\u25B8",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.rotate(rotation)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = stringResource(R.string.thinking_process_block),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = formatCharCount(body.length),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                if (isInProgress) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(5.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
 
-                AnimatedVisibility(
-                    visibleState = thinkVisibilityState,
-                    enter =
-                        androidx.compose.animation.expandVertically(
-                            animationSpec = tween(durationMillis = 220),
-                            expandFrom = Alignment.Top
-                        ) + androidx.compose.animation.fadeIn(
-                            animationSpec = tween(durationMillis = 220)
-                        ),
-                    exit =
-                        if (skipCollapseAnimationOnce && !expanded) {
-                            ExitTransition.None
+            AnimatedVisibility(visible = expanded) {
+                Column(modifier = Modifier.padding(start = 2.dp, bottom = 10.dp)) {
+                    val rendered =
+                        if (isInProgress) {
+                            // 流式进行中：只渲染尾部，避免长文本每帧全量重排
+                            if (body.length > thinkTail) "…" + body.takeLast(thinkTail) else body
+                        } else if (body.length > shown) {
+                            body.take(shown) + "\n\n…（还有 " + formatCharCount(body.length - shown) + " 没渲染）"
                         } else {
-                            androidx.compose.animation.shrinkVertically(
-                                animationSpec = tween(durationMillis = 220),
-                                shrinkTowards = Alignment.Top
-                            ) + androidx.compose.animation.fadeOut(
-                                animationSpec = tween(durationMillis = 220)
-                            )
+                            body
                         }
-                ) {
-                    if (shouldComposeThinkBody && (thinkText.isNotBlank() || thinkMarkdownStream != null)) {
-                            val hierarchyLineColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
-                            val thinkContainerModifier =
-                                Modifier.fillMaxWidth()
-                                    .padding(top = 2.dp, bottom = 4.dp)
-                                    .animateContentSize(
-                                        animationSpec = tween(durationMillis = 240)
-                                    )
-                                    .then(
-                                        if (renderExpandedThinkWithFullHeight) {
-                                            Modifier
-                                        } else {
-                                            Modifier.heightIn(max = 300.dp)
-                                        }
-                                    )
-                            val thinkContentModifier =
-                                Modifier.fillMaxWidth()
-                                    .then(
-                                        if (renderExpandedThinkWithFullHeight) {
-                                            Modifier
-                                        } else {
-                                            Modifier.verticalScroll(scrollState)
-                                        }
-                                    )
-                                    .clickable(
-                                        enabled = expanded,
-                                        interactionSource = thinkBodyToggleInteractionSource,
-                                        indication = null,
-                                    ) {
-                                        thinkBodyFullHeight = !thinkBodyFullHeight
-                                    }
-                                    .padding(start = 24.dp)
-                            Box(
-                                modifier = thinkContainerModifier
-                            ) {
-                                CanvasIndentedGuide(
-                                    modifier = Modifier.matchParentSize(),
-                                    lineColor = hierarchyLineColor,
-                                )
-
-                                Box(
-                                    modifier = thinkContentModifier
-                                ) {
-                                    if (useStreamingThinkMarkdown) {
-                                            val baseTypography = MaterialTheme.typography
-                                            val thinkTypography =
-                                                remember(baseTypography) {
-                                                    baseTypography.copy(
-                                                        bodyMedium = baseTypography.bodySmall
-                                                    )
-                                                }
-                                            MaterialTheme(
-                                                colorScheme = MaterialTheme.colorScheme,
-                                                typography = thinkTypography,
-                                                shapes = MaterialTheme.shapes
-                                            ) {
-                                                StreamMarkdownRenderer(
-                                                    markdownStream = thinkMarkdownStream!!,
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    textColor = textColor.copy(alpha = 0.6f),
-                                                    backgroundColor = Color.Transparent,
-                                                    enableDialogs = enableDialogs,
-                                                    fillMaxWidth = true
-                                                )
-                                            }
-                                    } else if (thinkText.isNotBlank()) {
-                                            val baseTypography = MaterialTheme.typography
-                                            val thinkTypography =
-                                                remember(baseTypography) {
-                                                    baseTypography.copy(
-                                                        bodyMedium = baseTypography.bodySmall
-                                                    )
-                                                }
-                                            MaterialTheme(
-                                                colorScheme = MaterialTheme.colorScheme,
-                                                typography = thinkTypography,
-                                                shapes = MaterialTheme.shapes
-                                            ) {
-                                                StreamMarkdownRenderer(
-                                                    content = thinkText,
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    textColor = textColor.copy(alpha = 0.6f),
-                                                    backgroundColor = Color.Transparent,
-                                                    enableDialogs = enableDialogs,
-                                                    fillMaxWidth = true
-                                                )
-                                            }
-                                    } else {
-                                        Text(
-                                            text = thinkText,
-                                            color = textColor.copy(alpha = 0.6f),
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-                            }
+                    Text(
+                        text = rendered,
+                        fontSize = 12.6.sp,
+                        lineHeight = 19.sp,
+                        color = textColor.copy(alpha = 0.72f)
+                    )
+                    if (!isInProgress && body.length > shown) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "继续渲染（还有 " + formatCharCount(body.length - shown) + "）",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { shown += thinkCap }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
                     }
                 }
             }
+        }
     }
+
+    /** 取 <think>…</think> 之间的正文；未闭合时取其后全部。 */
+    private fun extractThinkBody(content: String): String {
+        val open = content.indexOf('>')
+        if (open < 0) return content
+        val rest = content.substring(open + 1)
+        val close = rest.indexOf("</think")
+        val close2 = rest.indexOf("</thinking")
+        val end =
+            when {
+                close >= 0 && close2 >= 0 -> minOf(close, close2)
+                close >= 0 -> close
+                close2 >= 0 -> close2
+                else -> rest.length
+            }
+        return rest.substring(0, end).trim()
+    }
+
 
     private fun createThinkMarkdownCharStream(
         xmlStream: Stream<String>,
@@ -1778,3 +1621,12 @@ class CustomXmlRenderer(
         // 实际的情感触发由 AvatarEmotionManager.analyzeEmotion() 处理
     }
 }
+
+
+/** 字符数紧凑显示（cccodroid 的 fmtChars 同款）：1234 -> "1.2k"。 */
+internal fun formatCharCount(count: Int): String =
+    when {
+        count >= 10_000 -> String.format(java.util.Locale.US, "%.0fk", count / 1000.0)
+        count >= 1_000 -> String.format(java.util.Locale.US, "%.1fk", count / 1000.0)
+        else -> "$count"
+    }

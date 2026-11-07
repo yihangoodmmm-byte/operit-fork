@@ -7,8 +7,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +37,16 @@ import com.ai.assistance.operit.util.ChatMarkupRegex
 import com.ai.assistance.operit.util.markdown.MarkdownNodeStable
 import com.ai.assistance.operit.util.markdown.MarkdownProcessorType
 import com.ai.assistance.operit.util.stream.Stream
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.sp
 
 class ThinkToolsXmlNodeGrouper(
     private val showThinkingProcess: Boolean,
@@ -322,18 +338,52 @@ class ThinkToolsXmlNodeGrouper(
                 ).value
             }
 
-            CanvasExpandableHeaderRow(
-                title = titleText,
-                semanticDescription = if (expanded) "Collapse" else "Expand",
-                expanded = expanded,
-                titleColor = textColor.copy(alpha = 0.7f),
-                rotationDegrees = rotation,
-                onClick = {
-                    val newExpanded = !expanded
-                    expanded = newExpanded
-                    userOverride = newExpanded
-                },
-            )
+            // ── cccodroid 的 .tool-sub / .ts-head 形态 ──────────────────
+            // 左侧 2px 竖线、无底色；折叠头是 12px 灰色小字 + 折叠箭头 + 运行状态点。
+            // 原来是一个带底色的胶囊头，和思考块、工具卡挤在一起分不清层次。
+            val railColor = MaterialTheme.colorScheme.outlineVariant
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .drawBehind {
+                            drawRect(
+                                color = railColor,
+                                topLeft = Offset(0f, 0f),
+                                size = Size(2.dp.toPx(), size.height)
+                            )
+                        }
+                        .clickable {
+                            val newExpanded = !expanded
+                            expanded = newExpanded
+                            userOverride = newExpanded
+                        }
+                        .padding(start = 12.dp, top = 6.dp, bottom = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "\u25B8",
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.rotate(rotation)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = titleText,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (hasLiveXmlStream) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(5.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
 
             AnimatedVisibility(
                 visible = expanded,
