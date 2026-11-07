@@ -30,6 +30,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.ai.assistance.operit.ui.components.CustomScaffold
+import com.ai.assistance.operit.ui.features.chat.v2.CccComposer
+import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
+import com.ai.assistance.operit.ui.features.chat.v2.formatTokenCount as cccFormatK
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -405,6 +408,23 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
 
     // UI state
     val scrollState = rememberScrollState()
+    // V2 列表状态（LazyColumn）。保留上面的 scrollState 供其它逻辑引用。
+    val cccListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    // 输入区状态行用到的上下文用量（与底栏 chip 同源：currentWindowSize / maxWindowSizeInK）
+    // AIChatScreen 本身没有收集这两个值（原实现由输入区组件内部收集），这里就地取
+    // 用 .value 而不是 by 委托：与本文件其它 collectAsState 用法保持一致，
+    // 也避免在编译期因委托类型推断失败而连坐后面的引用。
+    val cccMaxWindowSizeInK = actualViewModel.maxWindowSizeInK.collectAsState().value
+    val cccCurrentWindowSize = actualViewModel.currentWindowSize.collectAsState().value
+    val cccModelName = actualViewModel.modelName.collectAsState().value
+    val cccContextLimit = (cccMaxWindowSizeInK * 1024).toLong().coerceAtLeast(0L)
+    val cccContextPercent =
+        if (cccContextLimit > 0L) {
+            ((cccCurrentWindowSize.toDouble() / cccContextLimit.toDouble()) * 100.0).coerceIn(0.0, 999.0).toInt()
+        } else {
+            0
+        }
+    val cccContextText = "上下文 " + cccContextPercent + "% · " + cccFormatK(cccCurrentWindowSize) + "/" + cccFormatK(cccContextLimit)
     val historyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val characterCardManager = remember { CharacterCardManager.getInstance(context) }
@@ -933,65 +953,15 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                 .matchParentSize()
                                 .graphicsLayer { translationY = -chatViewportTranslationYPx }
                     ) {
-                        ChatScreenContent(
+                        // -- V2: message area rendered by cccodroid-style list --
+                        // ChatScreenContent was a 100+ param mega container (top bar,
+                        // history selector, scroll button, list, overlays). Replaced by
+                        // CccMessageList: document flow, 16dp gaps, no outer chrome.
+                        CccMessageList(
+                                messages = chatHistory,
+                                listState = cccListState,
                                 modifier = Modifier.fillMaxSize(),
-                                paddingValues =
-                                        PaddingValues(), // Padding is already handled by the parent Box
-                                bottomInset = bottomBarHeightDp,
-                                actualViewModel = actualViewModel,
-                                enableMessageDialogs = !isFloatingMode,
-                                showChatHistorySelector = showChatHistorySelector,
-                                chatHistory = chatHistory,
-                                isLoading = isLoading,
-                                userMessageColor = userMessageColor,
-                                aiMessageColor = aiMessageColor,
-                                userTextColor = userTextColor,
-                                aiTextColor = aiTextColor,
-                                systemMessageColor = systemMessageColor,
-                                systemTextColor = systemTextColor,
-                                thinkingBackgroundColor = thinkingBackgroundColor,
-                                thinkingTextColor = thinkingTextColor,
-                                hasBackgroundImage = effectiveHasBackgroundImage,
-                                editingMessageIndex = editingMessageIndex,
-                                editingMessageContent = editingMessageContent,
-                                chatScreenGestureConsumed = chatScreenGestureConsumed,
-                                onChatScreenGestureConsumed = onChatScreenGestureConsumedChange,
-                                currentDrag = currentDrag,
-                                onCurrentDragChange = onCurrentDragChange,
-                                verticalDrag = verticalDrag,
-                                onVerticalDragChange = onVerticalDragChange,
-                                dragThreshold = dragThreshold,
-                                scrollState = scrollState,
-                                autoScrollToBottom = autoScrollToBottom,
-                                onAutoScrollToBottomChange = onAutoScrollToBottomChange,
-                                coroutineScope = coroutineScope,
-                                chatHistories = chatHistories,
-                                currentChatId = currentChatId ?: "",
-                                chatHeaderHistoryIconColor = chatHeaderHistoryIconColor,
-                                chatHeaderPipIconColor = chatHeaderPipIconColor,
-                                chatHeaderOverlayMode = chatHeaderOverlayMode,
-                                chatStyle = chatStyle, // Pass chat style
-                                cursorUserBubbleLiquidGlass = cursorUserBubbleLiquidGlass,
-                                cursorUserBubbleWaterGlass = cursorUserBubbleWaterGlass,
-                                bubbleUserBubbleLiquidGlass = bubbleUserBubbleLiquidGlass,
-                                bubbleUserBubbleWaterGlass = bubbleUserBubbleWaterGlass,
-                                bubbleAiBubbleLiquidGlass = bubbleAiBubbleLiquidGlass,
-                                bubbleAiBubbleWaterGlass = bubbleAiBubbleWaterGlass,
-                                historyListState = historyListState,
-                                showCharacterSelector = showCharacterSelector,
-                                onShowCharacterSelectorChange = { showCharacterSelector = it },
-                                onSwitchCharacter = onSwitchCharacter,
-                                onOpenCharacterSettings = onNavigateToModelPrompts,
-                                chatAreaHorizontalPadding = chatAreaHorizontalPadding,
-                                bubbleUserImageStyle = bubbleUserImageStyle,
-                                bubbleAiImageStyle = bubbleAiImageStyle,
-                                bubbleUserRoundedCornersEnabled = bubbleUserRoundedCornersEnabled,
-                                bubbleAiRoundedCornersEnabled = bubbleAiRoundedCornersEnabled,
-                                bubbleUserContentPaddingLeft = bubbleUserContentPaddingLeft,
-                                bubbleUserContentPaddingRight = bubbleUserContentPaddingRight,
-                                bubbleAiContentPaddingLeft = bubbleAiContentPaddingLeft,
-                                bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
-                                showChatFloatingDotsAnimation = showChatFloatingDotsAnimation,
+                                enableDialogs = !isFloatingMode,
                         )
 
                         if (inputStyle == UserPreferencesManager.INPUT_STYLE_CLASSIC) {
@@ -1876,166 +1846,23 @@ private fun ChatInputBottomBar(
         }
     }
 
-    if (inputStyle == UserPreferencesManager.INPUT_STYLE_AGENT) {
-        AgentChatInputSection(
-                actualViewModel = actualViewModel,
-                userMessage = userMessage,
-                onUserMessageChange = { value -> handleUserMessageChange(value) },
-                enableEnterToSend = enableEnterToSend,
-                onSendMessage = sendMessage,
-                onQueueMessage = { enqueueDraftToPendingQueue() },
-                onCancelMessage = actualViewModel::cancelCurrentMessage,
-                isLoading = isLoading,
-                inputState = inputState,
-                allowTextInputWhileProcessing = true,
-                onAttachmentRequest = actualViewModel::handleAttachment,
-                attachments = attachments,
-                onRemoveAttachment = actualViewModel::removeAttachment,
-                onInsertAttachment = actualViewModel::insertAttachmentReference,
-                onAttachScreenContent = actualViewModel::captureScreenContent,
-                onAttachNotifications = actualViewModel::captureNotifications,
-                onAttachLocation = actualViewModel::captureLocation,
-                onAttachMemory = onShowMemoryFolderDialog,
-                onAttachPackage = actualViewModel::attachPackage,
-                onTakePhoto = actualViewModel::handleTakenPhoto,
-                hasBackgroundImage = hasBackgroundImage,
-                chatInputTransparent = chatInputTransparent,
-                chatInputFloating = chatInputFloating,
-                chatInputLiquidGlass = chatInputLiquidGlass,
-                chatInputWaterGlass = chatInputWaterGlass,
-                externalAttachmentPanelState = attachmentPanelState,
-                onAttachmentPanelStateChange = actualViewModel::updateAttachmentPanelState,
-                showInputProcessingStatus = showInputProcessingStatus,
-                enableTools = enableTools,
-                replyToMessage = replyToMessage,
-                onClearReply = actualViewModel::clearReplyToMessage,
-                isWorkspaceOpen = isWorkspaceOpen,
-                enableThinkingMode = enableThinkingMode,
-                onToggleThinkingMode = actualViewModel::toggleThinkingMode,
-                thinkingOptionId = thinkingOptionId,
-                onThinkingOptionIdChange = actualViewModel::updateThinkingOptionId,
-                enableMaxContextMode = enableMaxContextMode,
-                onToggleEnableMaxContextMode = actualViewModel::toggleEnableMaxContextMode,
-                currentChatId = currentChatId,
-                featureStates = featureStates,
-                onToggleFeature = actualViewModel::toggleFeature,
-                inputMenuRuntime = inputMenuRuntime,
-                permissionLevel = permissionLevel,
-                onSetPermissionLevel = actualViewModel::setMasterPermissionLevel,
-                enableMemoryAutoUpdate = enableMemoryAutoUpdate,
-                onToggleMemoryAutoUpdate = actualViewModel::toggleMemoryAutoUpdate,
-                isAutoReadEnabled = isAutoReadEnabled,
-                onToggleAutoRead = actualViewModel::toggleAutoRead,
-                onToggleTools = actualViewModel::toggleTools,
-                disableStreamOutput = disableStreamOutput,
-                onToggleDisableStreamOutput = actualViewModel::toggleDisableStreamOutput,
-                disableUserPreferenceDescription = disableUserPreferenceDescription,
-                onToggleDisableUserPreferenceDescription =
-                    actualViewModel::toggleDisableUserPreferenceDescription,
-                onNavigateToMemoryBase = onNavigateToMemoryBase,
-                onNavigateToPackageManager = onNavigateToPackageManager,
-                toolPromptVisibility = toolPromptVisibility,
-                onSaveToolPromptVisibilityMap = actualViewModel::saveToolPromptVisibilityMap,
-                toolOrder = toolPromptOrder,
-                onSaveToolOrder = actualViewModel::saveToolPromptOrder,
-                onManualMemoryUpdate = actualViewModel::manuallyUpdateMemory,
-                onNavigateToModelConfig = onNavigateToModelConfig,
-                characterCardBoundChatModelConfigId = characterCardBoundChatModelConfigId,
-                characterCardBoundChatModelIndex = characterCardBoundChatModelIndex,
-                characterCardBoundMemoryProfileId = characterCardBoundMemoryProfileId,
-                pendingQueueMessages = pendingQueueMessages,
-                isPendingQueueExpanded = isPendingQueueExpanded,
-                onPendingQueueExpandedChange = { expanded ->
-                    currentChatId?.let { chatId ->
-                        actualViewModel.setPendingQueueExpanded(chatId, expanded)
-                    }
-                },
-                onDeletePendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)
-                },
-                onEditPendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)?.let { queueItem ->
-                        val text = queueItem.text
-                        actualViewModel.updateUserMessage(
-                            TextFieldValue(
-                                text = text,
-                                selection = TextRange(text.length),
-                            ),
-                        )
-                    }
-                },
-                onSendPendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)?.let { queueItem ->
-                        currentChatId?.let { chatId ->
-                            sendQueuedItemNow(chatId, queueItem, true)
-                        }
-                    }
-                },
-        )
-    } else {
-        ClassicChatInputSection(
-                actualViewModel = actualViewModel,
-                userMessage = userMessage,
-                onUserMessageChange = { value -> handleUserMessageChange(value) },
-                enableEnterToSend = enableEnterToSend,
-                onSendMessage = sendMessage,
-                onQueueMessage = { enqueueDraftToPendingQueue() },
-                onCancelMessage = actualViewModel::cancelCurrentMessage,
-                isLoading = isLoading,
-                inputState = inputState,
-                allowTextInputWhileProcessing = true,
-                onAttachmentRequest = actualViewModel::handleAttachment,
-                attachments = attachments,
-                onRemoveAttachment = actualViewModel::removeAttachment,
-                onInsertAttachment = actualViewModel::insertAttachmentReference,
-                onAttachScreenContent = actualViewModel::captureScreenContent,
-                onAttachNotifications = actualViewModel::captureNotifications,
-                onAttachLocation = actualViewModel::captureLocation,
-                onAttachMemory = onShowMemoryFolderDialog,
-                onAttachPackage = actualViewModel::attachPackage,
-                onTakePhoto = actualViewModel::handleTakenPhoto,
-                hasBackgroundImage = hasBackgroundImage,
-                chatInputTransparent = chatInputTransparent,
-                chatInputFloating = chatInputFloating,
-                chatInputLiquidGlass = chatInputLiquidGlass,
-                chatInputWaterGlass = chatInputWaterGlass,
-                externalAttachmentPanelState = attachmentPanelState,
-                onAttachmentPanelStateChange = actualViewModel::updateAttachmentPanelState,
-                showInputProcessingStatus = showInputProcessingStatus,
-                enableTools = enableTools,
-                replyToMessage = replyToMessage,
-                onClearReply = actualViewModel::clearReplyToMessage,
-                isWorkspaceOpen = isWorkspaceOpen,
-                pendingQueueMessages = pendingQueueMessages,
-                isPendingQueueExpanded = isPendingQueueExpanded,
-                onPendingQueueExpandedChange = { expanded ->
-                    currentChatId?.let { chatId ->
-                        actualViewModel.setPendingQueueExpanded(chatId, expanded)
-                    }
-                },
-                onDeletePendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)
-                },
-                onEditPendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)?.let { queueItem ->
-                        val text = queueItem.text
-                        actualViewModel.updateUserMessage(
-                            TextFieldValue(
-                                text = text,
-                                selection = TextRange(text.length),
-                            ),
-                        )
-                    }
-                },
-                onSendPendingQueueMessage = { id ->
-                    removePendingQueueMessageById(id)?.let { queueItem ->
-                        currentChatId?.let { chatId ->
-                            sendQueuedItemNow(chatId, queueItem, true)
-                        }
-                    }
-                },
-        )
-    }
+    // -- V2: composer (cccocroid structure) --------------------------------
+    // Old branches (Agent / Classic) were two 3000+ line sections with model row,
+    // tool row, attachment row stacked above the field. Replaced by a single box
+    // with the buttons inside it, and one status line below.
+    CccComposer(
+            value = userMessage,
+            onValueChange = { handleUserMessageChange(it) },
+            onSend = { sendMessage() },
+            canSend = userMessage.text.isNotBlank(),
+            isProcessing = isLoading,
+            onStop = { actualViewModel.cancelCurrentMessage() },
+            placeholder = stringResource(id = R.string.input_question_hint),
+            modelLabel = cccModelName.ifBlank { "未选择模型" },
+            contextPercent = cccContextPercent,
+            contextText = cccContextText,
+            onModelClick = { onNavigateToModelConfig() },
+    )
 }
 
 @Composable
