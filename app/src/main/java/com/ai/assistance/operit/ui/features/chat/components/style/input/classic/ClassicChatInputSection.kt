@@ -534,31 +534,51 @@ fun ClassicChatInputSection(
                     },
                     enabled = classicInputEnabled,
                     decorationBox = { innerTextField ->
+                        // ── iOS 化 ──────────────────────────────────────────────
+                        // 原来是一个「描边圆角盒 + 右侧塞一个发送按钮」的组合，按钮还在盒子里面，
+                        // 加上外层再套一层添加入口，页面上就出现了三四个圆形/胶囊控件。
+                        // iOS 的做法很收敛：一个圆角输入框，右侧只有一枚发送键（无发送内容时是麦克风）。
+                        // 添加入口改成输入框左侧的「+」，与 iOS 消息输入习惯一致。
                         Row(
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
-                                    .border(
-                                        width = 1.dp,
-                                        color = classicInputBorderColor,
-                                        shape = classicInputShape,
-                                    )
                                     .clip(classicInputShape)
-                                    .background(
-                                        if (inputLiquidGlassEnabled || inputWaterGlassEnabled) {
-                                            Color.Transparent
-                                        } else {
-                                            MaterialTheme.colorScheme.surface
-                                        }
-                                    )
-                                    .padding(start = 14.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            // iOS 输入框左侧的「+」：接管原先外层那个圆形添加按钮
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(30.dp)
+                                        .clip(CircleShape)
+                                        .clickable(
+                                            enabled = true,
+                                            onClick = {
+                                                setShowAttachmentPanel(!showAttachmentPanel)
+                                            }
+                                        ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = context.getString(R.string.add_attachment),
+                                    tint =
+                                        if (showAttachmentPanel) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                             Box(
                                 modifier =
                                     Modifier
                                         .weight(1f)
-                                        .padding(end = 6.dp, top = 7.dp, bottom = 7.dp),
+                                        .padding(start = 4.dp, end = 6.dp, top = 7.dp, bottom = 7.dp),
                                 contentAlignment = Alignment.CenterStart,
                             ) {
                                 if (userMessage.text.isEmpty()) {
@@ -593,45 +613,7 @@ fun ClassicChatInputSection(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Attachment button (+ 按钮) - 确保圆形
-
-                Box(
-                    modifier =
-                    Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (showAttachmentPanel)
-                                MaterialTheme.colorScheme
-                                    .primary
-                            else
-                                MaterialTheme.colorScheme
-                                    .surfaceVariant
-                        )
-                        .clickable(
-                            enabled = true,
-                            onClick = {
-                                setShowAttachmentPanel(
-                                    !showAttachmentPanel
-                                )
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = context.getString(R.string.add_attachment),
-                        tint =
-                        if (showAttachmentPanel)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme
-                                .onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
+                // iOS 化：外层不再单列一个「+」圆钮（已挪进输入框左侧），也不再有圆形底色块。
 
                 // Send button (发送按钮) - 确保圆形
                 Box(

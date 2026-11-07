@@ -176,7 +176,9 @@ fun AppContent(
     val themeSnapshot = LocalThemePreferenceSnapshot.current
     val useBackgroundImage = themeSnapshot.useBackgroundImage
     val backgroundImageUri = themeSnapshot.backgroundImageUri
-    val hasBackgroundImage = useBackgroundImage && backgroundImageUri != null
+    // iOS 化：背景壁纸层下线。玻璃材质已全部改为纯色，壁纸只会把纯色衬得脏；
+    // 真正绘制壁纸的分支由 useBackgroundImage 控制，这里恒为 false 即不再绘制。
+    val hasBackgroundImage = false
 
     // Get toolbar transparency setting
     val toolbarTransparent = themeSnapshot.toolbarTransparent

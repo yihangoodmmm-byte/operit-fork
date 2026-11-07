@@ -596,7 +596,10 @@ sealed class Screen(
                     navigateToToolPermissions = { navigateTo(ToolPermission) },
                     navigateToGitHubAccount = {},
                     navigateToModelConfig = { navigateTo(ModelConfig) },
-                    navigateToThemeSettings = { navigateTo(ThemeSettings) },
+                    // 产品决策：删除主题颜色选择的入口。
+                    // 主题家族改由代码固定，不再暴露给用户；Screen.ThemeSettings 常量保留，
+                    // 以免牵动路由表与其它引用。
+                    navigateToThemeSettings = {},
                     navigateToGlobalDisplaySettings = {},
                     navigateToModelPrompts = { navigateTo(SystemPromptSettings) },
                     navigateToPromptLayers = { navigateTo(PromptLayersSettings) },
@@ -681,7 +684,8 @@ sealed class Screen(
             onError: (String) -> Unit,
             onGestureConsumed: (Boolean) -> Unit
         ) {
-            UpdateScreen(onNavigateToThemeSettings = { navigateTo(ThemeSettings) })
+            // 同上：主题选择入口已下线
+            UpdateScreen(onNavigateToThemeSettings = {})
         }
     }
 

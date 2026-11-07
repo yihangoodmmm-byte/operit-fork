@@ -49,23 +49,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.R
-import com.ai.assistance.operit.core.tools.AIToolHandler
-import com.ai.assistance.operit.core.tools.packTool.PackageManager
 import com.ai.assistance.operit.core.tools.system.AndroidPermissionLevel
 import com.ai.assistance.operit.core.tools.system.ShizukuAuthorizer
 import com.ai.assistance.operit.core.tools.system.action.ActionListenerFactory
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import com.ai.assistance.operit.data.preferences.androidPermissionPreferences
-import com.ai.assistance.operit.data.repository.WorkflowRepository
 import com.ai.assistance.operit.ui.common.NavItem
 import com.ai.assistance.operit.ui.main.screens.ScreenRouteRegistry
 import com.ai.assistance.operit.ui.main.navigation.NavigationEntrySpec
 import com.ai.assistance.operit.ui.main.screens.Screen
 import com.ai.assistance.operit.ui.theme.liquidGlass
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private data class SidebarPermissionStatus(
         val badgeTextResId: Int
@@ -154,46 +149,13 @@ fun DrawerContent(
                 topContentPadding ?:
                 WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val fixedBottomItems = remember {
-                setOf(NavItem.Settings, NavItem.Help, NavItem.About)
+                setOf(NavItem.Settings)
         }
         val quickActionItems = remember {
                 setOf(NavItem.Packages, NavItem.Workflow)
         }
-        val packageManager = remember(context) {
-                PackageManager.getInstance(context, AIToolHandler.getInstance(context))
-        }
-        val workflowRepository = remember(context) { WorkflowRepository(context) }
-        val activePackageCount by
-                produceState(initialValue = 0, selectedRouteId) {
-                        value =
-                                withContext(Dispatchers.IO) {
-                                        packageManager.getEnabledPackageNames().size
-                                }
-                }
-        val workflowCount by
-                produceState(initialValue = 0, selectedRouteId) {
-                        value =
-                                withContext(Dispatchers.IO) {
-                                        workflowRepository.getAllWorkflows().getOrDefault(emptyList()).size
-                                }
-                }
-        val permissionStatus by
-                produceState(
-                        initialValue =
-                                SidebarPermissionStatus(
-                                        badgeTextResId = R.string.sidebar_status_normal
-                                ),
-                        selectedRouteId,
-                        preferredPermissionLevel
-                ) {
-                        value =
-                                withContext(Dispatchers.IO) {
-                                        resolveSidebarPermissionStatus(
-                                                context = context,
-                                                preferredPermissionLevel = preferredPermissionLevel
-                                        )
-                                }
-                }
+        // iOS 化：统计卡已删除，packageManager / workflowRepository / 三个 produceState
+        // 都不再有消费者（原先每切一次页面要白做三次磁盘与包管理查询），一并移除。
         val primaryNavItems =
                 remember(navItems) {
                         navItems.filterNot {
@@ -250,9 +212,6 @@ fun DrawerContent(
                                 networkType = networkType,
                                 appearance = appearance,
                                 navItems = primaryNavItems,
-                                activePackageCount = activePackageCount,
-                                workflowCount = workflowCount,
-                                permissionStatus = permissionStatus,
                                 onNavItemClick = handleNavItemClick,
                                 onNavigationEntryClick = handleNavigationEntryClick
                         )
@@ -455,69 +414,32 @@ private fun NewSidebarTopContent(
         networkType: String,
         appearance: NavigationDrawerAppearance,
         navItems: List<NavItem>,
-        activePackageCount: Int,
-        workflowCount: Int,
-        permissionStatus: SidebarPermissionStatus,
         onNavItemClick: (NavItem) -> Unit,
         onNavigationEntryClick: (NavigationEntrySpec) -> Unit
 ) {
-        Spacer(modifier = Modifier.height(24.dp))
-
-        SidebarInfoCard(
-                brandName = brandName,
-                isNetworkAvailable = isNetworkAvailable,
-                networkType = networkType,
-                appearance = appearance
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        Row(
-                modifier =
-                        Modifier.fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-                SidebarQuickActionCard(
-                        modifier = Modifier.weight(1f),
-                        icon = NavItem.Packages.icon,
-                        label = stringResource(id = NavItem.Packages.titleResId),
-                        badgeText = activePackageCount.toString(),
-                        selected = selectedItem == NavItem.Packages,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.Packages) }
-                )
-                SidebarQuickActionCard(
-                        modifier = Modifier.weight(1f),
-                        icon = NavItem.ShizukuCommands.icon,
-                        label = stringResource(id = R.string.sidebar_permission_short),
-                        badgeText = stringResource(id = permissionStatus.badgeTextResId),
-                        selected = selectedItem == NavItem.ShizukuCommands,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.ShizukuCommands) }
-                )
-                SidebarQuickActionCard(
-                        modifier = Modifier.weight(1f),
-                        icon = NavItem.Workflow.icon,
-                        label = stringResource(id = NavItem.Workflow.titleResId),
-                        badgeText = workflowCount.toString(),
-                        selected = selectedItem == NavItem.Workflow,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.Workflow) }
-                )
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
+        // ── iOS 化：删除 Operit 的品牌卡与三张统计快捷键 ─────────────────
+        // 原来的「Operit AI + WiFi 胶囊 + 包管理/权限/工作流 三卡」是 Operit 最强的识别特征：
+        // 品牌卡 + 徽章数字 + 权限状态，都在 iOS 的抽屉里不会出现。
+        // 现在只保留一行大标题（对应 iOS 大标题），然后直接是导航列表。
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-                text = stringResource(id = R.string.nav_group_ai_features),
-                style = MaterialTheme.typography.titleSmall,
-                color = appearance.titleColor.copy(alpha = 0.82f),
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 28.dp, end = 20.dp, bottom = 2.dp)
+                text = brandName,
+                style = MaterialTheme.typography.titleLarge,
+                color = appearance.titleColor,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp, end = 20.dp, bottom = 8.dp)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        // 网络状态降级为一行小字，不再是带底色的胶囊/卡片
+        Text(
+                text = if (isNetworkAvailable) networkType else stringResource(id = R.string.network_status_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = appearance.titleColor.copy(alpha = 0.6f),
+                modifier = Modifier.padding(start = 16.dp, end = 20.dp, bottom = 4.dp)
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         navItems.forEach { item ->
                 CompactNavigationDrawerItem(
@@ -530,14 +452,15 @@ private fun NewSidebarTopContent(
         }
         if (pluginEntries.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(14.dp))
+                // 分组标签改用 iOS 的小号大写字距样式
                 Text(
                         text = stringResource(id = R.string.nav_group_plugins),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = appearance.titleColor.copy(alpha = 0.82f),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = appearance.titleColor.copy(alpha = 0.55f),
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 28.dp, end = 20.dp, bottom = 2.dp)
+                        letterSpacing = 0.8.sp,
+                        modifier = Modifier.padding(start = 16.dp, end = 20.dp, top = 8.dp, bottom = 4.dp)
                 )
-                Spacer(modifier = Modifier.height(6.dp))
                 pluginEntries.forEach { entry ->
                         CompactNavigationDrawerItem(
                                 icon = entry.icon,
@@ -550,159 +473,7 @@ private fun NewSidebarTopContent(
         }
 }
 
-@Composable
-private fun SidebarInfoCard(
-        brandName: String,
-        isNetworkAvailable: Boolean,
-        networkType: String,
-        appearance: NavigationDrawerAppearance
-) {
-        Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 6.dp)
-        ) {
-                Text(
-                        text = brandName,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                                letterSpacing = 0.5.sp
-                        ),
-                        color = appearance.titleColor,
-                        fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Surface(
-                        shape = RoundedCornerShape(50),
-                        color = appearance.statusAvailableColor.copy(alpha = 0.12f)
-                ) {
-                        Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                                Box(
-                                        modifier = Modifier
-                                                .size(6.dp)
-                                                .clip(CircleShape)
-                                                .background(
-                                                        if (isNetworkAvailable) Color(0xFF4CAF50)
-                                                        else Color(0xFFEF5350)
-                                                )
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Icon(
-                                        imageVector =
-                                                if (isNetworkAvailable) Icons.Default.Wifi else Icons.Default.WifiOff,
-                                        contentDescription = stringResource(id = R.string.network_status_label),
-                                        tint = appearance.statusAvailableColor,
-                                        modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                        text = networkType,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = appearance.statusAvailableColor,
-                                        fontWeight = FontWeight.Medium
-                                )
-                        }
-                }
-        }
-}
 
-@Composable
-private fun SidebarQuickActionCard(
-        modifier: Modifier = Modifier,
-        icon: androidx.compose.ui.graphics.vector.ImageVector,
-        label: String,
-        badgeText: String,
-        selected: Boolean,
-        appearance: NavigationDrawerAppearance,
-        onClick: () -> Unit
-) {
-        val itemShape = RoundedCornerShape(12.dp)
-        val selectedGlassOverlayColor =
-                if (selected) {
-                        appearance.selectedContainerColor.copy(alpha = 0.18f)
-                } else {
-                        Color.Transparent
-                }
-        val accentColor = appearance.selectedContentColor
-        Surface(
-                modifier =
-                        modifier.height(76.dp)
-                                .liquidGlass(
-                                        enabled = appearance.buttonLiquidGlassEnabled,
-                                        shape = itemShape,
-                                        containerColor = appearance.buttonContainerColor,
-                                        shadowElevation = if (selected) 4.dp else 2.dp,
-                                        borderWidth = 0.5.dp,
-                                        blurRadius = 16.dp,
-                                        overlayAlphaBoost = 0.04f,
-                                        enableLens = false
-                                )
-                                .clip(itemShape)
-                                .background(selectedGlassOverlayColor),
-                onClick = onClick,
-                color =
-                        if (appearance.buttonLiquidGlassEnabled) {
-                                Color.Transparent
-                        } else if (selected) {
-                                appearance.selectedContainerColor
-                        } else {
-                                Color.Transparent
-                        },
-                shape = itemShape
-        ) {
-                Box(modifier = Modifier.fillMaxWidth().height(76.dp)) {
-                        if (selected) {
-                                Box(
-                                        modifier = Modifier
-                                                .align(Alignment.BottomCenter)
-                                                .fillMaxWidth(0.5f)
-                                                .height(2.dp)
-                                                .padding(bottom = 4.dp)
-                                                .clip(RoundedCornerShape(2.dp))
-                                                .background(accentColor.copy(alpha = 0.7f))
-                                )
-                        }
-                        SidebarQuickActionBadge(
-                                text = badgeText,
-                                appearance = appearance,
-                                selected = selected,
-                                modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(top = 6.dp, end = 6.dp)
-                        )
-                        Column(
-                                modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .padding(horizontal = 4.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                        ) {
-                                Icon(
-                                        imageVector = icon,
-                                        contentDescription = null,
-                                        tint =
-                                                if (selected) appearance.selectedContentColor
-                                                else appearance.itemColor,
-                                        modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                        text = label,
-                                        style = MaterialTheme.typography.labelMedium.copy(
-                                                letterSpacing = 0.2.sp
-                                        ),
-                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                                        color =
-                                                if (selected) appearance.selectedContentColor
-                                                else appearance.itemColor,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                )
-                        }
-                }
-        }
-}
 
 @Composable
 private fun SidebarQuickActionBadge(
@@ -742,25 +513,12 @@ private fun DrawerBottomShortcutRow(
         appearance: NavigationDrawerAppearance,
         onNavItemClick: (NavItem) -> Unit
 ) {
+        // iOS 化：底部只保留「设置」一项，关于/使用手册从抽屉移除
+        // （设置页内仍有「关于」入口，功能没有丢失）。
         Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
-                BottomShortcutDrawerItem(
-                        modifier = Modifier.weight(1f),
-                        item = NavItem.About,
-                        selected = selectedItem == NavItem.About,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.About) }
-                )
-                BottomShortcutDrawerItem(
-                        modifier = Modifier.weight(1f),
-                        item = NavItem.Help,
-                        selected = selectedItem == NavItem.Help,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.Help) }
-                )
                 BottomShortcutDrawerItem(
                         modifier = Modifier.weight(1f),
                         item = NavItem.Settings,

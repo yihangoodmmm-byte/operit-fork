@@ -126,7 +126,6 @@ fun ChatScreenContent(
         coroutineScope: CoroutineScope,
         chatHistories: List<ChatHistory>,
         currentChatId: String,
-        chatHeaderTransparent: Boolean,
         chatHeaderHistoryIconColor: Int?,
           chatHeaderPipIconColor: Int?,
           chatHeaderOverlayMode: Boolean,
@@ -250,7 +249,9 @@ fun ChatScreenContent(
     }
 
     Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
-        if (chatHeaderOverlayMode && chatHeaderTransparent) {
+        // iOS 化：顶栏已固定为与页面同色，"透明顶栏 + 覆盖模式"这条分支不再需要。
+        // 保留 overlay 分支条件里的 chatHeaderOverlayMode，供悬浮布局使用。
+        if (chatHeaderOverlayMode) {
             // 覆盖模式：Header浮动在ChatArea之上
             Box(modifier = Modifier.fillMaxSize()) {
                 ChatArea(
@@ -358,7 +359,6 @@ fun ChatScreenContent(
                                 },
                         actualViewModel = actualViewModel,
                         showChatHistorySelector = showChatHistorySelector,
-                        chatHeaderTransparent = chatHeaderTransparent,
                         chatHeaderHistoryIconColor = chatHeaderHistoryIconColor,
                         chatHeaderPipIconColor = chatHeaderPipIconColor,
                         onCharacterSwitcherClick = { onShowCharacterSelectorChange(true) }
@@ -369,7 +369,6 @@ fun ChatScreenContent(
                 ChatScreenHeader(
                         actualViewModel = actualViewModel,
                         showChatHistorySelector = showChatHistorySelector,
-                        chatHeaderTransparent = chatHeaderTransparent,
                         chatHeaderHistoryIconColor = chatHeaderHistoryIconColor,
                         chatHeaderPipIconColor = chatHeaderPipIconColor,
                         onCharacterSwitcherClick = { onShowCharacterSelectorChange(true) }

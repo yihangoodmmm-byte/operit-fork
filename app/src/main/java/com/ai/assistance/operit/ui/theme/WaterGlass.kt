@@ -36,6 +36,23 @@ fun Modifier.waterGlass(
         return this
     }
 
+    // 与 liquidGlass 同一决策：去玻璃、改纯色。签名保持不变，调用点无感。
+    if (PlainSurfaceMode) {
+        return this
+            .background(color = containerColor, shape = shape)
+            .then(
+                if (borderWidth > 0.dp) {
+                    Modifier.border(
+                        width = borderWidth,
+                        color = PlainSurfaceBorderColor(containerColor),
+                        shape = shape
+                    )
+                } else {
+                    Modifier
+                }
+            )
+    }
+
     val liquidState = if (isWaterGlassSupported()) LocalWaterGlassState.current else null
     val isLightGlass = containerColor.luminance() >= 0.5f
     if (liquidState == null) {

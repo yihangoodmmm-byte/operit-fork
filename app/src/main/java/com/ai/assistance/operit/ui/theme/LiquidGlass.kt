@@ -24,6 +24,26 @@ import com.kyant.backdrop.shadow.Shadow
 
 val LocalLiquidGlassBackdrop = compositionLocalOf<Backdrop?> { null }
 
+/**
+ * 全局开关：true 时所有玻璃修饰符退化为纯色。
+ *
+ * 产品方向是"去玻璃、纯色"。这里集中一个开关而不是删除实现，理由是：
+ * 一是改动可回滚；二是 glass 相关代码里有大量平台分支，直接删会牵连 28 个调用点。
+ */
+internal const val PlainSurfaceMode = true
+
+/**
+ * 纯色模式下的描边颜色：按容器明暗给一档对方色的弱描边。
+ * 玻璃时代靠高光边缘分层，纯色时代必须有一根细线，否则块与块之间会糊在一起。
+ */
+@Composable
+internal fun PlainSurfaceBorderColor(containerColor: Color): Color =
+    if (containerColor.luminance() >= 0.5f) {
+        Color.Black.copy(alpha = 0.10f)
+    } else {
+        Color.White.copy(alpha = 0.12f)
+    }
+
 private const val LiquidGlassMinApi = Build.VERSION_CODES.TIRAMISU
 
 fun isLiquidGlassSupported(): Boolean = Build.VERSION.SDK_INT >= LiquidGlassMinApi
@@ -41,6 +61,26 @@ fun Modifier.liquidGlass(
 ): Modifier {
     if (!enabled) {
         return this
+    }
+
+    // ── 玻璃 → 纯色 ─────────────────────────────────────────────
+    // 产品决策：整套界面去掉液态玻璃/折射/高光，一律改为纯色块。
+    // 保留函数签名是为了不动 28 个调用点（抽屉、输入栏、气泡、Tab 等），
+    // 只把实现换成"纯色填充 + 可选描边"，不再消费 backdrop、不再做模糊与折射。
+    if (PlainSurfaceMode) {
+        return this
+            .background(color = containerColor, shape = shape)
+            .then(
+                if (borderWidth > 0.dp) {
+                    Modifier.border(
+                        width = borderWidth,
+                        color = PlainSurfaceBorderColor(containerColor),
+                        shape = shape
+                    )
+                } else {
+                    Modifier
+                }
+            )
     }
 
     val backdrop = if (isLiquidGlassSupported()) LocalLiquidGlassBackdrop.current else null

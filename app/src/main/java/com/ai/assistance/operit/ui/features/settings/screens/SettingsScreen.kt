@@ -95,13 +95,7 @@ fun SettingsScreen(
                         icon = Icons.Default.Person,
                         containerColor = cardContainerColor
                 ) {
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_theme_appearance),
-                                subtitle = stringResource(id = R.string.settings_theme_subtitle),
-                                icon = Icons.Default.Palette,
-                                onClick = navigateToThemeSettings
-                        )
-
+                        // 产品决策：删除「主题和外观」入口（配色不再可选，改为代码固定）
                         CompactSettingsItem(
                                 title = stringResource(id = R.string.settings_user_preferences),
                                 subtitle = stringResource(id = R.string.settings_user_preferences_subtitle),
