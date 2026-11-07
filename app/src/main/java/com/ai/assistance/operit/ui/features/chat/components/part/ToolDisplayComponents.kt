@@ -1,5 +1,7 @@
 package com.ai.assistance.operit.ui.features.chat.components.part
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -75,29 +77,35 @@ fun CompactToolDisplay(
 
     val summary = remember(displayParams) { buildParamsHeadPreview(displayParams) }
 
-    // AiCode 扁平工具行：整行不套卡片，行与行之间只用 1dp 细线分隔。
-    // 行内布局（16dp 图标格 + 8dp 间距）原本就与 AiCode 一致，无需改；
-    // 这里补的是"分隔手段"——原来靠上下留白，现在靠细线，密度更高也更像文档。
-    Column(modifier = Modifier.fillMaxWidth()) {
+    // Claude 式工具卡：一次调用 = 一张细描边小卡（10dp 圆角、无阴影），
+    // 工具名用正文色 + 参数摘要弱化，整块与助手正文区分开但不喧宾夺主。
+    Box(
+        modifier =
+            modifier
+                .padding(vertical = 2.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .padding(horizontal = 10.dp, vertical = 7.dp)
+    ) {
         CanvasToolSummaryRow(
             toolName = displayToolName,
             summary = summary,
             semanticDescription = semanticDescription,
             leadingIcon = getToolIcon(displayToolName),
-            titleColor = MaterialTheme.colorScheme.primary,
-            summaryColor = textColor.copy(alpha = 0.7f),
-            modifier = modifier,
+            titleColor = MaterialTheme.colorScheme.onSurface,
+            summaryColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier,
             onClick =
                 if (hasParams && enableDialog) {
                     { showDetailDialog = true }
                 } else {
                     null
                 },
-        )
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }

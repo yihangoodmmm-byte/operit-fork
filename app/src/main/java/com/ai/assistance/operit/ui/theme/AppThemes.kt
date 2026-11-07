@@ -121,21 +121,15 @@ object AppThemes {
      * [dark] 只对支持明暗两套的家族（AICODE / CC）生效；iOS 白/黑、Claude 本身已经写死明暗，
      * 传什么都返回原来的那一套，保证既有观感不变。
      */
-    fun schemeOf(family: AppThemeFamily, dark: Boolean = false): ColorScheme = when (family) {
-        AppThemeFamily.IOS_LIGHT -> IosLight
-        AppThemeFamily.IOS_DARK -> IosDark
-        AppThemeFamily.CLAUDE -> Claude
-        AppThemeFamily.AICODE -> AiCodePalette.derive(
-            if (dark) AiCodePalette.BLUE_DARK else AiCodePalette.BLUE,
-            dark
-        )
-        AppThemeFamily.CC -> AiCodePalette.derive(
-            if (dark) AiCodePalette.CC_DARK else AiCodePalette.CC,
-            dark
-        )
-    }
+    /**
+     * 全局唯一的配色：CC 暖纸色（cccodroid 的暖中性 + 陶土橙）。
+     *
+     * 改成单一主题后配色不再可选——明暗跟随系统。其余家族枚举只为兼容旧偏好存储，
+     * 一律映射到同一套配色。
+     */
+    fun schemeOf(family: AppThemeFamily, dark: Boolean = false): ColorScheme =
+        AiCodePalette.derive(if (dark) AiCodePalette.CC_DARK else AiCodePalette.CC, dark)
 
-    /** 从偏好里存的字符串恢复；未知值回落到 AiCode 蓝（新的默认观感）。 */
-    fun fromId(id: String?): AppThemeFamily =
-        AppThemeFamily.entries.firstOrNull { it.id == id } ?: AppThemeFamily.AICODE
+    /** 配色已固定为 CC 暖纸色，任何输入都返回同一家族。 */
+    fun fromId(id: String?): AppThemeFamily = AppThemeFamily.CC
 }

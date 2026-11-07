@@ -284,10 +284,11 @@ fun BubbleAiMessageComposable(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = if (bubbleShowAvatar) 0.dp else 8.dp,
-                    top = 4.dp,
+                    // Claude 式文档流：助手正文左边距统一 8dp，不再为首列头像让位
+                    start = 8.dp,
+                    top = 6.dp,
                     end = 0.dp,
-                    bottom = 4.dp,
+                    bottom = 6.dp,
                 )
                 .then(sizeTrackingModifier)
                 .alpha(alpha)

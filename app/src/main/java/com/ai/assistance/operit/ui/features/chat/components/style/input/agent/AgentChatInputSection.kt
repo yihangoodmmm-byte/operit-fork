@@ -754,12 +754,9 @@ fun AgentChatInputSection(
                 }
             }
 
-            val inputCardShape =
-                if (chatInputFloating) {
-                    RoundedCornerShape(22.dp)
-                } else {
-                    RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-                }
+            // Claude 式输入区：整块是一个 14dp 圆角的浅色面板，不悬浮、不贴边。
+            // 原来悬浮时 22dp 大胶囊、非悬浮时只有上圆角贴底，两种形态都像"工具面板"。
+            val inputCardShape = RoundedCornerShape(14.dp)
             val inputLiquidGlassEnabled =
                 chatInputTransparent && chatInputLiquidGlass && !chatInputWaterGlass && isLiquidGlassSupported()
             val inputWaterGlassEnabled =

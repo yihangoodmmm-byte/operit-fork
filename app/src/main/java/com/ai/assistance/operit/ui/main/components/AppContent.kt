@@ -279,39 +279,38 @@ fun AppContent(
                         if (titleContent != null) {
                             titleContent.content()
                         } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // 使用Screen的标题或导航项的标题
+                            // Claude 式两行标题：主行是会话/页面标题，副行是应用名。
+                            // 原来是一行「页面标题 - 会话标题」，长标题会被截断得只剩省略号。
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Text(
                                     text =
                                     when {
-                                        // 如果是AI对话界面且有自定义标题，则优先显示
                                         currentScreen is Screen.AiChat && !customChatTitle.isNullOrEmpty() ->
                                             customChatTitle!!
-                                        // 优先使用Screen的标题
+                                        currentScreen is Screen.AiChat && currentChatTitle.isNotBlank() ->
+                                            currentChatTitle
                                         currentScreen.getTitle().isNotBlank() ->
                                             currentScreen.getTitle()
-                                        // 回退到导航项的标题资源
                                         selectedItem?.titleResId != null &&
                                             selectedItem.titleResId != 0 ->
                                             stringResource(id = selectedItem.titleResId)
-                                        // 最后的默认值
                                         else -> ""
                                     },
+                                    style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp,
-                                    color = appBarContentColor
+                                    color = appBarContentColor,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
-
-                                // 显示当前聊天标题（仅在AI对话页面)
-                                if (currentScreen is Screen.AiChat && currentChatTitle.isNotBlank()) {
-                                    Text(
-                                        text = "- $currentChatTitle",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = appBarContentColor.copy(alpha = 0.8f),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
+                                Text(
+                                    text = "Operit",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = appBarContentColor.copy(alpha = 0.6f),
+                                    maxLines = 1
+                                )
                             }
                         }
                     },

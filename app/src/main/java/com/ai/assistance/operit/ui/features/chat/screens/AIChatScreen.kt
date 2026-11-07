@@ -528,7 +528,9 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     //   · 助手正文**直接铺在页面底色上**，不套气泡 —— 底色透明；
     //   · 用户消息是一枚浅色药丸，就是 primaryContainer（14dp 圆角在气泡侧改）；
     //   · 分组只靠 1dp 细线（outlineVariant），不靠卡片阴影。
-    val defaultUserMessageColor = MaterialTheme.colorScheme.primaryContainer
+    // Claude 式文档流：用户消息是一块浅灰圆角（surfaceVariant），不是蓝底反白气泡；
+    // 助手正文无底色，直接铺在页面暖纸底上。
+    val defaultUserMessageColor = MaterialTheme.colorScheme.surfaceVariant
     val defaultAiMessageColor = Color.Transparent
     val cursorCustomUserMessageColor = cursorUserBubbleColorValue?.let(::Color)
     val bubbleCustomUserMessageColor = bubbleUserBubbleColorValue?.let(::Color)
