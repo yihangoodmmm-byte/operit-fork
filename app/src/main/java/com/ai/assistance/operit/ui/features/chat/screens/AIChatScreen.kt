@@ -412,19 +412,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     val cccListState = androidx.compose.foundation.lazy.rememberLazyListState()
     // 输入区状态行用到的上下文用量（与底栏 chip 同源：currentWindowSize / maxWindowSizeInK）
     // AIChatScreen 本身没有收集这两个值（原实现由输入区组件内部收集），这里就地取
-    // 用 .value 而不是 by 委托：与本文件其它 collectAsState 用法保持一致，
-    // 也避免在编译期因委托类型推断失败而连坐后面的引用。
-    val cccMaxWindowSizeInK = actualViewModel.maxWindowSizeInK.collectAsState().value
-    val cccCurrentWindowSize = actualViewModel.currentWindowSize.collectAsState().value
-    val cccModelName = actualViewModel.modelName.collectAsState().value
-    val cccContextLimit = (cccMaxWindowSizeInK * 1024).toLong().coerceAtLeast(0L)
-    val cccContextPercent =
-        if (cccContextLimit > 0L) {
-            ((cccCurrentWindowSize.toDouble() / cccContextLimit.toDouble()) * 100.0).coerceIn(0.0, 999.0).toInt()
-        } else {
-            0
-        }
-    val cccContextText = "上下文 " + cccContextPercent + "% · " + cccFormatK(cccCurrentWindowSize) + "/" + cccFormatK(cccContextLimit)
+
     val historyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val characterCardManager = remember { CharacterCardManager.getInstance(context) }
@@ -1493,6 +1481,24 @@ private fun ChatInputBottomBar(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
+
+    // ── V2 输入区需要的状态 ──────────────────────────────────────
+    // 这些值原来由 Agent/Classic 两个输入区组件内部各自收集，
+    // 现在统一在底部栏这一层取，避免各处重复订阅。
+    val cccModelName = actualViewModel.modelName.collectAsState().value
+    val cccContextLimit =
+        (actualViewModel.maxWindowSizeInK.collectAsState().value * 1024).toLong().coerceAtLeast(0L)
+    val cccCurrentWindowSize = actualViewModel.currentWindowSize.collectAsState().value
+    val cccContextPercent =
+        if (cccContextLimit > 0L) {
+            ((cccCurrentWindowSize.toDouble() / cccContextLimit.toDouble()) * 100.0)
+                .coerceIn(0.0, 999.0)
+                .toInt()
+        } else {
+            0
+        }
+    val cccContextText =
+        "上下文 " + cccContextPercent + "% · " + cccFormatK(cccCurrentWindowSize) + "/" + cccFormatK(cccContextLimit)
     val waifuPreferences = remember(context) { WaifuPreferences.getInstance(context) }
     val userPreferences = remember(context) { UserPreferencesManager.getInstance(context) }
     val clipboardManager = remember(context) {
