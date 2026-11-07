@@ -136,34 +136,14 @@ fun ChatScreenHeader(
 
     val launchFloatingWindow = useFloatingWindowLauncher(actualViewModel, permissionLauncher)
 
-    Row(
-            modifier =
-                    modifier
-                            .fillMaxWidth()
-                            // iOS 化：顶部工具条不再自带一条浅灰底带，直接与页面同色
-                            .background(Color.Transparent)
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        ChatHeader(
-                showChatHistorySelector = showChatHistorySelector,
-                onToggleChatHistorySelector = { actualViewModel.toggleChatHistorySelector() },
-                modifier = Modifier.weight(1f),
-                isFloatingMode = isFloatingMode,
-                onLaunchFloatingWindow = launchFloatingWindow,
-                historyIconColor = chatHeaderHistoryIconColor,
-                pipIconColor = chatHeaderPipIconColor,
-                runningTaskCount = activeStreamingChatIds.size,
-                // 角色卡已停用：聊天头部不再展示角色名/头像入口
-                activeCharacterName = "",
-                activeCharacterAvatarUri = null,
-                onCharacterClick = onCharacterSwitcherClick
-        )
-
-        // iOS 化：删除顶部 Token 圆环 + 下拉统计（Operit 特有，且极易被误认为加载中）
-        // 统计信息仍可在会话设置里查看，这里不再占用顶栏。
-    }
+    // ── 删除第二条工具条（Operit 骨架特征）─────────────────────────
+    // 原来这里是一条常驻横条：左边「历史」图标、中间面板按钮、右边小窗/PiP。
+    // 它夹在顶栏和消息之间，等于同一块屏幕上有两行"栏"，是 Operit 最容易被认出的结构。
+    //
+    // 现在整条不为空时也不渲染了：历史入口收进顶栏左侧（见 AppContent 的 navigationIcon），
+    // 面板/小窗入口移到抽屉与设置页。这里保留函数签名与参数，避免牵动 100+ 个调用点。
+    //
+    // ChatHeader 组件本身仍被别处引用，不删除。
 }
 
 @Composable

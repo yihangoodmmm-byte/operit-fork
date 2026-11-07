@@ -59,6 +59,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.ChatMessage
@@ -237,7 +238,10 @@ fun UserMessageComposable(
         val liquidGlassEnabled =
             !isHiddenPlaceholder && !waterGlassEnabled && enableLiquidGlass && isLiquidGlassSupported()
 
-        // Message bubble
+        // ── 用户消息 = 右对齐气泡（不要整行卡片）──────────────────
+        // 原来这里是 fillMaxWidth() 的 Card + 内部 "Prompt" 标题，视觉上是一段带标签的
+        // 文档块，和助手正文长得一样，只能靠标签区分——这是 Operit 的骨架特征。
+        // 改成：靠右、限宽（最大 82%）、圆角 16dp、无标题标签，像正常聊天软件的自己那一侧。
         Card(
             modifier =
             Modifier
@@ -245,9 +249,10 @@ fun UserMessageComposable(
                     if (isHiddenPlaceholder) {
                         Modifier.widthIn(max = 320.dp)
                     } else {
-                        Modifier.fillMaxWidth()
+                        Modifier.fillMaxWidth(0.82f)
                     }
                 )
+                .padding(start = 48.dp)
                 .waterGlass(
                     enabled = waterGlassEnabled,
                     shape = RoundedCornerShape(8.dp),
@@ -274,15 +279,15 @@ fun UserMessageComposable(
                         effectiveBackgroundColor
                     },
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = 16.dp,
-                    top = if (isHiddenPlaceholder) 0.dp else 16.dp,
-                    end = 16.dp,
-                    bottom = if (isHiddenPlaceholder) 0.dp else 16.dp,
+                    start = 14.dp,
+                    top = if (isHiddenPlaceholder) 0.dp else 10.dp,
+                    end = 14.dp,
+                    bottom = if (isHiddenPlaceholder) 0.dp else 10.dp,
                 )) {
                 if (isHiddenPlaceholder) {
                     HiddenUserMessagePlaceholderContent(
@@ -290,22 +295,22 @@ fun UserMessageComposable(
                         subtitleColor = effectiveTextColor.copy(alpha = 0.72f),
                     )
                 } else {
-                    // 用户消息标题
-                    Text(
-                        text = if (!proxySenderName.isNullOrBlank()) {
-                            "Prompt by $proxySenderName"
-                        } else {
-                            "Prompt"
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = effectiveTextColor.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    // 删掉 "Prompt" 标题标签（Operit 的骨架特征之一）。
+                    // 有代理发送者时保留一行作者名，因为那是信息，不是装饰。
+                    if (!proxySenderName.isNullOrBlank()) {
+                        Text(
+                            text = proxySenderName,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = effectiveTextColor.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
 
                     Text(
                         text = textContent,
                         color = effectiveTextColor,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 22.sp
                     )
                 }
             }

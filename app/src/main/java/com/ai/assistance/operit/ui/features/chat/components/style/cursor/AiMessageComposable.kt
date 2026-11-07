@@ -125,20 +125,15 @@ fun AiMessageComposable(
                         heightMemory?.updateMeasured(message.timestamp, size.height)
                     }
         ) {
-        // 构建标题 - 分左右两部分显示
+        // 删掉 "Response" 标题行（Operit 的骨架特征：每条助手消息都顶一个标签）。
+        // 只保留右侧的模型/角色信息，且弱化到几乎看不见——它是元数据，不该抢视觉。
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(start = 16.dp, end = 16.dp, bottom = 2.dp),
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧：Response标题
-            Text(
-                text = "Response",
-                style = MaterialTheme.typography.labelSmall,
-                color = textColor.copy(alpha = 0.7f)
-            )
             
             // 右侧：详细信息（角色名、模型信息）
             val detailText = buildString {
