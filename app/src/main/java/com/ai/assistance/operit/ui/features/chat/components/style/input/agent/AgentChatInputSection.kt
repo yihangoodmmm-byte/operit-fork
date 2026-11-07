@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import java.util.Locale
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -423,7 +424,9 @@ fun AgentChatInputSection(
     val canSendMessage = hasDraftText || attachments.isNotEmpty()
     val showQueueAction = isProcessing && hasDraftText
     val showCancelAction = isProcessing && !showQueueAction
-    val sendButtonEnabled = true
+    // 语音/小窗入口移除后，按钮不再承担「无内容时跳转」的职责：
+    // 只有在能发送、能排队或能取消时才可点，否则置灰。
+    val sendButtonEnabled = canSendMessage || showQueueAction || showCancelAction
     val tokenLimitWarning: @Composable () -> Unit = {
         if (isOverTokenLimit && canSendMessage && !showQueueAction) {
             Text(
@@ -1189,33 +1192,40 @@ fun AgentChatInputSection(
                                 modifier = Modifier.weight(1f),
                                 contentAlignment = Alignment.CenterStart,
                             ) {
+                                // ── 模型入口（codex 式紧凑徽章）──────────────────
+                                // codex 的输入区里模型只是一个小徽章，点开才是选择器，不占一整行文字。
+                                // 这里同样收成「圆点 + 短名」的胶囊：圆点用主色示意当前供应商，
+                                // 名字按字符数截断，宽度上限比原来（220dp）收到 150dp。
                                 Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color.Transparent,
+                                    shape = RoundedCornerShape(999.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                     modifier =
                                         Modifier
-                                            .widthIn(min = 0.dp, max = 220.dp)
-                                            .border(
-                                                width = 1.dp,
-                                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                                shape = RoundedCornerShape(12.dp),
-                                            )
-                                            .clip(RoundedCornerShape(12.dp))
+                                            .widthIn(min = 0.dp, max = 150.dp)
+                                            .clip(RoundedCornerShape(999.dp))
                                             .clickable(onClick = onModelSelectorClick),
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .size(6.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary)
+                                        )
+                                        Spacer(modifier = Modifier.width(5.dp))
                                         Text(
                                             text = modelLabel,
-                                            style = MaterialTheme.typography.bodyMedium,
+                                            style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSurface,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.widthIn(max = 160.dp),
+                                            modifier = Modifier.widthIn(max = 110.dp),
                                         )
-                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Spacer(modifier = Modifier.width(2.dp))
                                         Icon(
                                             imageVector =
                                                 if (showModelSelectorPopup.value) {
@@ -1225,7 +1235,7 @@ fun AgentChatInputSection(
                                                 },
                                             contentDescription = context.getString(R.string.select_model_config),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(18.dp),
+                                            modifier = Modifier.size(16.dp),
                                         )
                                     }
                                 }
@@ -1350,14 +1360,8 @@ fun AgentChatInputSection(
                                                                 setShowAttachmentPanel(false)
                                                             }
                                                         }
-                                                        else -> {
-                                                            actualViewModel.onFloatingButtonClick(
-                                                                FloatingMode.FULLSCREEN,
-                                                                voicePermissionLauncher,
-                                                                colorScheme,
-                                                                typography,
-                                                            )
-                                                        }
+                                                        // 产品决策：移除「无内容时点按钮进入语音输入 / 切小窗」这两条路径。
+                                                        // 没有可发送内容时按钮不可点，不做任何跳转。
                                                     }
                                                 },
                                             ),
@@ -1368,15 +1372,13 @@ fun AgentChatInputSection(
                                             when {
                                                 showCancelAction -> Icons.Default.Close
                                                 showQueueAction -> Icons.Default.Add
-                                                canSendMessage -> Icons.AutoMirrored.Filled.Send
-                                                else -> Icons.Default.Mic
+                                                else -> Icons.AutoMirrored.Filled.Send
                                             },
                                         contentDescription =
                                             when {
                                                 showCancelAction -> context.getString(R.string.cancel)
                                                 showQueueAction -> context.getString(R.string.chat_queue_add_message)
-                                                canSendMessage -> context.getString(R.string.send)
-                                                else -> context.getString(R.string.voice_input)
+                                                else -> context.getString(R.string.send)
                                             },
                                         tint = actionButtonIconTint,
                                         modifier = Modifier.size(18.dp),
@@ -1388,6 +1390,19 @@ fun AgentChatInputSection(
                         tokenLimitWarning()
                     }
                 }
+
+                // ── 底部 chip 行（照 cccodroid 的 #hint-row 做法）──
+                // cccodroid 把「模型 / 权限 / 用量」从按钮行里拿出来，单独排成一行居中细胶囊，
+                // 按钮行只留「+ 附件」和「发送」。这样按钮区干净，状态信息又不占地方。
+                ComposerHintRow(
+                    modelLabel = currentModelName,
+                    onModelClick = {
+                        showExtraSettingsPopup.value = false
+                        showModelSelectorPopup.value = true
+                    },
+                    contextUsed = currentWindowSize,
+                    contextLimit = (maxWindowSizeInK * 1024L).toLong(),
+                )
             }
 
             AgentModelSelectorPopup(
@@ -3338,3 +3353,96 @@ private fun expandCornerRadius(base: CornerRadius, expansion: Float): CornerRadi
         x = (base.x + expansion).coerceAtLeast(0f),
         y = (base.y + expansion).coerceAtLeast(0f),
     )
+
+
+/**
+ * 输入区下方的状态行（照 cccodroid 的 `#hint-row` 移植）。
+ *
+ * cccodroid 的做法：按钮行里只有「+ / 附件 / 发送」，模型、权限、用量单独排成一行
+ * 居中的细胶囊（`border-radius: 999px`、1px 描边、次要文字色），三者之间用间距分开。
+ * 好处是按钮区不会随状态变长而抖动，信息也一屏可见。
+ *
+ * 这里落了三个 chip：
+ * - 模型：可点，打开模型选择器（对应 codex 的紧凑模型入口，不再占一整行文字）
+ * - 上下文：当前占用 / 上限 + 百分比
+ * - Token：输入 / 输出累计
+ */
+@Composable
+private fun ComposerHintRow(
+    modelLabel: String,
+    onModelClick: () -> Unit,
+    contextUsed: Long,
+    contextLimit: Long,
+) {
+    val percent =
+        if (contextLimit > 0L) {
+            ((contextUsed.toDouble() / contextLimit.toDouble()) * 100.0).coerceIn(0.0, 999.0)
+        } else {
+            0.0
+        }
+    val overLimit = percent >= 90.0
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        ComposerHintChip(
+            text = modelLabel.ifBlank { "未选择模型" },
+            emphasized = true,
+            onClick = onModelClick,
+        )
+        ComposerHintChip(
+            text = "上下文 ${percent.toInt()}% · ${formatCompactCount(contextUsed)}/${formatCompactCount(contextLimit)}",
+            danger = overLimit,
+        )
+    }
+}
+
+/** 单个 chip：999px 胶囊 + 1px 描边 + 次要色文字。 */
+@Composable
+private fun ComposerHintChip(
+    text: String,
+    emphasized: Boolean = false,
+    danger: Boolean = false,
+    onClick: (() -> Unit)? = null,
+) {
+    val borderColor =
+        when {
+            danger -> MaterialTheme.colorScheme.error.copy(alpha = 0.45f)
+            else -> MaterialTheme.colorScheme.outlineVariant
+        }
+    val contentColor =
+        when {
+            danger -> MaterialTheme.colorScheme.error
+            emphasized -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    val base =
+        Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(999.dp))
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                }
+            )
+            .padding(horizontal = 9.dp, vertical = 3.dp)
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = contentColor,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = base,
+    )
+}
+
+/** 把 token 数压成 1.2K / 3.4M 这类紧凑写法（cccodroid 的 usNum 同款处理）。 */
+private fun formatCompactCount(value: Long): String =
+    when {
+        value >= 1_000_000L -> String.format(Locale.US, "%.1fM", value / 1_000_000.0)
+        value >= 1_000L -> String.format(Locale.US, "%.1fK", value / 1_000.0)
+        else -> value.toString()
+    }
