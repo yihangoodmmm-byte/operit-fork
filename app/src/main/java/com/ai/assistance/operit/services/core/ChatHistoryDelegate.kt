@@ -96,12 +96,59 @@ class ChatHistoryDelegate(
         hasOlderPersistedHistory: Boolean? = null,
         hasNewerPersistedHistory: Boolean? = null,
     ) {
+        val effectiveMessages =
+            mergePreservingLiveStreams(
+                incoming = messages,
+                previous = _chatHistory.value,
+                allowCarryOver = hasNewerPersistedHistory != true,
+            )
         currentChatWindow.applyMessages(
-            messages = messages,
+            messages = effectiveMessages,
             chatHistoryFlow = _chatHistory,
             hasOlderPersistedHistory = hasOlderPersistedHistory,
             hasNewerPersistedHistory = hasNewerPersistedHistory,
         )
+    }
+
+    /**
+     * 窗口重建时保住"仍在流式输出"的消息。
+     *
+     * 显示窗口是按页从数据库重建的（每 5 条一页、最多保留 2 页），而**数据库里的消息没有
+     * contentStream**。如果直接用重建结果覆盖内存，正在输出的那条会丢掉流，
+     * 表现为「AI 输出到一半断流、内容未完成」——输出越长越容易触发，因为更容易翻页。
+     *
+     * 这里把旧列表里仍带流、且新列表缺失（或缺失流）的消息按 timestamp 补回去。
+     *
+     * @param allowCarryOver 仅当停留在最新窗口时为 true。用户主动往前翻历史时不回填，
+     *                       否则会把更新的活消息塞进旧窗口。
+     */
+    private fun mergePreservingLiveStreams(
+        incoming: List<ChatMessage>,
+        previous: List<ChatMessage>,
+        allowCarryOver: Boolean,
+    ): List<ChatMessage> {
+        if (!allowCarryOver || incoming.isEmpty()) {
+            return incoming
+        }
+        val liveMessages = previous.filter { it.contentStream != null }
+        if (liveMessages.isEmpty()) {
+            return incoming
+        }
+        val merged = LinkedHashMap<Long, ChatMessage>(incoming.size + liveMessages.size)
+        incoming.forEach { merged[it.timestamp] = it }
+        var carried = 0
+        liveMessages.forEach { live ->
+            val existing = merged[live.timestamp]
+            if (existing == null || existing.contentStream == null) {
+                merged[live.timestamp] = live
+                carried++
+            }
+        }
+        if (carried == 0) {
+            return incoming
+        }
+        AppLogger.d(TAG, "窗口重建时保住 $carried 条流式消息")
+        return merged.values.sortedBy { it.timestamp }
     }
 
     private suspend fun refreshCurrentChatDisplayFlags(
@@ -1373,7 +1420,14 @@ class ChatHistoryDelegate(
         val existingIndex = currentMessages.indexOfFirst { it.timestamp == message.timestamp }
 
         if (existingIndex >= 0) {
-            if (message.contentStream == null || currentMessages[existingIndex].contentStream == null) {
+            // 只在"不会丢掉正在进行的流式输出"时才替换：
+            //   · 内存里这条没有流  → 随便换（静态消息）
+            //   · 新来的这条有流    → 换（同样是活消息）
+            //   · 内存里有流、新来的是无流快照（来自数据库的窗口重建）→ **不换**，
+            //     否则正在输出的那条会丢掉 contentStream，界面表现为"断流、未完成"。
+            val existingHasLiveStream = currentMessages[existingIndex].contentStream != null
+            val incomingHasStream = message.contentStream != null
+            if (!existingHasLiveStream || incomingHasStream) {
                 AppLogger.d(TAG, "更新当前会话内存消息, ts: ${message.timestamp}")
                 setCurrentChatMessagesInMemory(
                     currentMessages.mapIndexed { index, existingMessage ->
@@ -1383,6 +1437,11 @@ class ChatHistoryDelegate(
                             existingMessage
                         }
                     },
+                )
+            } else {
+                AppLogger.d(
+                    TAG,
+                    "跳过用无流快照覆盖正在流式输出的消息, ts: ${message.timestamp}"
                 )
             }
             return true
@@ -1395,7 +1454,16 @@ class ChatHistoryDelegate(
 
         val currentPageCount = countDisplayPages(currentMessages).coerceIn(1, MAX_DISPLAY_PAGE_COUNT)
         val updatedMessages = currentMessages + message
-        val windowMessages = takeNewestDisplayPages(updatedMessages, currentPageCount)
+        // 流式输出进行中不裁剪窗口：
+        // 平时按"最新 N 页"裁剪是为了省内存，但流没结束时裁剪会让可见内容在输出途中被抽走，
+        // 用户看到的就是「输出到一半新开一页 / 上下文跳掉」。
+        val hasLiveStreamingMessage = currentMessages.any { it.contentStream != null }
+        val windowMessages =
+            if (hasLiveStreamingMessage) {
+                updatedMessages
+            } else {
+                takeNewestDisplayPages(updatedMessages, currentPageCount)
+            }
         AppLogger.d(TAG, "向当前会话内存追加消息, ts: ${message.timestamp}")
         setCurrentChatMessagesInMemory(
             messages = windowMessages,
