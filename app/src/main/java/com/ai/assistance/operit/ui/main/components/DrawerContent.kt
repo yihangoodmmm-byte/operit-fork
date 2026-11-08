@@ -232,27 +232,31 @@ fun DrawerContent(
                                         bottom = bottomInset
                                 )
         ) {
-                Column(
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
-                ) {
-                        NewSidebarTopContent(
+                // 结构照 cccodroid 的 drawer：
+                //   side-head（品牌）→ side-new（新对话）→ side-nav（导航，固定）
+                //   → side-recent（最近对话，flex:1 独立滚动）→ 底部账户行
+                // 之前整块共用一个 verticalScroll，最近对话一多就把导航项顶到屏幕外，
+                // 必须往下滚才能看到"插件/自动化任务"——这是错的层级。
+                NewSidebarTopContent(
                                 selectedItem = selectedItem,
                                 pluginEntries = pluginEntries,
                                 selectedRouteId = selectedRouteId,
                                 brandName = drawerBrandName,
-                                isNetworkAvailable = isNetworkAvailable,
-                                networkType = networkType,
                                 appearance = appearance,
                                 navItems = primaryNavItems,
                                 onNavItemClick = handleNavItemClick,
                                 onNavigationEntryClick = handleNavigationEntryClick,
                                 onNewChat = handleNewChat,
-                                recentChats = drawerChatHistories.take(20),
-                                currentChatId = drawerCurrentChatId,
-                                onSelectChat = handleSwitchChat,
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                }
+
+                // 最近对话占据剩余全部高度，自己滚动（cccodroid 的 .side-recent{flex:1;overflow-y:auto}）
+                DrawerRecentChats(
+                        chats = drawerChatHistories.take(30),
+                        currentChatId = drawerCurrentChatId,
+                        appearance = appearance,
+                        onSelect = handleSwitchChat,
+                        modifier = Modifier.weight(1f)
+                )
 
                 HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 20.dp),
@@ -446,40 +450,33 @@ private fun NewSidebarTopContent(
         pluginEntries: List<NavigationEntrySpec>,
         selectedRouteId: String,
         brandName: String,
-        isNetworkAvailable: Boolean,
-        networkType: String,
         appearance: NavigationDrawerAppearance,
         navItems: List<NavItem>,
         onNavItemClick: (NavItem) -> Unit,
         onNavigationEntryClick: (NavigationEntrySpec) -> Unit,
         onNewChat: () -> Unit,
-        recentChats: List<ChatHistory>,
-        currentChatId: String?,
-        onSelectChat: (String) -> Unit,
 ) {
         // ── iOS 化：删除 Operit 的品牌卡与三张统计快捷键 ─────────────────
         // 原来的「Operit AI + WiFi 胶囊 + 包管理/权限/工作流 三卡」是 Operit 最强的识别特征：
         // 品牌卡 + 徽章数字 + 权限状态，都在 iOS 的抽屉里不会出现。
         // 现在只保留一行大标题（对应 iOS 大标题），然后直接是导航列表。
-        Spacer(modifier = Modifier.height(20.dp))
+        // 品牌行照 cccodroid 的 .side-head：图标 22dp + 名字 15sp/600，
+        // 一行结束，不放大标题，也不挂网络状态。
+        // 原来这里是 titleLarge+Bold 的"Operit AI"再跟一行"WiFi"——大标题 + 状态行
+        // 是 Operit 抽屉的辨识特征，而且 WiFi 状态对"打开抽屉找会话"这件事毫无帮助。
+        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
                 text = brandName,
-                style = MaterialTheme.typography.titleLarge,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.2.sp,
                 color = appearance.titleColor,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 16.dp, end = 20.dp, bottom = 8.dp)
+                maxLines = 1,
+                modifier = Modifier.padding(start = 16.dp, end = 20.dp)
         )
 
-        // 网络状态降级为一行小字，不再是带底色的胶囊/卡片
-        Text(
-                text = if (isNetworkAvailable) networkType else stringResource(id = R.string.network_status_label),
-                style = MaterialTheme.typography.labelSmall,
-                color = appearance.titleColor.copy(alpha = 0.6f),
-                modifier = Modifier.padding(start = 16.dp, end = 20.dp, bottom = 4.dp)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         // ── 「新对话」按钮（照 cccodroid 的 .side-new）─────────────────
         // cccodroid 抽屉的第一个可点项永远是"新对话"：全宽、1dp 描边、11dp 圆角、
@@ -487,15 +484,6 @@ private fun NewSidebarTopContent(
         DrawerNewChatButton(
             appearance = appearance,
             onClick = onNewChat,
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        DrawerRecentChats(
-            chats = recentChats,
-            currentChatId = currentChatId,
-            appearance = appearance,
-            onSelect = onSelectChat,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -738,11 +726,17 @@ private fun DrawerRecentChats(
     currentChatId: String?,
     appearance: NavigationDrawerAppearance,
     onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     if (chats.isEmpty()) {
         return
     }
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+    ) {
         Text(
             text = "最近对话",
             style = MaterialTheme.typography.labelSmall,

@@ -216,15 +216,17 @@ private fun SettingsSection(
         containerColor: Color,
         content: @Composable ColumnScope.() -> Unit
 ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 18.dp)) {
-                // 分区标签：小号、加字距、弱化色（AiCode SectionLabel）
+        // 分区节奏收紧：原来 bottom 18dp、标签上下 10/6dp，四个分区就吃掉大半屏，
+        // 信息密度偏低（product register 的 DENSITY 应在 6–9）。
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+                // 分区标签：小号、加字距、弱化色
                 Text(
                         text = title,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.8.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 4.dp, top = 10.dp, bottom = 6.dp)
+                        modifier = Modifier.padding(start = 4.dp, top = 12.dp, bottom = 4.dp)
                 )
                 Column(modifier = Modifier.fillMaxWidth(), content = content)
         }
