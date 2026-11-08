@@ -1,6 +1,10 @@
 package com.ai.assistance.operit.ui.main.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import com.ai.assistance.operit.data.model.ChatHistory
+import com.ai.assistance.operit.data.repository.ChatHistoryManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.DrawerValue
@@ -179,6 +184,33 @@ fun DrawerContent(
         val handleNavItemClick: (NavItem) -> Unit = { item ->
                 handleScreenSelection(ScreenRouteRegistry.defaultScreenForNavItem(item))
         }
+        // 「新对话」：直接调 ChatHistoryManager 建一个当前会话，再切到聊天页。
+        // 抽屉拿不到 ChatViewModel，但 ChatHistoryManager 是进程单例，行为等价。
+        // 最近对话（cccodroid 抽屉的核心内容，Operit 原来没有）
+        val drawerChatHistories by
+                ChatHistoryManager.getInstance(context).chatHistoriesFlow.collectAsState(initial = emptyList())
+        val drawerCurrentChatId by
+                ChatHistoryManager.getInstance(context).currentChatIdFlow.collectAsState(initial = null)
+        val handleSwitchChat: (String) -> Unit = { chatId ->
+                scope.launch {
+                        runCatching { ChatHistoryManager.getInstance(context).setCurrentChatId(chatId) }
+                        if (drawerState.currentValue == DrawerValue.Open) {
+                                drawerState.close()
+                        }
+                        handleScreenSelection(ScreenRouteRegistry.defaultScreenForNavItem(NavItem.AiChat))
+                }
+        }
+        val handleNewChat: () -> Unit = {
+                scope.launch {
+                        runCatching {
+                                ChatHistoryManager.getInstance(context).createNewChat(setAsCurrentChat = true)
+                        }
+                        if (drawerState.currentValue == DrawerValue.Open) {
+                                drawerState.close()
+                        }
+                        handleScreenSelection(ScreenRouteRegistry.defaultScreenForNavItem(NavItem.AiChat))
+                }
+        }
         val handleNavigationEntryClick: (NavigationEntrySpec) -> Unit = { entry ->
                 val shouldCloseBeforeNavigate =
                         drawerState.currentValue == DrawerValue.Open ||
@@ -213,7 +245,11 @@ fun DrawerContent(
                                 appearance = appearance,
                                 navItems = primaryNavItems,
                                 onNavItemClick = handleNavItemClick,
-                                onNavigationEntryClick = handleNavigationEntryClick
+                                onNavigationEntryClick = handleNavigationEntryClick,
+                                onNewChat = handleNewChat,
+                                recentChats = drawerChatHistories.take(20),
+                                currentChatId = drawerCurrentChatId,
+                                onSelectChat = handleSwitchChat,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -415,7 +451,11 @@ private fun NewSidebarTopContent(
         appearance: NavigationDrawerAppearance,
         navItems: List<NavItem>,
         onNavItemClick: (NavItem) -> Unit,
-        onNavigationEntryClick: (NavigationEntrySpec) -> Unit
+        onNavigationEntryClick: (NavigationEntrySpec) -> Unit,
+        onNewChat: () -> Unit,
+        recentChats: List<ChatHistory>,
+        currentChatId: String?,
+        onSelectChat: (String) -> Unit,
 ) {
         // ── iOS 化：删除 Operit 的品牌卡与三张统计快捷键 ─────────────────
         // 原来的「Operit AI + WiFi 胶囊 + 包管理/权限/工作流 三卡」是 Operit 最强的识别特征：
@@ -440,6 +480,25 @@ private fun NewSidebarTopContent(
         )
 
         Spacer(modifier = Modifier.height(10.dp))
+
+        // ── 「新对话」按钮（照 cccodroid 的 .side-new）─────────────────
+        // cccodroid 抽屉的第一个可点项永远是"新对话"：全宽、1dp 描边、11dp 圆角、
+        // 主色图标 + 文字。Operit 原来没有这个入口（之前藏在被删掉的第二条工具条里）。
+        DrawerNewChatButton(
+            appearance = appearance,
+            onClick = onNewChat,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        DrawerRecentChats(
+            chats = recentChats,
+            currentChatId = currentChatId,
+            appearance = appearance,
+            onSelect = onSelectChat,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         navItems.forEach { item ->
                 CompactNavigationDrawerItem(
@@ -617,3 +676,134 @@ private fun BottomShortcutDrawerItem(
                 }
         }
 }
+
+
+/**
+ * 「新对话」按钮（照 cccodroid 的 `.side-new` 移植）。
+ *
+ * cccodroid 的写法：全宽、1dp 描边、11dp 圆角、padding 9×12、主色图标 18dp + 文字、间距 10dp。
+ * 它是抽屉里第一个可点项，位置在品牌行之下、导航项之上——用户打开抽屉第一眼就能开新会话。
+ */
+@Composable
+private fun DrawerNewChatButton(
+    appearance: NavigationDrawerAppearance,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(11.dp)
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+                .clip(shape)
+                .border(width = 1.dp, color = appearance.dividerColor.copy(alpha = 0.55f), shape = shape)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            tint = appearance.selectedContentColor,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "新对话",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = appearance.titleColor,
+            maxLines = 1
+        )
+    }
+}
+
+
+
+/**
+ * 「最近对话」列表（照 cccodroid 的 `.side-recent` 移植）。
+ *
+ * 这是 cccodroid 抽屉与 Operit 抽屉最大的结构差异：
+ * Operit 的抽屉只有导航项，**没有会话列表**，切换会话要靠聊天页顶部另开一个选择器；
+ * cccodroid 把会话列表直接放在抽屉里，占了剩余全部高度，点一下即切换。
+ *
+ * 形态对齐 `.side-recent{flex:1;overflow-y:auto}`：
+ * - 标题一行小字（labelSmall + 字距）
+ * - 每行：标题单行省略 + 时间戳右对齐弱化
+ * - 当前会话高亮（主色文字 + 极浅底色）
+ */
+@Composable
+private fun DrawerRecentChats(
+    chats: List<ChatHistory>,
+    currentChatId: String?,
+    appearance: NavigationDrawerAppearance,
+    onSelect: (String) -> Unit,
+) {
+    if (chats.isEmpty()) {
+        return
+    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "最近对话",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.8.sp,
+            color = appearance.titleColor.copy(alpha = 0.55f),
+            modifier = Modifier.padding(start = 16.dp, top = 10.dp, bottom = 4.dp)
+        )
+        chats.forEach { chat ->
+            val selected = chat.id == currentChatId
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (selected) {
+                                appearance.selectedContainerColor.copy(alpha = 0.28f)
+                            } else {
+                                androidx.compose.ui.graphics.Color.Transparent
+                            }
+                        )
+                        .clickable { onSelect(chat.id) }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = chat.title.ifBlank { "未命名对话" },
+                    fontSize = 13.5.sp,
+                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                    color =
+                        if (selected) {
+                            appearance.selectedContentColor
+                        } else {
+                            appearance.titleColor.copy(alpha = 0.85f)
+                        },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                // 时间戳（cccodroid 的 .side-recent 每行右侧有弱化时间）
+                Text(
+                    text = formatChatTimestamp(chat.updatedAt),
+                    fontSize = 10.5.sp,
+                    color = appearance.titleColor.copy(alpha = 0.45f),
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+/** 会话时间戳：今天显示 HH:mm，昨天显示「昨天」，更早显示 M-d。 */
+private fun formatChatTimestamp(updatedAt: java.time.LocalDateTime): String {
+    val today = java.time.LocalDate.now()
+    val date = updatedAt.toLocalDate()
+    return when (date) {
+        today -> String.format(java.util.Locale.US, "%02d:%02d", updatedAt.hour, updatedAt.minute)
+        today.minusDays(1) -> "昨天"
+        else -> (updatedAt.monthValue).toString() + "-" + (updatedAt.dayOfMonth).toString()
+    }
+}
+

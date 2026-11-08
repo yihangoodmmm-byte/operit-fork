@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.CodeOff
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -818,46 +819,53 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     LaunchedEffect(isCurrentScreen, embedded, showWebView, showAiComputer, isWorkspacePreparing, appBarContentColor, hasBoundWorkspace) {
         if (isCurrentScreen && !embedded) {
             setTopBarActions {
-                // AI电脑模式切换按钮
-                IconButton(
-                        enabled = !isWorkspacePreparing,
-                        onClick = {
-                            actualViewModel.onAiComputerButtonClick()
-                        }
-                ) {
-                    Icon(
-                            imageVector = Icons.Default.Terminal,
-                            contentDescription = stringResource(R.string.ai_computer),
-                            tint =
-                            if (showAiComputer) MaterialTheme.colorScheme.primaryContainer
-                            else appBarContentColor
-                    )
-                }
-
-                // Web开发模式切换按钮
-                IconButton(
-                        enabled = !isWorkspacePreparing,
-                        onClick = {
-                            actualViewModel.onWorkspaceButtonClick()
-                        }
-                ) {
-                    if (isWorkspacePreparing) {
-                        CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = appBarContentColor
-                        )
-                    } else {
+                // cccodroid 的 #tb-tools 折叠做法：顶栏常态只留一个「⋯」，
+                // 把低频入口（AI 电脑 / 工作区）收进菜单，给标题让出宽度。
+                var showMoreMenu by remember { mutableStateOf(false) }
+                Box {
+                    IconButton(onClick = { showMoreMenu = true }) {
                         Icon(
-                                imageVector =
-                                if (hasBoundWorkspace) Icons.Default.Code
-                                else Icons.Default.CodeOff,
-                                contentDescription =
-                                if (hasBoundWorkspace) stringResource(R.string.workspace)
-                                else stringResource(R.string.setup_workspace),
-                                tint =
-                                if (showWebView) MaterialTheme.colorScheme.primaryContainer
-                                else appBarContentColor
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "更多",
+                            tint = appBarContentColor
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMoreMenu,
+                        onDismissRequest = { showMoreMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ai_computer)) },
+                            enabled = !isWorkspacePreparing,
+                            leadingIcon = {
+                                Icon(Icons.Default.Terminal, contentDescription = null)
+                            },
+                            onClick = {
+                                showMoreMenu = false
+                                actualViewModel.onAiComputerButtonClick()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    if (hasBoundWorkspace) {
+                                        stringResource(R.string.workspace)
+                                    } else {
+                                        stringResource(R.string.setup_workspace)
+                                    }
+                                )
+                            },
+                            enabled = !isWorkspacePreparing,
+                            leadingIcon = {
+                                Icon(
+                                    if (hasBoundWorkspace) Icons.Default.Code else Icons.Default.CodeOff,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = {
+                                showMoreMenu = false
+                                actualViewModel.onWorkspaceButtonClick()
+                            }
                         )
                     }
                 }

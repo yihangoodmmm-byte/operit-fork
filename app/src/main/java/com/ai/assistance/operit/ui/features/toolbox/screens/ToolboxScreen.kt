@@ -1,28 +1,27 @@
 package com.ai.assistance.operit.ui.features.toolbox.screens
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.features.toolbox.screens.apppermissions.AppPermissionsScreen
@@ -104,88 +103,58 @@ fun ToolboxScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolCard(tool: Tool) {
-        var isPressed by remember { mutableStateOf(false) }
-
-        // 创建协程作用域
-        val scope = rememberCoroutineScope()
-
-        // 缩放动画
-        val scale by
-                animateFloatAsState(
-                        targetValue = if (isPressed) 0.95f else 1f,
-                        animationSpec = tween(durationMillis = if (isPressed) 100 else 200),
-                        label = "scale"
-                )
-
-        Card(
-                onClick = {
-                        isPressed = true
-                        // 使用rememberCoroutineScope来启动协程
-                        scope.launch {
-                                delay(100)
-                                tool.onClick()
-                                isPressed = false
-                        }
-                },
-                modifier = Modifier.fillMaxWidth().height(156.dp).scale(scale),
-                colors =
-                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation =
-                        CardDefaults.cardElevation(
-                                defaultElevation = 2.dp,
-                                pressedElevation = 8.dp
-                        ),
-                shape = RoundedCornerShape(12.dp)
+    // cccodroid 的行式工具项：左边图标（不用彩色圆底，用中性色）、
+    // 中间「名称 + 一行说明」、右边一个 chevron，行高 56dp，底部 1dp 细线。
+    // 原来是 156dp 高的方形卡片 + 按压缩放动画 + 彩色圆底图标，一屏只能放两三个。
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { tool.onClick() }
+                    .padding(horizontal = 4.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-                // 卡片内容
-                Column(
-                        modifier = Modifier.fillMaxSize().padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                        // 工具图标带有背景圆圈
-                        Box(
-                                contentAlignment = Alignment.Center,
-                                modifier =
-                                        Modifier.size(48.dp)
-                                                .clip(CircleShape)
-                                                .background(
-                                                        color = MaterialTheme.colorScheme.primaryContainer
-                                                )
-                                                .padding(8.dp)
-                        ) {
-                                Icon(
-                                        imageVector = tool.icon,
-                                        contentDescription = tool.name,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                )
-                        }
-
-                        Text(
-                                text = tool.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                minLines = 1,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                        )
-
-                        tool.description?.takeIf { it.isNotBlank() }?.let { description ->
-                                Text(
-                                        text = description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(horizontal = 2.dp),
-                                        minLines = 1,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                )
-                        }
+            Icon(
+                imageVector = tool.icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tool.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                tool.description?.takeIf { it.isNotBlank() }?.let { description ->
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
+            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.size(16.dp)
+            )
         }
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        )
+    }
 }
 
 

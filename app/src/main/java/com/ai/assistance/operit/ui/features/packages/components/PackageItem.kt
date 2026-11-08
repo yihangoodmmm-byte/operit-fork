@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.ui.common.components.CcSwitch
 
 @Composable
@@ -22,58 +23,61 @@ fun PackageItem(
         onClick: () -> Unit,
         onToggleImport: (Boolean) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        )
-        ) {
-                Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+    // cccodroid 行式列表项：无卡片、无底色，行内「图标 + 名称/说明 + 开关」
+    // 行高由内容决定（约 52dp），底部 1dp 细线分隔。原来是带 0.3 alpha 底色的圆角卡。
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(horizontal = 4.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
-                ) {
-            // 图标
-                                        Icon(
-                                                imageVector = Icons.Default.Extension,
-                                                contentDescription = null,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Extension,
+                contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                        )
-            
-            Spacer(modifier = Modifier.width(8.dp))
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            // 文本内容 - 添加右侧边距防止撞到开关
-                        Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-                        ) {
-                                Text(
-                                        text = name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                        text = description,
-                                        style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
-                                )
-                        }
-
-            // 开关
-                        CcSwitch(
-                                checked = isImported,
-                                onCheckedChange = onToggleImport,
-                modifier = Modifier.size(width = 32.dp, height = 20.dp),
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                        )
+                )
+                if (description.isNotBlank()) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
+            }
+
+            CcSwitch(
+                checked = isImported,
+                onCheckedChange = onToggleImport
+            )
         }
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        )
+    }
 }

@@ -2,6 +2,7 @@ package com.ai.assistance.operit.ui.theme
 
 import android.content.Context
 import android.net.Uri
+import com.ai.assistance.operit.R
 import com.ai.assistance.operit.util.AppLogger
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -20,54 +21,72 @@ import java.io.File
  * 正文 bodyLarge 行高 24sp、字距 0（不是 Operit 原来的 0.5sp——字距一宽就显得松散），
  * 标签类 Medium 且字距归零。
  *
- * 只动"层级节奏"，字体家族仍由用户的字体偏好决定（这里给 Default，运行时会被
- * applyFontFamilyToTypography 覆盖成用户选的系统字体或导入字体）。
+ * 字体家族用 [CcFontFamily]（cccodroid 的 Inter + Hei）。
+ * 若用户在偏好里选了系统字体或导入字体，applyFontFamilyToTypography 会在运行时覆盖。
  */
+/**
+ * CC 字体（移植自 cccodroid 的 fonts/ 目录）。
+ *
+ * cccodroid 的字体栈是 \"CC Inter\",\"CC Hei\"（界面）+ \"CC Spectral\",\"CC Song\"（正文）。
+ * 这里只移植界面用的两套：Inter 负责拉丁字符、Hei 负责中文，Compose 按字形自动回退，
+ * 所以中英混排时西文走 Inter、汉字走 Hei，与网页端一致。
+ *
+ * 原始文件是 woff2（Android 不支持），已用 fontTools 转成 ttf 放进 res/font。
+ */
+val CcFontFamily = FontFamily(
+    Font(R.font.cc_inter_regular, FontWeight.Normal),
+    Font(R.font.cc_inter_medium, FontWeight.Medium),
+    Font(R.font.cc_inter_bold, FontWeight.Bold),
+    Font(R.font.cc_hei_regular, FontWeight.Normal),
+    Font(R.font.cc_hei_medium, FontWeight.Medium),
+    Font(R.font.cc_hei_bold, FontWeight.Bold),
+)
+
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 21.sp,
         letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 26.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 13.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = CcFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,

@@ -279,39 +279,31 @@ fun AppContent(
                         if (titleContent != null) {
                             titleContent.content()
                         } else {
-                            // Claude 式两行标题：主行是会话/页面标题，副行是应用名。
-                            // 原来是一行「页面标题 - 会话标题」，长标题会被截断得只剩省略号。
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text =
-                                    when {
-                                        currentScreen is Screen.AiChat && !customChatTitle.isNullOrEmpty() ->
-                                            customChatTitle!!
-                                        currentScreen is Screen.AiChat && currentChatTitle.isNotBlank() ->
-                                            currentChatTitle
-                                        currentScreen.getTitle().isNotBlank() ->
-                                            currentScreen.getTitle()
-                                        selectedItem?.titleResId != null &&
-                                            selectedItem.titleResId != 0 ->
-                                            stringResource(id = selectedItem.titleResId)
-                                        else -> ""
-                                    },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = appBarContentColor,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = "Operit",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = appBarContentColor.copy(alpha = 0.6f),
-                                    maxLines = 1
-                                )
-                            }
+                            // 单行标题（照 cccodroid 的 #topbar / #app-title）：
+                            // 15sp、600 字重、字距 0.2sp，左对齐贴着菜单键，不要居中。
+                            // cccodroid 的顶栏是"左菜单 + 标题 + 右侧工具键"，标题左对齐；
+                            // 原来两行居中 + 英文副标题，视觉上更像"品牌页"而不是聊天工具。
+                            Text(
+                                text =
+                                when {
+                                    currentScreen is Screen.AiChat && !customChatTitle.isNullOrEmpty() ->
+                                        customChatTitle!!
+                                    currentScreen is Screen.AiChat && currentChatTitle.isNotBlank() ->
+                                        currentChatTitle
+                                    currentScreen.getTitle().isNotBlank() ->
+                                        currentScreen.getTitle()
+                                    selectedItem?.titleResId != null &&
+                                        selectedItem.titleResId != 0 ->
+                                        stringResource(id = selectedItem.titleResId)
+                                    else -> ""
+                                },
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.2.sp,
+                                color = appBarContentColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     },
                     navigationIcon = {
