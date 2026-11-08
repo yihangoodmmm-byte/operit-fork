@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.DrawerValue
@@ -560,110 +562,50 @@ private fun DrawerBottomShortcutRow(
         appearance: NavigationDrawerAppearance,
         onNavItemClick: (NavItem) -> Unit
 ) {
-        // iOS 化：底部只保留「设置」一项，关于/使用手册从抽屉移除
-        // （设置页内仍有「关于」入口，功能没有丢失）。
-        Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-        ) {
-                BottomShortcutDrawerItem(
-                        modifier = Modifier.weight(1f),
-                        item = NavItem.Settings,
-                        selected = selectedItem == NavItem.Settings,
-                        appearance = appearance,
-                        onClick = { onNavItemClick(NavItem.Settings) }
+        // 底部账户行（照 cccodroid 的 .side-acct）：
+        // 一行高 48dp、无底色、无玻璃、上方一条发丝线，图标 + 文字 + 右侧 chevron。
+        // 原来是一块 68dp 高的"液态玻璃"整宽按钮，视觉重量比会话列表还重——
+        // 底部这一条在 iOS/cccodroid 里是"最弱"的一层，不该抢戏。
+        Column(modifier = Modifier.fillMaxWidth()) {
+                HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = appearance.dividerColor.copy(alpha = 0.5f)
                 )
-        }
-}
-
-@Composable
-private fun BottomShortcutDrawerItem(
-        modifier: Modifier = Modifier,
-        item: NavItem,
-        selected: Boolean,
-        appearance: NavigationDrawerAppearance,
-        onClick: () -> Unit
-) {
-        val itemShape = RoundedCornerShape(14.dp)
-        val selectedGlassOverlayColor =
-                if (selected) {
-                        appearance.selectedContainerColor.copy(alpha = 0.18f)
-                } else {
-                        Color.Transparent
-                }
-        val accentColor = appearance.selectedContentColor
-
-        Surface(
-                modifier =
-                        modifier
-                                .height(68.dp)
-                                .liquidGlass(
-                                        enabled = appearance.buttonLiquidGlassEnabled,
-                                        shape = itemShape,
-                                        containerColor = appearance.buttonContainerColor,
-                                        shadowElevation = if (selected) 6.dp else 4.dp,
-                                        borderWidth = 0.5.dp,
-                                        blurRadius = 12.dp,
-                                        overlayAlphaBoost = 0.04f,
-                                        enableLens = false
-                                )
-                                .clip(itemShape)
-                                .background(selectedGlassOverlayColor),
-                onClick = onClick,
-                color =
-                        if (appearance.buttonLiquidGlassEnabled) {
-                                Color.Transparent
-                        } else if (selected) {
-                                appearance.selectedContainerColor
-                        } else {
-                                Color.Transparent
-                        },
-                shape = itemShape
-        ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                        if (selected) {
-                                Box(
-                                        modifier = Modifier
-                                                .align(Alignment.TopCenter)
-                                                .fillMaxWidth(0.4f)
-                                                .height(2.5.dp)
-                                                .padding(top = 4.dp)
-                                                .clip(RoundedCornerShape(2.dp))
-                                                .background(accentColor.copy(alpha = 0.7f))
-                                )
-                        }
-                        Column(
-                                modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                        ) {
-                                Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = null,
-                                        tint =
-                                                if (selected) appearance.selectedContentColor
-                                                else appearance.itemColor,
-                                        modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(5.dp))
-                                Text(
-                                        text = stringResource(id = item.titleResId),
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                                letterSpacing = 0.1.sp
-                                        ),
-                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                                        textAlign = TextAlign.Center,
-                                        color =
-                                                if (selected) appearance.selectedContentColor
-                                                else appearance.itemColor,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.fillMaxWidth()
-                                )
-                        }
+                Row(
+                        modifier =
+                                Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .clickable { onNavItemClick(NavItem.Settings) }
+                                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                ) {
+                        Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                tint = appearance.titleColor.copy(alpha = 0.75f),
+                                modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Text(
+                                text = stringResource(id = NavItem.Settings.titleResId),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = appearance.titleColor.copy(alpha = 0.9f),
+                                maxLines = 1,
+                                modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = appearance.titleColor.copy(alpha = 0.35f),
+                                modifier = Modifier.size(16.dp)
+                        )
                 }
         }
 }
+
 
 
 /**

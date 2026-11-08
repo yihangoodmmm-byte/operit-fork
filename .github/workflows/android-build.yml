@@ -143,8 +143,15 @@ jobs:
       - name: Restore Android CMake source cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
+          # FetchContent 下载的第三方源码。原来只缓存 operit_deps/*-src，
+          # 但这些模块（mnn / quickjs / mmd / fbx / dragonbones / llama）实际是
+          # 下载到各自 build 目录下的 .cxx/.../_deps 里，没被缓存 →
+          # 每次构建都要重新从 github.com/.../archive 拉，构建机网络一抖就 503/504 全挂。
           path: |
             **/.cxx/operit_deps/*-src
+            **/.cxx/**/_deps/**/*-src
+            **/.cxx/**/_deps/**/*-subbuild
+            **/_deps/**/*-src
           key: android-cmake-sources-${{ runner.os }}-${{ runner.arch }}-arm64-v8a-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}-${{ hashFiles('cmake/**', '**/CMakeLists.txt', '**/*.cmake', '**/build.gradle.kts', 'gradle.properties') }}
 
       - name: Restore Android dependency cache
