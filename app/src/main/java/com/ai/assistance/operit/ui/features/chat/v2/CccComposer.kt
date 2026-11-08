@@ -76,26 +76,42 @@ fun CccComposer(
             modifier
                 .fillMaxWidth()
                 .background(cs.background)
-                .padding(
-                    start = 10.dp,
-                    end = 10.dp,
-                    top = 8.dp,
-                    bottom = 8.dp
-                )
+                .padding(start = 10.dp, end = 10.dp, top = 6.dp, bottom = 8.dp)
     ) {
-        // ── 输入框本体：所有按钮与文本框在同一行 ──────────────────
+        // ── 1. 状态行在上方 ────────────────────────────────────────
+        // 原来这条在输入框下面。两个问题：
+        //   a) 拇指区被它占住——最靠近拇指的一条应该是最常按的输入框；
+        //   b) 键盘弹起时它正好压在 IME 上沿，会被系统工具条挤。
+        // 移到上方后，视觉顺序变成「上下文信息 → 输入」，也更符合"先看信息再动手"。
+        FlowRow(
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, bottom = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // 模型芯片是"锚点"：点击弹出快捷切换浮窗，而不是跳配置页
+            Box {
+                HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
+                modelPicker()
+            }
+            HintChip(
+                text = contextText,
+                danger = contextPercent >= 90
+            )
+        }
+
+        // ── 2. 输入框：贴着底边，最靠近拇指 ─────────────────────────
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .clip(fieldShape)
                     .background(cs.surface)
-                    .border(1.dp, cs.outlineVariant, fieldShape)
-                    .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                    .border(1.dp, cs.outlineVariant.copy(alpha = 0.7f), fieldShape)
+                    .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Box(
-                modifier = Modifier.weight(1f).heightIn(min = 34.dp),
+                modifier = Modifier.weight(1f).heightIn(min = 36.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (value.text.isEmpty()) {
@@ -117,60 +133,56 @@ fun CccComposer(
                         ),
                     cursorBrush = SolidColor(cs.primary),
                     maxLines = 5,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(4.dp))
-
-            // 发送 / 停止：cccodroid 是 32dp 圆形，底色为强调色 18% 透明
+            // 发送 / 停止：视觉 34dp 圆，但**触控区 44dp**。
+            // 之前只做 32dp 圆且没有额外可点区域，低于移动端 44dp 的下限，
+            // 拇指点偏一点就点不中——这不是美观问题，是可点性问题。
             Box(
                 modifier =
                     Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isProcessing) cs.error
-                            else if (canSend) cs.primary.copy(alpha = 0.18f)
-                            else cs.surfaceVariant
-                        )
+                        .size(44.dp)
                         .clickable(enabled = canSend || isProcessing) {
                             if (isProcessing) onStop() else onSend()
                         },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (isProcessing) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
-                    contentDescription = if (isProcessing) "停止" else "发送",
-                    tint =
-                        if (isProcessing) cs.onError
-                        else if (canSend) cs.primary
-                        else cs.onSurfaceVariant.copy(alpha = 0.38f),
-                    modifier = Modifier.size(18.dp)
-                )
+                Box(
+                    modifier =
+                        Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isProcessing) cs.error
+                                else if (canSend) cs.primary.copy(alpha = 0.18f)
+                                else cs.surfaceVariant
+                            ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isProcessing) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
+                        contentDescription = if (isProcessing) "停止" else "发送",
+                        tint =
+                            if (isProcessing) cs.onError
+                            else if (canSend) cs.primary
+                            else cs.onSurfaceVariant.copy(alpha = 0.38f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
-        }
-
-        // ── 框外状态行：模型 / 上下文 ──────────────────────────────
-        Spacer(modifier = Modifier.height(6.dp))
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            // 模型芯片是"锚点"：点击弹出快捷切换浮窗，而不是跳配置页
-            Box {
-                HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
-                modelPicker()
-            }
-            HintChip(
-                text = contextText,
-                danger = contextPercent >= 90
-            )
         }
     }
 }
 
+/**
+ * 状态芯片（框外一行）。
+ *
+ * 形态：浅填充 + 999dp 全圆角 + 11sp。
+ * 之前是描边样式，在深色底上是一圈发亮的线，看起来像表单控件而不是"状态提示"；
+ * 浅填充（主色/中性色 7–12% alpha）更安静，也和设置页、抽屉的填充语言一致。
+ */
 @Composable
 private fun HintChip(
     text: String,
@@ -180,8 +192,6 @@ private fun HintChip(
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(999.dp)
-    // 浅填充而不是描边：描边胶囊在深色底上是一圈发亮的线，看起来像 Operit 的表单控件；
-    // 填充式（主色/中性色 8–10% alpha）才是 cccodroid 的 #hint-row 观感，也更安静。
     val backgroundColor =
         when {
             danger -> cs.error.copy(alpha = 0.12f)

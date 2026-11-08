@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -306,43 +306,54 @@ fun AppContent(
                             )
                         }
                     },
+                    // 左上角只放「返回」。三条杠已移到右上角（见 actions）。
+                    // 能返回时是返回箭头，否则留空——不再用同一颗按钮兼做"打开抽屉"，
+                    // 那样会让"进入页面"和"返回"变成同一个动作，用户只能靠再点一次原按钮退出。
                     navigationIcon = {
-                        // 导航按钮逻辑
+                        if (canGoBack) {
+                            IconButton(onClick = onGoBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.app_content_navigate_back),
+                                    tint = appBarContentColor
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        // 右上角：抽屉/侧栏开关（原左上角三条杠）
                         IconButton(
                             onClick = {
-                                if (canGoBack) {
-                                    onGoBack()
+                                if (useTabletLayout) {
+                                    onToggleSidebar()
                                 } else {
-                                    // 平板模式下切换侧边栏展开/收起状态
-                                    if (useTabletLayout) {
-                                        onToggleSidebar()
-                                    } else {
-                                        // 手机模式下打开抽屉
-                                        scope.launch { drawerState.open() }
-                                    }
+                                    scope.launch { drawerState.open() }
                                 }
                             }
                         ) {
                             Icon(
-                                if (canGoBack) Icons.Default.ArrowBack
-                                else if (useTabletLayout)
-                                // 平板模式下使用开关图标表示收起/展开
-                                    if (isTabletSidebarExpanded) Icons.Filled.ChevronLeft
-                                    else Icons.Default.Menu
-                                else Icons.Default.Menu,
+                                imageVector =
+                                    if (useTabletLayout && isTabletSidebarExpanded) {
+                                        Icons.Filled.ChevronLeft
+                                    } else {
+                                        Icons.Default.Menu
+                                    },
                                 contentDescription =
-                                when {
-                                    canGoBack -> stringResource(R.string.app_content_navigate_back)
-                                    useTabletLayout ->
-                                        if (isTabletSidebarExpanded) stringResource(R.string.app_content_collapse_sidebar)
-                                        else stringResource(R.string.app_content_expand_sidebar)
-                                    else -> stringResource(id = R.string.menu)
-                                },
+                                    if (useTabletLayout) {
+                                        if (isTabletSidebarExpanded) {
+                                            stringResource(R.string.app_content_collapse_sidebar)
+                                        } else {
+                                            stringResource(R.string.app_content_expand_sidebar)
+                                        }
+                                    } else {
+                                        stringResource(id = R.string.menu)
+                                    },
                                 tint = appBarContentColor
                             )
                         }
+                        actions()
                     },
-                    actions = actions,
+
                     colors =
                     TopAppBarDefaults.topAppBarColors(
                         containerColor =

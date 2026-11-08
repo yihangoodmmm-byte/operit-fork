@@ -320,13 +320,27 @@ fun OperitApp(
         requestRouteTransition {
             isNavigatingBack = false
             navigationTransitionSource = NavigationTransitionSource.DRAWER
-            routerState.resetTo(
+            val target =
                 com.ai.assistance.operit.ui.main.navigation.RouteEntry(
                     routeId = entry.routeId,
                     args = entry.routeArgs,
                     source = RouteEntrySource.DRAWER
                 )
-            )
+            // 关键：从聊天根页（AiChat）进入其它页面时**压栈**，而不是替换。
+            // 原来一律 resetTo，栈始终只有一层，canPop=false → 左上角永远不出现返回箭头，
+            // 只能靠"再点一次同一个导航项"返回（用户反馈的正是这个）。
+            // 已经处在某个子页时仍然 resetTo，避免抽屉里连点几下就攒出很深的返回栈。
+            val isAtRoot =
+                routerState.currentEntry.routeId == AppRouteCatalog.toEntry(Screen.AiChat).routeId
+            if (isAtRoot) {
+                routerState.navigate(
+                    routeId = target.routeId,
+                    args = target.args,
+                    source = RouteEntrySource.DRAWER
+                )
+            } else {
+                routerState.resetTo(target)
+            }
         }
     }
 
