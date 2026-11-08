@@ -1178,6 +1178,25 @@ sealed class Screen(
         }
     }
 
+    // 用量与余额（Operit 本来就有完整统计层，缺的只是页面与入口）
+    data object UsageStatistics :
+            Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_usage_statistics) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.operit.ui.features.tokenstats.CccUsageScreen(
+                modifier = androidx.compose.ui.Modifier.fillMaxSize()
+            )
+        }
+    }
+
     // FFmpeg Toolbox screen
     data object FFmpegToolbox :
             Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_ffmpeg_toolbox) {

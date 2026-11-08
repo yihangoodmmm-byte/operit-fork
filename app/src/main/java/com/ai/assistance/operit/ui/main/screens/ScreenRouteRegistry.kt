@@ -3,6 +3,7 @@ package com.ai.assistance.operit.ui.main.screens
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Code
@@ -299,6 +300,15 @@ object ScreenRouteRegistry {
                 descriptionResId = R.string.tool_sql_viewer_desc,
                 icon = Icons.Default.TableView,
                 order = 130
+            ),
+            hostEntryDefinition(
+                entryId = "toolbox.usage_statistics",
+                screen = Screen.UsageStatistics,
+                surface = NavigationSurface.TOOLBOX,
+                titleResId = R.string.screen_title_usage_statistics,
+                descriptionResId = R.string.tool_usage_statistics_desc,
+                icon = Icons.Default.Analytics,
+                order = 135
             ),
             hostEntryDefinition(
                 entryId = "toolbox.token_config",
