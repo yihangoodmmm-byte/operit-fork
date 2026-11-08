@@ -10,6 +10,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.data.model.ChatMessage
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 /**
  * 消息列表（照 cccodroid 的 `#chat` 容器移植）。
@@ -37,6 +51,42 @@ fun CccMessageList(
     topPadding: Dp = CccTokens.ListPaddingTop,
     bottomPadding: Dp = CccTokens.ListPaddingBottom,
 ) {
+    if (messages.isEmpty()) {
+        // 空会话不能是一片纯空白：那是最容易被识别成「没做完」的状态。
+        // cccodroid 在这里放一个居中的欢迎块；这里保持同样克制——一行标题 + 一行说明。
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 80.dp)
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.75f))
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "开始新的对话",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "直接提问，或把文件拖进来",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        return
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,

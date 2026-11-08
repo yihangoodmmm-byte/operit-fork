@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import com.ai.assistance.operit.ui.components.CustomScaffold
 import com.ai.assistance.operit.api.chat.EnhancedAIService
 import com.ai.assistance.operit.data.model.FunctionType
+import com.ai.assistance.operit.data.model.getValidModelIndex
 import com.ai.assistance.operit.data.preferences.FunctionalConfigManager
 import com.ai.assistance.operit.data.preferences.FunctionConfigMapping
 import com.ai.assistance.operit.data.preferences.ModelConfigManager
@@ -1502,7 +1503,9 @@ private fun ChatInputBottomBar(
     // ── V2 输入区需要的状态 ──────────────────────────────────────
     // 这些值原来由 Agent/Classic 两个输入区组件内部各自收集，
     // 现在统一在底部栏这一层取，避免各处重复订阅。
-    val cccModelName = actualViewModel.modelName.collectAsState().value
+    // 注意：modelName 可能是「逗号分隔的多个模型」，直接显示会出现
+    // "deepseek-flash,deepseek-v4-pro" 这种整串。要和配置里的 modelIndex 一起解析出真正选中的那个。
+    val cccRawModelName = actualViewModel.modelName.collectAsState().value
     val cccContextLimit =
         (actualViewModel.maxWindowSizeInK.collectAsState().value * 1024).toLong().coerceAtLeast(0L)
     val cccCurrentWindowSize = actualViewModel.currentWindowSize.collectAsState().value
@@ -1530,6 +1533,20 @@ private fun ChatInputBottomBar(
         cccMappingWithIndex[FunctionType.CHAT]
             ?: FunctionConfigMapping(FunctionalConfigManager.DEFAULT_CONFIG_ID, 0)
     var cccShowModelPicker by remember { mutableStateOf(false) }
+
+    // 从「配置 + 索引」解析出当前实际使用的模型名
+    val cccModelName: String =
+        remember(cccConfigSummaries, cccCurrentMapping, cccRawModelName) {
+            val summary = cccConfigSummaries.find { it.id == cccCurrentMapping.configId }
+            if (summary == null) {
+                cccRawModelName.split(',').firstOrNull()?.trim().orEmpty()
+            } else {
+                val validIndex = getValidModelIndex(summary.modelName, cccCurrentMapping.modelIndex)
+                summary.modelName.split(',')[validIndex.coerceIn(0, summary.modelName.split(',').lastIndex)]
+                    .trim()
+                    .ifBlank { cccRawModelName.split(',').firstOrNull()?.trim().orEmpty() }
+            }
+        }
     val waifuPreferences = remember(context) { WaifuPreferences.getInstance(context) }
     val userPreferences = remember(context) { UserPreferencesManager.getInstance(context) }
     val clipboardManager = remember(context) {
