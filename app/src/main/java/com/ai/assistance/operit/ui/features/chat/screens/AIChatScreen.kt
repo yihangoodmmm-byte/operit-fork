@@ -30,7 +30,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.ai.assistance.operit.ui.components.CustomScaffold
+import com.ai.assistance.operit.api.chat.EnhancedAIService
+import com.ai.assistance.operit.data.model.FunctionType
+import com.ai.assistance.operit.data.preferences.FunctionalConfigManager
+import com.ai.assistance.operit.data.preferences.FunctionConfigMapping
+import com.ai.assistance.operit.data.preferences.ModelConfigManager
 import com.ai.assistance.operit.ui.features.chat.v2.CccComposer
+import com.ai.assistance.operit.ui.features.chat.v2.CccModelPicker
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
 import com.ai.assistance.operit.ui.features.chat.v2.formatTokenCount as cccFormatK
 import androidx.compose.ui.graphics.Color
@@ -950,6 +956,9 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                 listState = cccListState,
                                 modifier = Modifier.fillMaxSize(),
                                 enableDialogs = !isFloatingMode,
+                                // 输入栏是叠在内容之上的（Box + BottomCenter），列表必须让出它的实测高度，
+                                // 否则最后一条消息会被输入栏盖住——这是把 ChatScreenContent 换掉后丢掉的职责。
+                                bottomInset = bottomBarHeightDp,
                         )
 
                         if (inputStyle == UserPreferencesManager.INPUT_STYLE_CLASSIC) {
@@ -1499,6 +1508,20 @@ private fun ChatInputBottomBar(
         }
     val cccContextText =
         "上下文 " + cccContextPercent + "% · " + cccFormatK(cccCurrentWindowSize) + "/" + cccFormatK(cccContextLimit)
+
+    // ── 模型快捷切换 ────────────────────────────────────────────
+    // 与旧输入区同源：配置列表来自 ModelConfigManager，当前选中来自 FunctionalConfigManager，
+    // 切换走 setConfigForFunction + refreshServiceForFunction（否则不会立即生效）。
+    val cccModelConfigManager = remember(context) { ModelConfigManager(context) }
+    val cccFunctionalConfigManager = remember(context) { FunctionalConfigManager(context) }
+    val cccConfigSummaries by
+        cccModelConfigManager.configSummariesFlow.collectAsState(initial = emptyList())
+    val cccMappingWithIndex by
+        cccFunctionalConfigManager.functionConfigMappingWithIndexFlow.collectAsState(initial = emptyMap())
+    val cccCurrentMapping =
+        cccMappingWithIndex[FunctionType.CHAT]
+            ?: FunctionConfigMapping(FunctionalConfigManager.DEFAULT_CONFIG_ID, 0)
+    var cccShowModelPicker by remember { mutableStateOf(false) }
     val waifuPreferences = remember(context) { WaifuPreferences.getInstance(context) }
     val userPreferences = remember(context) { UserPreferencesManager.getInstance(context) }
     val clipboardManager = remember(context) {
@@ -1867,7 +1890,31 @@ private fun ChatInputBottomBar(
             modelLabel = cccModelName.ifBlank { "未选择模型" },
             contextPercent = cccContextPercent,
             contextText = cccContextText,
-            onModelClick = { onNavigateToModelConfig() },
+            onModelClick = { cccShowModelPicker = true },
+            modelPicker = {
+                CccModelPicker(
+                    expanded = cccShowModelPicker,
+                    onDismiss = { cccShowModelPicker = false },
+                    summaries = cccConfigSummaries,
+                    currentConfigId = cccCurrentMapping.configId,
+                    currentModelIndex = cccCurrentMapping.modelIndex,
+                    onPick = { configId, modelIndex ->
+                        cccShowModelPicker = false
+                        coroutineScope.launch {
+                            cccFunctionalConfigManager.setConfigForFunction(
+                                FunctionType.CHAT,
+                                configId,
+                                modelIndex,
+                            )
+                            EnhancedAIService.refreshServiceForFunction(context, FunctionType.CHAT)
+                        }
+                    },
+                    onManageModels = {
+                        cccShowModelPicker = false
+                        onNavigateToModelConfig()
+                    },
+                )
+            },
     )
 }
 

@@ -65,6 +65,8 @@ fun CccComposer(
     contextText: String,
     onModelClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 模型快捷切换浮窗（由调用方提供，锚定在模型芯片上）。 */
+    modelPicker: @Composable () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     val fieldShape = RoundedCornerShape(22.dp)
@@ -156,7 +158,11 @@ fun CccComposer(
             horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
+            // 模型芯片是"锚点"：点击弹出快捷切换浮窗，而不是跳配置页
+            Box {
+                HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
+                modelPicker()
+            }
             HintChip(
                 text = contextText,
                 danger = contextPercent >= 90

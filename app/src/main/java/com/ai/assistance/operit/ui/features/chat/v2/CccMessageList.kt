@@ -5,9 +5,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.data.model.ChatMessage
 
 /**
@@ -27,18 +28,25 @@ fun CccMessageList(
     listState: LazyListState,
     modifier: Modifier = Modifier,
     enableDialogs: Boolean = true,
-    contentPadding: PaddingValues =
-        PaddingValues(
-            start = CccTokens.ListPaddingHorizontal,
-            end = CccTokens.ListPaddingHorizontal,
-            top = CccTokens.ListPaddingTop,
-            bottom = CccTokens.ListPaddingBottom
-        ),
+    /**
+     * 输入栏高度。列表是垫在输入栏下面的，必须自己让出这块高度，
+     * 否则最后一条消息会被输入栏盖住（这是替换 ChatScreenContent 后丢掉的职责）。
+     */
+    bottomInset: Dp = 0.dp,
+    horizontalPadding: Dp = CccTokens.ListPaddingHorizontal,
+    topPadding: Dp = CccTokens.ListPaddingTop,
+    bottomPadding: Dp = CccTokens.ListPaddingBottom,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,
-        contentPadding = contentPadding,
+        contentPadding =
+            PaddingValues(
+                start = horizontalPadding,
+                end = horizontalPadding,
+                top = topPadding,
+                bottom = bottomPadding + bottomInset
+            ),
         verticalArrangement = Arrangement.spacedBy(CccTokens.MessageGap)
     ) {
         // 用 count 重载而不是 items(list)：避免依赖 List<ChatMessage> 的类型推断，
