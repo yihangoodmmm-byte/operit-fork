@@ -258,7 +258,30 @@ fun OperitApp(
                 if (fromDrawer) NavigationTransitionSource.DRAWER
                 else NavigationTransitionSource.DEFAULT
             if (fromDrawer) {
-                routerState.resetTo(nextEntry)
+                // 抽屉进入的顶层页（设置 / 终端 / 工具箱…）也要能返回。
+                // 原来这里一律 resetTo，栈被清空 → canPop=false → 左上角没有返回键
+                // （设置**子页**之所以有，是因为它们走下面的 navigate() 分支）。
+                // 现在：
+                //   · 从聊天根页进入 → push，栈变成 [聊天, 目标]
+                //   · 已在某个子页时再点抽屉 → 先 pop 掉当前页再 push，
+                //     保持栈深为 2，既不会越叠越深，返回也始终回到聊天页
+                val chatRouteId = AppRouteCatalog.toEntry(Screen.AiChat).routeId
+                if (currentRouteEntry.routeId == chatRouteId) {
+                    routerState.navigate(
+                        routeId = nextEntry.routeId,
+                        args = nextEntry.args,
+                        source = nextEntry.source,
+                        routeSpec = navigationModel.routesById[nextEntry.routeId]
+                    )
+                } else {
+                    routerState.pop()
+                    routerState.navigate(
+                        routeId = nextEntry.routeId,
+                        args = nextEntry.args,
+                        source = nextEntry.source,
+                        routeSpec = navigationModel.routesById[nextEntry.routeId]
+                    )
+                }
             } else {
                 routerState.navigate(
                     routeId = nextEntry.routeId,

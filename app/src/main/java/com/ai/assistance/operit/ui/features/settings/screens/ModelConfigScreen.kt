@@ -385,17 +385,11 @@ fun ModelConfigScreen(
         ) {
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border =
-                        BorderStroke(
-                            0.7.dp,
-                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
+                // 扁平分区（不再是"卡片套卡片"）：
+                // 原来这是一张 12dp 圆角 + 0.7dp 描边 + 1dp 投影的卡片，
+                // 里面每个字段又各自是一个圆角输入框——两层盒子叠在一起是 Operit 最典型的样子。
+                // 现在外层只用一条发丝线分隔，内容直接铺在页面上。
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Row(
                             modifier = Modifier
@@ -1147,12 +1141,7 @@ private fun ThinkingConfigurationsSection(
         onError = { e -> showNotification(e.message ?: saveFailedText) }
     )
 
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { sectionExpanded = !sectionExpanded },

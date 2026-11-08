@@ -248,24 +248,19 @@ private fun CompactSettingsItem(
         icon: ImageVector,
         onClick: () -> Unit
 ) {
+        // iOS / cccodroid 的设置行：**没有前置图标**，一行文字为主，
+        // 副标题只在需要解释时出现，右侧统一一个弱化 chevron。
+        // 原来每行都挂一个 20dp Material 图标，四个分区下来就是一排彩色小图标——
+        // 图标在这里不承载任何区分度（标题已经说清楚了），只是 Operit 的装饰习惯。
         Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                         modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 52.dp)
+                                .heightIn(min = 46.dp)
                                 .clickable { onClick() }
-                                .padding(horizontal = 4.dp, vertical = 10.dp),
+                                .padding(horizontal = 4.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                 ) {
-                        Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(14.dp))
-
                         Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                         text = title,
@@ -292,8 +287,8 @@ private fun CompactSettingsItem(
                         Icon(
                                 imageVector = Icons.Default.ChevronRight,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                modifier = Modifier.size(16.dp)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                modifier = Modifier.size(14.dp)
                         )
                 }
                 // 行间细线：AiCode 扁平列表唯一的分隔手段
