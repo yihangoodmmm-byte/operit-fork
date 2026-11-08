@@ -49,6 +49,11 @@ fun CccMessageItem(
     message: ChatMessage,
     modifier: Modifier = Modifier,
     enableDialogs: Boolean = true,
+    /**
+     * 是否显示角色行。连续多条助手消息只在**第一条**画，避免长对话里满屏重复的「● Operit」。
+     * 由列表按「上一条是谁」计算后传入。
+     */
+    showRole: Boolean = true,
 ) {
     val isUser = message.sender == "user"
     val isSummary = message.sender == "summary"
@@ -72,7 +77,9 @@ fun CccMessageItem(
                             Modifier
                                 .widthIn(max = maxBubbleWidth)
                                 .clip(RoundedCornerShape(CccTokens.UserBubbleRadius))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                // 用户气泡用主色的极浅染色（cccodroid 的 --bubble-user 也是带色倾向的，
+                                // 不是中性灰）。纯 surfaceVariant 在深色下是一块发闷的灰板，和正文拉不开层次。
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.13f))
                                 .padding(
                                     horizontal = CccTokens.UserBubblePaddingH,
                                     vertical = CccTokens.UserBubblePaddingV
@@ -88,20 +95,22 @@ fun CccMessageItem(
             }
         } else {
             // ── 助手 / 系统：无气泡，先一行角色，再正文 ─────────────────
-            RoleLine(
-                label =
-                    when {
-                        isSummary -> "摘要"
-                        message.roleName.isNotBlank() -> message.roleName
-                        else -> "Operit"
-                    },
-                dotColor =
-                    if (isSummary) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-            )
+            if (showRole) {
+                RoleLine(
+                    label =
+                        when {
+                            isSummary -> "摘要"
+                            message.roleName.isNotBlank() -> message.roleName
+                            else -> "Operit"
+                        },
+                    dotColor =
+                        if (isSummary) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
+                )
+            }
             Box(
                 modifier =
                     Modifier

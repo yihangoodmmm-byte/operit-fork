@@ -180,10 +180,13 @@ private fun HintChip(
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(999.dp)
-    val borderColor =
+    // 浅填充而不是描边：描边胶囊在深色底上是一圈发亮的线，看起来像 Operit 的表单控件；
+    // 填充式（主色/中性色 8–10% alpha）才是 cccodroid 的 #hint-row 观感，也更安静。
+    val backgroundColor =
         when {
-            danger -> cs.error.copy(alpha = 0.45f)
-            else -> cs.outlineVariant
+            danger -> cs.error.copy(alpha = 0.12f)
+            emphasized -> cs.primary.copy(alpha = 0.12f)
+            else -> cs.onSurface.copy(alpha = 0.07f)
         }
     val contentColor =
         when {
@@ -195,7 +198,7 @@ private fun HintChip(
         modifier =
             Modifier
                 .clip(shape)
-                .border(1.dp, borderColor, shape)
+                .background(backgroundColor)
                 .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
                 .padding(horizontal = 9.dp, vertical = 3.dp)
     ) {

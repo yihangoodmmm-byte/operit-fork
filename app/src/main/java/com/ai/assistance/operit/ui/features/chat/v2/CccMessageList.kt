@@ -55,9 +55,14 @@ fun CccMessageList(
             count = messages.size,
             key = { index -> messages[index].timestamp }
         ) { index ->
+            val message = messages[index]
+            // 连续的同角色消息只在第一条画角色行（否则长对话里每段都顶一个「● Operit」）
+            val previous = messages.getOrNull(index - 1)
+            val showRole = previous == null || previous.sender != message.sender
             CccMessageItem(
-                message = messages[index],
-                enableDialogs = enableDialogs
+                message = message,
+                enableDialogs = enableDialogs,
+                showRole = showRole
             )
         }
     }
