@@ -1197,6 +1197,63 @@ sealed class Screen(
         }
     }
 
+    // 扩展与技能
+    data object Skills :
+            Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_skills) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.operit.ui.features.packages.screens.CccSkillsScreen(
+                modifier = androidx.compose.ui.Modifier.fillMaxSize()
+            )
+        }
+    }
+
+    // 文档预览
+    data object DocumentPreview :
+            Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_document_preview) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.operit.ui.features.preview.CccDocumentViewer(
+                modifier = androidx.compose.ui.Modifier.fillMaxSize()
+            )
+        }
+    }
+
+    // 本地 Git 查看器
+    data object GitViewer :
+            Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_git_viewer) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.operit.ui.features.gitviewer.CccGitViewer(
+                modifier = androidx.compose.ui.Modifier.fillMaxSize()
+            )
+        }
+    }
+
     // FFmpeg Toolbox screen
     data object FFmpegToolbox :
             Screen(navItem = NavItem.Toolbox, titleRes = R.string.screen_title_ffmpeg_toolbox) {

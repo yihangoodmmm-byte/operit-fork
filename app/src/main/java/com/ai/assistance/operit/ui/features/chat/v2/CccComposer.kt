@@ -67,6 +67,14 @@ fun CccComposer(
     modifier: Modifier = Modifier,
     /** 模型快捷切换浮窗（由调用方提供，锚定在模型芯片上）。 */
     modelPicker: @Composable () -> Unit = {},
+    /**
+     * 推理档位芯片的文案。为 null 表示当前模型不支持推理档位（TOGGLE_ONLY / UNSUPPORTED），
+     * 此时不渲染这颗芯片——空着比放一个点不动的假入口好。
+     */
+    reasoningLabel: String? = null,
+    onReasoningClick: (() -> Unit)? = null,
+    /** 推理档位浮窗，锚定在推理芯片上。 */
+    reasoningPicker: @Composable () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
     val fieldShape = RoundedCornerShape(22.dp)
@@ -92,6 +100,13 @@ fun CccComposer(
             Box {
                 HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
                 modelPicker()
+            }
+            // 推理档位：只有在当前模型真的支持分档时才出现
+            if (reasoningLabel != null && onReasoningClick != null) {
+                Box {
+                    HintChip(text = reasoningLabel, onClick = onReasoningClick)
+                    reasoningPicker()
+                }
             }
             HintChip(
                 text = contextText,

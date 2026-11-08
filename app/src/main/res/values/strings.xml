@@ -8511,4 +8511,10 @@
     <string name="codex_reset_after_clock">%1$02d:%2$02d 后重置</string>
     <string name="screen_title_usage_statistics">用量与余额</string>
     <string name="tool_usage_statistics_desc">Token 与费用统计、活跃度日历</string>
+    <string name="screen_title_skills">扩展与技能</string>
+    <string name="tool_skills_desc">管理已安装技能，控制是否对 AI 可见</string>
+    <string name="screen_title_document_preview">文档预览</string>
+    <string name="tool_document_preview_desc">预览 Markdown、PDF 与 Office 文档</string>
+    <string name="screen_title_git_viewer">Git 仓库</string>
+    <string name="tool_git_viewer_desc">查看本地仓库的分支与提交历史</string>
 </resources>

@@ -38,7 +38,10 @@ import com.ai.assistance.operit.data.preferences.FunctionalConfigManager
 import com.ai.assistance.operit.data.preferences.FunctionConfigMapping
 import com.ai.assistance.operit.data.preferences.ModelConfigManager
 import com.ai.assistance.operit.ui.features.chat.v2.CccComposer
+import com.ai.assistance.operit.api.chat.llmprovider.ThinkingQualityMappingRegistry
 import com.ai.assistance.operit.ui.features.chat.v2.CccModelPicker
+import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningOption
+import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningPicker
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
 import com.ai.assistance.operit.ui.features.chat.v2.formatTokenCount as cccFormatK
 import androidx.compose.ui.graphics.Color
@@ -1547,6 +1550,38 @@ private fun ChatInputBottomBar(
                     .ifBlank { cccRawModelName.split(',').firstOrNull()?.trim().orEmpty() }
             }
         }
+    // ── 推理档位 ─────────────────────────────────────────────────
+    // 档位不是全局常量：每个「模型配置 × 模型」可以自带 thinkingConfigurations 规则，
+    // 解析出的 options 才是这个模型真正支持的档位，所以必须按当前配置实时解析。
+    val cccCurrentSummary = cccConfigSummaries.find { it.id == cccCurrentMapping.configId }
+    val cccThinkingMapping =
+        remember(cccCurrentSummary, cccModelName) {
+            cccCurrentSummary?.let { summary ->
+                ThinkingQualityMappingRegistry.resolve(
+                    providerTypeId = summary.apiProviderTypeId,
+                    modelName = cccModelName.ifBlank { summary.modelName },
+                    apiEndpoint = summary.apiEndpoint,
+                    thinkingConfigurations = summary.thinkingConfigurations,
+                )
+            }
+        }
+    val cccThinkingOptionId by actualViewModel.thinkingOptionId.collectAsState()
+    val cccReasoningOptions =
+        remember(cccThinkingMapping) {
+            cccThinkingMapping?.options.orEmpty().map { CccReasoningOption(it.id, it.displayLabel) }
+        }
+    val cccReasoningLabel: String? =
+        remember(cccReasoningOptions, cccThinkingOptionId, cccThinkingMapping) {
+            when {
+                cccThinkingMapping == null -> null
+                cccReasoningOptions.isNotEmpty() ->
+                    cccReasoningOptions.firstOrNull { it.id == cccThinkingOptionId }?.label
+                        ?: cccReasoningOptions.first().label
+                else -> null
+            }
+        }
+    var cccShowReasoningPicker by remember { mutableStateOf(false) }
+
     val waifuPreferences = remember(context) { WaifuPreferences.getInstance(context) }
     val userPreferences = remember(context) { UserPreferencesManager.getInstance(context) }
     val clipboardManager = remember(context) {
@@ -1937,6 +1972,20 @@ private fun ChatInputBottomBar(
                     onManageModels = {
                         cccShowModelPicker = false
                         onNavigateToModelConfig()
+                    },
+                )
+            },
+            reasoningLabel = cccReasoningLabel,
+            onReasoningClick = { cccShowReasoningPicker = true },
+            reasoningPicker = {
+                CccReasoningPicker(
+                    expanded = cccShowReasoningPicker,
+                    onDismiss = { cccShowReasoningPicker = false },
+                    options = cccReasoningOptions,
+                    currentId = cccThinkingOptionId,
+                    onPick = { optionId ->
+                        cccShowReasoningPicker = false
+                        actualViewModel.updateThinkingOptionId(optionId)
                     },
                 )
             },

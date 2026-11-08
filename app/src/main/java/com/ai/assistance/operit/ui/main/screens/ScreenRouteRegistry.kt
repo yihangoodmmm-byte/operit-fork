@@ -3,8 +3,11 @@ package com.ai.assistance.operit.ui.main.screens
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.AutoMode
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DataObject
@@ -309,6 +312,33 @@ object ScreenRouteRegistry {
                 descriptionResId = R.string.tool_usage_statistics_desc,
                 icon = Icons.Default.Analytics,
                 order = 135
+            ),
+            hostEntryDefinition(
+                entryId = "toolbox.skills",
+                screen = Screen.Skills,
+                surface = NavigationSurface.TOOLBOX,
+                titleResId = R.string.screen_title_skills,
+                descriptionResId = R.string.tool_skills_desc,
+                icon = Icons.Default.Extension,
+                order = 136
+            ),
+            hostEntryDefinition(
+                entryId = "toolbox.document_preview",
+                screen = Screen.DocumentPreview,
+                surface = NavigationSurface.TOOLBOX,
+                titleResId = R.string.screen_title_document_preview,
+                descriptionResId = R.string.tool_document_preview_desc,
+                icon = Icons.Default.Description,
+                order = 137
+            ),
+            hostEntryDefinition(
+                entryId = "toolbox.git_viewer",
+                screen = Screen.GitViewer,
+                surface = NavigationSurface.TOOLBOX,
+                titleResId = R.string.screen_title_git_viewer,
+                descriptionResId = R.string.tool_git_viewer_desc,
+                icon = Icons.Default.AccountTree,
+                order = 138
             ),
             hostEntryDefinition(
                 entryId = "toolbox.token_config",
