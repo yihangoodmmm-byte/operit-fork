@@ -1326,7 +1326,8 @@ open class GeminiProvider(
                     )
                     streamCollector.emit("\n\n")
                     streamCollector.emit(context.getString(R.string.openai_stream_interrupted_kept))
-                    onUsageFinalized?.invoke(retryCount + 1)
+                    // 中断不 finalize usage：网络中断(IOException)不是正常完成，
+                    // 对齐太墟 Failed 语义，用量留给续写/下一轮结算，避免误判「正常完成」。
                     return@stream
                 }
 
@@ -1822,7 +1823,13 @@ open class GeminiProvider(
             }
 
             if (!streamCompletionConfirmed) {
-                throw IOException(context.getString(R.string.provider_error_network_interrupted))
+                // 补尾：与 OpenAI 对齐，中转站/网关可能省略结束信号，
+                // 只要已收到正文就按正常完成处理，而不是把「断连」误判成网络中断。
+                if (receivedContent.length > 0) {
+                    streamCompletionConfirmed = true
+                } else {
+                    throw IOException(context.getString(R.string.provider_error_network_interrupted))
+                }
             }
 
             // 确保思考模式正确结束

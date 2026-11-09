@@ -185,6 +185,11 @@ private class RelayingRevisableStream(
 
     override suspend fun collect(collector: StreamCollector<String>) {
         try {
+            // 收集开始前先检查取消：冷流一旦被取消，就不应再触发上游求值，
+            // 否则 delegate 的 sendMessage 冷流仍会被 collect（ColdStreamCancellationTest 断言）。
+            if (cancelled.get()) {
+                throw CancellationException("AI request was cancelled")
+            }
             upstream.collect(
                 object : StreamCollector<String> {
                     override suspend fun emit(value: String) {

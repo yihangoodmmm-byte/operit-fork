@@ -3496,7 +3496,8 @@ open class OpenAIProvider(
                     )
                     emitter.emitTag("\n\n")
                     emitter.emitTag(context.getString(R.string.openai_stream_interrupted_kept))
-                    onUsageFinalized?.invoke(retryCount + 1)
+                    // 中断不 finalize usage：网络中断(IOException)不是正常完成，
+                    // 对齐太墟 Failed 语义，用量留给续写/下一轮结算，避免误判「正常完成」。
                     return@stream
                 }
 

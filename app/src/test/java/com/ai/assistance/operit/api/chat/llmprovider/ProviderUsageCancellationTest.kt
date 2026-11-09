@@ -16,6 +16,7 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.After
 import org.junit.Before
@@ -88,8 +89,8 @@ class ProviderUsageCancellationTest {
     }
 
     @Test
-    fun `OpenAI EOF without a terminal signal does not finalize usage`() {
-        assertIncompleteStreamDoesNotFinalize(
+    fun `OpenAI EOF with content is finalized as complete`() {
+        assertIncompleteStreamFinalizes(
             provider = openAiProvider(OPENAI_INCOMPLETE_STREAM_RESPONSE, "text/event-stream"),
         )
     }
@@ -102,15 +103,15 @@ class ProviderUsageCancellationTest {
     }
 
     @Test
-    fun `Gemini EOF without a terminal signal does not finalize usage`() {
-        assertIncompleteStreamDoesNotFinalize(
+    fun `Gemini EOF with content is finalized as complete`() {
+        assertIncompleteStreamFinalizes(
             provider = geminiProvider(GEMINI_INCOMPLETE_STREAM_RESPONSE, "text/event-stream"),
         )
     }
 
     @Test
-    fun `Gemini unspecified finish reason does not finalize usage`() {
-        assertIncompleteStreamDoesNotFinalize(
+    fun `Gemini unspecified finish reason with content is finalized as complete`() {
+        assertIncompleteStreamFinalizes(
             provider = geminiProvider(GEMINI_UNSPECIFIED_STREAM_RESPONSE, "text/event-stream"),
         )
     }
@@ -145,8 +146,8 @@ class ProviderUsageCancellationTest {
     }
 
     @Test
-    fun `Claude EOF without a terminal signal does not finalize usage`() {
-        assertIncompleteStreamDoesNotFinalize(
+    fun `Claude EOF with content is finalized as complete`() {
+        assertIncompleteStreamFinalizes(
             provider = claudeProvider(CLAUDE_INCOMPLETE_STREAM_RESPONSE, "text/event-stream"),
         )
     }
@@ -223,20 +224,17 @@ class ProviderUsageCancellationTest {
                         enableRetry = false,
                     )
                 val received = StringBuilder()
-                try {
-                    response.collect { chunk -> received.append(chunk) }
-                    fail("terminal stream failure must propagate")
-                } catch (_: IOException) {
-                    // The generated response is retained for interrupted-message finalization.
-                }
+                // 中断即正常状态：保留已产出内容并追加中断标记，不回滚重发，也不再抛出 IOException。
+                response.collect { chunk -> received.append(chunk) }
 
                 val events = (response as TextStreamEventCarrier).eventChannel.replayCache
-                assertEquals("answer", received.toString())
-                assertEquals(listOf(TextStreamEventType.SAVEPOINT), events.map { it.eventType })
+                assertEquals("answer\n\nstatus", received.toString())
+                assertTrue(events.isEmpty())
             }
         }
     }
 
+    /** 无正文的 EOF/无终态信号：仍走 IOException 错误路径，不 finalize（如 Gemini prompt feedback）。 */
     private fun assertIncompleteStreamDoesNotFinalize(provider: AIService, stream: Boolean = true) {
         val context = mock<Context>()
         whenever(context.applicationContext).thenReturn(context)
@@ -265,12 +263,45 @@ class ProviderUsageCancellationTest {
                     response.collect { }
                     fail("incomplete stream must fail")
                 } catch (_: IOException) {
-                    // A bare EOF must reach the retry/error path instead of finalizing usage.
+                    // A bare EOF with no content must reach the retry/error path instead of finalizing usage.
                 }
             }
         }
 
         assertEquals(emptyList<Int?>(), finalizedAttempts)
+    }
+
+    /** 有正文的 EOF（中转站/网关省略结束信号）：补尾按正常完成处理并 finalize。 */
+    private fun assertIncompleteStreamFinalizes(provider: AIService, stream: Boolean = true) {
+        val context = mock<Context>()
+        whenever(context.applicationContext).thenReturn(context)
+        whenever(context.getString(any<Int>())).thenReturn("status")
+        whenever(context.getString(any<Int>(), any())).thenReturn("status")
+        val finalizedAttempts = mutableListOf<Int?>()
+
+        Mockito.mockStatic(AppLogger::class.java).use {
+            runBlocking {
+                val response =
+                    provider.sendMessage(
+                        context = context,
+                        chatHistory = listOf(PromptTurn(PromptTurnKind.USER, "Hi")),
+                        modelParameters = emptyList(),
+                        enableThinking = false,
+                        stream = stream,
+                        availableTools = null,
+                        preserveThinkInHistory = false,
+                        onTokensUpdated = { _, _, _ -> },
+                        onUsageReported = null,
+                        onNonFatalError = {},
+                        enableRetry = false,
+                        onUsageFinalized = { attempt -> finalizedAttempts += attempt },
+                    )
+                // 补尾：有正文但缺结束信号，按正常完成处理，不抛 IOException。
+                response.collect { }
+            }
+        }
+
+        assertEquals(listOf(1), finalizedAttempts)
     }
 
     private fun assertStreamFinalizes(provider: AIService) {
