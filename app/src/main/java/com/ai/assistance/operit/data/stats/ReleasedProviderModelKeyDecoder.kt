@@ -34,9 +34,13 @@ internal object ReleasedProviderModelKeyDecoder {
         }
         val providerAlias = encoded.substring(0, separator)
         val model = encoded.substring(separator + 1)
+        // 未知的 provider 别名说明这是 pre-provider/model 时代的 function key（如 FILE_BINDING），
+        // 不是 provider:model 格式，应跳过而非误解析成 provider=FILE、model=BINDING。
+        val provider = aliases[providerAlias]
+            ?: throw IllegalArgumentException("released token key has unknown provider alias: $providerAlias")
         return ReleasedProviderModelKey(
             storedProviderModel = "$providerAlias:$model",
-            provider = if (known == null) providerAlias else aliases.getValue(providerAlias),
+            provider = provider,
             model = model,
         )
     }

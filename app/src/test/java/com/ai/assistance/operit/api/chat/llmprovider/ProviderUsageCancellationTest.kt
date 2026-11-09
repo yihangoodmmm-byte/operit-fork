@@ -229,7 +229,9 @@ class ProviderUsageCancellationTest {
 
                 val events = (response as TextStreamEventCarrier).eventChannel.replayCache
                 assertEquals("answer\n\nstatus", received.toString())
-                assertTrue(events.isEmpty())
+                // 每次 sendMessage 都会先 emit 一个初始 SAVEPOINT；「不 rollback」体现在
+                // 没有 ROLLBACK 事件，而不是完全没有 SAVEPOINT。
+                assertEquals(listOf(TextStreamEventType.SAVEPOINT), events.map { it.eventType })
             }
         }
     }
