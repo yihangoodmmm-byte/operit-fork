@@ -3494,9 +3494,7 @@ open class OpenAIProvider(
                         "【发送消息】输出中断，保留已产出内容(" + partialLength + " 字)，不再回滚重发",
                         e
                     )
-                    emitter.emitTag("
-
-")
+                    emitter.emitTag("\n\n")
                     emitter.emitTag(context.getString(R.string.openai_stream_interrupted_kept))
                     onUsageFinalized?.invoke(retryCount + 1)
                     return@stream
