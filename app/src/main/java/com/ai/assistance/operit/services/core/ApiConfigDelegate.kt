@@ -3,6 +3,7 @@ package com.ai.assistance.operit.services.core
 import android.content.Context
 import com.ai.assistance.operit.util.AppLogger
 import com.ai.assistance.operit.api.chat.EnhancedAIService
+import com.ai.assistance.operit.core.chat.ModelContextWindows
 import com.ai.assistance.operit.data.model.ActivePrompt
 import com.ai.assistance.operit.data.model.ApiKeyFormatValidator
 import com.ai.assistance.operit.data.model.ApiProviderType
@@ -96,17 +97,9 @@ class ApiConfigDelegate(
             MutableStateFlow(ModelConfigDefaults.DEFAULT_ENABLE_MAX_CONTEXT_MODE)
     val enableMaxContextMode: StateFlow<Boolean> = _enableMaxContextMode.asStateFlow()
 
-    val contextLength: StateFlow<Float> = combine(
-        _enableMaxContextMode,
-        _contextLength,
-        _maxContextLength
-    ) { isMaxMode, normalLength, maxLength ->
-        if (isMaxMode) maxLength else normalLength
-    }.stateIn(
-            configScope,
-            kotlinx.coroutines.flow.SharingStarted.Eagerly,
-            ModelConfigDefaults.DEFAULT_CONTEXT_LENGTH
-    )
+    // 「直接使用模型支持的最大上下文」：生效长度不再做 64K/200K 二选一，
+    // 直接用最大上下文作为兜底（模型级推断见 effectiveContextLength）。
+    val contextLength: StateFlow<Float> = maxContextLengthSetting
 
     private val _summaryTokenThreshold =
             MutableStateFlow(ModelConfigDefaults.DEFAULT_SUMMARY_TOKEN_THRESHOLD)
@@ -262,16 +255,16 @@ class ApiConfigDelegate(
 
     val effectiveContextLength: StateFlow<Float> =
             combine(
-                effectiveEnableMaxContextMode,
-                effectiveBaseContextLength,
+                effectiveChatConfig.map { config -> config.modelName },
                 effectiveMaxContextLengthSetting
-            ) { isMaxMode, normalLength, maxLength ->
-                if (isMaxMode) maxLength else normalLength
+            ) { modelName, maxLength ->
+                ModelContextWindows.resolveTokens(modelName)?.let { it / 1024f }
+                    ?: maxLength
             }
                 .stateIn(
                     configScope,
                     kotlinx.coroutines.flow.SharingStarted.Eagerly,
-                    ModelConfigDefaults.DEFAULT_CONTEXT_LENGTH
+                    ModelConfigDefaults.DEFAULT_MAX_CONTEXT_LENGTH
                 )
 
     val effectiveSummaryTokenThreshold: StateFlow<Float> =
@@ -390,7 +383,8 @@ class ApiConfigDelegate(
 
     private fun buildChatContextSettings(configId: String, config: ModelConfigData): ChatContextSettings {
         val effectiveContextLength =
-            if (config.enableMaxContextMode) config.maxContextLength else config.contextLength
+            ModelContextWindows.resolveTokens(config.modelName)?.let { it / 1024f }
+                ?: config.maxContextLength
         return ChatContextSettings(
             configId = configId,
             baseContextLength = config.contextLength,

@@ -2339,18 +2339,21 @@ class EnhancedAIService private constructor(private val context: Context) {
             publishEstimate = true
         )
 
-        // After a tool call, check if token usage exceeds the threshold
+        // After a tool call, check if token usage exceeds the threshold.
+        // 只有真正接近上下文上限（90%）才硬中断并总结，否则让 AI 完成当前轮的
+        // 工具结果分析——原先在 70% 就 return，正是「输出到一半被掐断」的根因。
         if (maxTokens > 0) {
             val usageRatio = currentTokens.toDouble() / maxTokens.toDouble()
+            val hardLimit = 0.90
 
-            if (usageRatio >= tokenUsageThreshold) {
-                AppLogger.w(TAG, "Token usage ($usageRatio) exceeds threshold ($tokenUsageThreshold) after tool call. Triggering summary.")
+            if (usageRatio >= hardLimit) {
+                AppLogger.w(TAG, "Token usage ($usageRatio) exceeds hard limit ($hardLimit) after tool call. Triggering summary.")
                 onTokenLimitExceeded?.invoke()
                 context.isConversationActive.set(false)
                 if (!isSubTask) {
                     stopAiService(characterName, avatarUri)
                 }
-                // 关键修复：在触发总结后，直接返回，因为后续流程将由回调处理
+                // 触发总结后直接返回，后续流程由回调处理
                 return
             }
         }

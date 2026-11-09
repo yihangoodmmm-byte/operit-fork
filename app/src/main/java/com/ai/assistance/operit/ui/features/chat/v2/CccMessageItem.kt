@@ -28,6 +28,7 @@ import com.ai.assistance.operit.data.model.ChatMessage
 import com.ai.assistance.operit.ui.common.markdown.StreamMarkdownRenderer
 import com.ai.assistance.operit.ui.features.chat.components.rememberRevisableTextStream
 import com.ai.assistance.operit.util.markdown.toCharStream
+import com.ai.assistance.operit.util.stream.coalesceRevisable
 
 /**
  * 单条消息（照 cccodroid 的 `.msg` / `.who` / `.bubble` 结构移植）。
@@ -59,8 +60,12 @@ fun CccMessageItem(
     val isSummary = message.sender == "summary"
 
     // 流式消息要经过一次多路复用再交给渲染器（直接订阅源流会把它标记成已关闭）
+    // 16ms 合批（阶段二切片一）：上游每个 token 推一个片段，逐片解析会让长输出掉帧。
+    // 用 coalesceRevisable 而不是裸合批，是因为修订事件走 eventChannel 旁路，
+    // 裸 stream 构建器会新建通道把它吞掉——那正是 RateLimitedAIService 踩过的坑。
     val displayStream = rememberRevisableTextStream(message.contentStream)
-    val charStream = remember(displayStream) { displayStream?.toCharStream() }
+    val charStream =
+        remember(displayStream) { displayStream?.coalesceRevisable()?.toCharStream() }
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (isUser) {
