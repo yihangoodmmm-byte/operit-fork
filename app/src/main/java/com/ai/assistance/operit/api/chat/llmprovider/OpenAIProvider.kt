@@ -3476,6 +3476,32 @@ open class OpenAIProvider(
                 )
                 return@stream
             } catch (e: Exception) {
+                // ── 中断即正常状态（移植太墟的会话语义）──────────────────────
+                // 原来这里无条件走"回滚到请求起点 + 重发"：
+                //   emitRollback → TextStreamRevisionTracker.truncate(0) → 已输出的内容被清空
+                // 用户看到的就是"输出到一半突然消失，然后从头再来"。
+                //
+                // 太墟把中断当成会话的正常状态处理（保留已产出、可继续、可回退），
+                // 而不是用重发去掩盖。这里对齐该语义：只要已经有内容发出去，
+                // 就不再回滚重发，而是保留内容、补一行中断标记、正常结束本轮。
+                // 没有产出内容时（例如 429/连不上）仍然走原有重试，那才是重试该干的事。
+                val partialLength = receivedContent.length
+                val isCancellation =
+                    e is kotlinx.coroutines.CancellationException || e is UserCancellationException
+                if (partialLength > 0 && !isCancellation) {
+                    AppLogger.w(
+                        "AIService",
+                        "【发送消息】输出中断，保留已产出内容(" + partialLength + " 字)，不再回滚重发",
+                        e
+                    )
+                    emitter.emitTag("
+
+")
+                    emitter.emitTag(context.getString(R.string.openai_stream_interrupted_kept))
+                    onUsageFinalized?.invoke(retryCount + 1)
+                    return@stream
+                }
+
                 lastException = e
                 retryCount = handleRetryableError(
                     context = context,

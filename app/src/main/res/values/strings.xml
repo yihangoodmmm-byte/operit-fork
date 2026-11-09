@@ -8517,4 +8517,5 @@
     <string name="tool_document_preview_desc">预览 Markdown、PDF 与 Office 文档</string>
     <string name="screen_title_git_viewer">Git 仓库</string>
     <string name="tool_git_viewer_desc">查看本地仓库的分支与提交历史</string>
+    <string name="openai_stream_interrupted_kept">〔连接中断，以上内容已保留〕</string>
 </resources>
