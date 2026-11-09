@@ -1997,6 +1997,24 @@ open class ClaudeProvider(
                 logFinalOutput(receivedContent, "Claude final output summary: ")
                 return@stream
             } catch (e: Exception) {
+                // 与 OpenAI 对齐：中断是正常状态，已产出的内容不能被回滚重发清空。
+                // 旧行为是 emitRollback -> receivedContent.setLength(0) -> 从头重打，
+                // 用户看到内容消失后重来。只要已经有产出且不是用户取消，就保留并结束本轮。
+                val partialLength = receivedContent.length
+                val isCancellation =
+                    e is kotlinx.coroutines.CancellationException || e is UserCancellationException
+                if (partialLength > 0 && !isCancellation) {
+                    AppLogger.w(
+                        "AIService",
+                        "【Claude】输出中断，保留已产出内容(" + partialLength + " 字)，不再回滚重发",
+                        e
+                    )
+                    emit("\n\n")
+                    emit(context.getString(R.string.openai_stream_interrupted_kept))
+                    onUsageFinalized?.invoke(retryCount + 1)
+                    return@stream
+                }
+
                 lastException = e
 
                 retryCount = handleRetryableError(

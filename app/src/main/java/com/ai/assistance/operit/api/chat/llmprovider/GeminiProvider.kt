@@ -1316,6 +1316,20 @@ open class GeminiProvider(
                 onUsageFinalized?.invoke(retryCount + 1)
                 return@stream
             } catch (e: Exception) {
+                // 与 OpenAI / Claude 对齐：中断保留已产出内容，不再回滚到 0 重发。
+                val partialLength = receivedContent.length
+                val isCancellation =
+                    e is kotlinx.coroutines.CancellationException || e is UserCancellationException
+                if (partialLength > 0 && !isCancellation) {
+                    logError(
+                        "【Gemini】输出中断，保留已产出内容(" + partialLength + " 字)，不再回滚重发"
+                    )
+                    emit("\n\n")
+                    emit(context.getString(R.string.openai_stream_interrupted_kept))
+                    onUsageFinalized?.invoke(retryCount + 1)
+                    return@stream
+                }
+
                 lastException = e
                 retryCount = handleRetryableError(
                     context = context,
