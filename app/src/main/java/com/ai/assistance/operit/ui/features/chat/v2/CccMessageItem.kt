@@ -28,12 +28,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.data.model.ChatMessage
 import com.ai.assistance.operit.ui.common.markdown.StreamMarkdownRenderer
 import com.ai.assistance.operit.ui.features.chat.components.rememberRevisableTextStream
 import com.ai.assistance.operit.util.markdown.toCharStream
 import com.ai.assistance.operit.util.stream.coalesceRevisable
+
+/** 消息淡入的初始下移量（像素）。见下方 graphicsLayer 注释。 */
+private const val ENTRANCE_TRANSLATE_PX = 12f
 
 /**
  * 单条消息（照 cccodroid 的 `.msg` / `.who` / `.bubble` 结构移植）。
@@ -85,7 +89,9 @@ fun CccMessageItem(
                 .fillMaxWidth()
                 .graphicsLayer {
                     alpha = entranceAlpha.value
-                    translationY = (1f - entranceAlpha.value) * 4.dp.toPx()
+                    // graphicsLayer 的 lambda 不是 Density 作用域，toPx() 在这里不可用；
+                    // 位移量直接用像素常量（4dp 在常见密度下约 10~16px，取 12f 与设计值一致）
+                    translationY = (1f - entranceAlpha.value) * ENTRANCE_TRANSLATE_PX
                 }
     ) {
         if (isUser) {
