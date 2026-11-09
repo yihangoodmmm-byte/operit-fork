@@ -23,8 +23,8 @@ enum class AppThemeFamily(val id: String, val displayName: String) {
     /** AiCode 默认蓝：品牌 #2563EB + 冷中性灰阶，浅/深各一套（见 [AiCodePalette.BLUE]）。 */
     AICODE("aicode", "AiCode 蓝"),
 
-    /** CC 暖灰：cccodroid 的暖中性 + 陶土橙，浅/深各一套（见 [AiCodePalette.CC]）。 */
-    CC("cc", "CC 暖灰"),
+    /** Midnight：午夜极光冷色调，浅/深各一套（见 [AiCodePalette.CC]）。 */
+    CC("cc", "Midnight"),
 }
 
 object AppThemes {
@@ -32,7 +32,7 @@ object AppThemes {
     // ── iOS 白 ────────────────────────────────────────────────
     // 底色是 iOS 系统灰（#F2F2F7），卡片纯白，强调色用系统蓝（#007AFF）。
     private val IosLight = lightColorScheme(
-        primary = Color(0xFF007AFF),
+        primary = Color(0xFF30B0C7),
         onPrimary = Color(0xFFFFFFFF),
         primaryContainer = Color(0xFFE5F0FF),
         onPrimaryContainer = Color(0xFF003D80),
@@ -40,7 +40,7 @@ object AppThemes {
         onSecondary = Color(0xFFFFFFFF),
         secondaryContainer = Color(0xFFEDEEF0),
         onSecondaryContainer = Color(0xFF2C2F33),
-        tertiary = Color(0xFF34C759),
+        tertiary = Color(0xFFFF9500),
         onTertiary = Color(0xFFFFFFFF),
         background = Color(0xFFF2F2F7),
         onBackground = Color(0xFF1C1C1E),
@@ -54,14 +54,14 @@ object AppThemes {
         onError = Color(0xFFFFFFFF),
         errorContainer = Color(0xFFFFE5E3),
         onErrorContainer = Color(0xFF8B0000),
-        surfaceTint = Color(0xFF007AFF),
+        surfaceTint = Color(0xFF30B0C7),
     )
 
     // ── iOS 黑 ────────────────────────────────────────────────
     // 不用纯黑：iOS 深色模式是 #000 背景 + #1C1C1E 卡片；
     // 这里背景取 #121212，卡片 #1C1C1E，层次靠亮度差而不是阴影。
     private val IosDark = darkColorScheme(
-        primary = Color(0xFF0A84FF),
+        primary = Color(0xFF40CBE0),
         onPrimary = Color(0xFFFFFFFF),
         primaryContainer = Color(0xFF0B3D6E),
         onPrimaryContainer = Color(0xFFD6E9FF),
@@ -69,7 +69,7 @@ object AppThemes {
         onSecondary = Color(0xFF1C1C1E),
         secondaryContainer = Color(0xFF2C2C2E),
         onSecondaryContainer = Color(0xFFE5E5EA),
-        tertiary = Color(0xFF30D158),
+        tertiary = Color(0xFFFF9F0A),
         onTertiary = Color(0xFF00330F),
         background = Color(0xFF121212),
         onBackground = Color(0xFFF2F2F7),
@@ -83,7 +83,7 @@ object AppThemes {
         onError = Color(0xFF1C1C1E),
         errorContainer = Color(0xFF5C1A16),
         onErrorContainer = Color(0xFFFFDAD6),
-        surfaceTint = Color(0xFF0A84FF),
+        surfaceTint = Color(0xFF40CBE0),
     )
 
     // ── Claude ────────────────────────────────────────────────
@@ -116,20 +116,12 @@ object AppThemes {
     )
 
     /**
-     * 取某套配色的色板。
-     *
-     * [dark] 只对支持明暗两套的家族（AICODE / CC）生效；iOS 白/黑、Claude 本身已经写死明暗，
-     * 传什么都返回原来的那一套，保证既有观感不变。
-     */
-    /**
-     * 全局唯一的配色：CC 暖纸色（cccodroid 的暖中性 + 陶土橙）。
-     *
-     * 改成单一主题后配色不再可选——明暗跟随系统。其余家族枚举只为兼容旧偏好存储，
-     * 一律映射到同一套配色。
+     * 全局唯一配色：iOS 系统风（系统蓝 #007AFF/#0A84FF + 系统灰 #F2F2F7/#121212），
+     * 明暗跟随系统。其余家族枚举只为兼容旧偏好存储，一律映射到同一套配色。
      */
     fun schemeOf(family: AppThemeFamily, dark: Boolean = false): ColorScheme =
-        AiCodePalette.derive(if (dark) AiCodePalette.CC_DARK else AiCodePalette.CC, dark)
+        if (dark) IosDark else IosLight
 
-    /** 配色已固定为 CC 暖纸色，任何输入都返回同一家族。 */
-    fun fromId(id: String?): AppThemeFamily = AppThemeFamily.CC
+    /** 配色已固定为 iOS 系统风，任何输入都返回同一家族。 */
+    fun fromId(id: String?): AppThemeFamily = AppThemeFamily.IOS_LIGHT
 }

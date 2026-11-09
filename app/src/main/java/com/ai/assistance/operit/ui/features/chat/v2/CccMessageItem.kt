@@ -1,20 +1,8 @@
 package com.ai.assistance.operit.ui.features.chat.v2
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -24,9 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +54,23 @@ fun CccMessageItem(
     val isUser = message.sender == "user"
     val isSummary = message.sender == "summary"
 
+    // ── 控制台条目：角色色 + 等宽标签 ─────────────────────────────
+    // 用户=珊瑚红，摘要=青绿，助手=电光青绿。颜色是唯一的角色区分，
+    // 布局统一左对齐（不再有 cccodroid 的右气泡）。
+    val roleColor =
+        when {
+            isUser -> MaterialTheme.colorScheme.tertiary
+            isSummary -> MaterialTheme.colorScheme.secondary
+            else -> MaterialTheme.colorScheme.primary
+        }
+    val roleLabel =
+        when {
+            isUser -> "You"
+            isSummary -> "Summary"
+            message.roleName.isNotBlank() -> message.roleName
+            else -> "Agent"
+        }
+
     // 流式消息要经过一次多路复用再交给渲染器（直接订阅源流会把它标记成已关闭）
     // 16ms 合批（阶段二切片一）：上游每个 token 推一个片段，逐片解析会让长输出掉帧。
     // 用 coalesceRevisable 而不是裸合批，是因为修订事件走 eventChannel 旁路，
@@ -76,11 +79,12 @@ fun CccMessageItem(
     val charStream =
         remember(displayStream) { displayStream?.coalesceRevisable()?.toCharStream() }
 
-    // 消息淡入（cccodroid 的 .msg { animation: fade .18s }）：
-    // 首次进入组合时 opacity 0→1、translateY 4dp→0，之后内容更新（流式）不再重播。
+    // 消息进入动画（cccodroid 的 .msg { animation: fade .18s } 的增强版）：
+    // 首次进入组合时 scale 0.96→1、opacity 0→1、translateY 12px→0，
+    // 之后内容更新（流式）不再重播。
     val entranceAlpha = remember { Animatable(0f) }
     LaunchedEffect(message.timestamp) {
-        entranceAlpha.animateTo(1f, tween(durationMillis = 180, easing = FastOutSlowInEasing))
+        entranceAlpha.animateTo(1f, tween(durationMillis = 260, easing = FastOutSlowInEasing))
     }
 
     Column(
@@ -92,95 +96,32 @@ fun CccMessageItem(
                     // graphicsLayer 的 lambda 不是 Density 作用域，toPx() 在这里不可用；
                     // 位移量直接用像素常量（4dp 在常见密度下约 10~16px，取 12f 与设计值一致）
                     translationY = (1f - entranceAlpha.value) * ENTRANCE_TRANSLATE_PX
+                    val s = 0.96f + 0.04f * entranceAlpha.value
+                    scaleX = s
+                    scaleY = s
                 }
     ) {
-        if (isUser) {
-            // ── 用户：右对齐、**按内容收缩**、上限 85% / 680dp ──────────
-            // cccodroid 的写法是 max-width:min(85%,680px)，即"最宽到这里"，
-            // 不是"固定这么宽"。用 fillMaxWidth(0.85f) 会得到一块永远 85% 宽的色块，
-            // 短消息看起来像被拉长，所以这里用 BoxWithConstraints 算出上限再让内容自己决定宽度。
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val maxBubbleWidth =
-                    minOf(maxWidth * CccTokens.UserBubbleMaxWidthFraction, CccTokens.MessageMaxWidth)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .widthIn(max = maxBubbleWidth)
-                                .clip(RoundedCornerShape(CccTokens.UserBubbleRadius))
-                                // 用户气泡用主色的极浅染色（cccodroid 的 --bubble-user 也是带色倾向的，
-                                // 不是中性灰）。纯 surfaceVariant 在深色下是一块发闷的灰板，和正文拉不开层次。
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.13f))
-                                .padding(
-                                    horizontal = CccTokens.UserBubblePaddingH,
-                                    vertical = CccTokens.UserBubblePaddingV
-                                )
-                    ) {
-                        MessageBody(
-                            message = message,
-                            charStream = charStream,
-                            enableDialogs = enableDialogs
-                        )
-                    }
-                }
-            }
-        } else {
-            // ── 助手 / 系统：无气泡，先一行角色，再正文 ─────────────────
-            if (showRole) {
-                RoleLine(
-                    label =
-                        when {
-                            isSummary -> "摘要"
-                            message.roleName.isNotBlank() -> message.roleName
-                            else -> "Operit"
-                        },
-                    dotColor =
-                        if (isSummary) {
-                            MaterialTheme.colorScheme.tertiary
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        }
-                )
-            }
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = CccTokens.BotContentPaddingHorizontal)
-            ) {
-                MessageBody(
-                    message = message,
-                    charStream = charStream,
-                    enableDialogs = enableDialogs
-                )
-            }
+        if (showRole) {
+            RoleLine(label = roleLabel, color = roleColor)
         }
+        MessageBody(
+            message = message,
+            charStream = charStream,
+            enableDialogs = enableDialogs
+        )
     }
 }
 
-/** cccodroid 的 `.who`：6dp 圆点 + 11.5sp/0.4 字距的弱化标签。 */
+/** 角色标签：普通小字，不用 mono/`>`/uppercase 这类 AI 味写法。 */
 @Composable
-private fun RoleLine(label: String, dotColor: androidx.compose.ui.graphics.Color) {
-    Row(
-        modifier = Modifier.padding(bottom = CccTokens.WhoBottom),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(CccTokens.WhoDotSize)
-                    .clip(CircleShape)
-                    .background(dotColor)
-        )
-        Spacer(modifier = Modifier.width(CccTokens.WhoGap))
-        Text(
-            text = label,
-            fontSize = CccTokens.WhoFontSize,
-            letterSpacing = CccTokens.WhoLetterSpacing,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
+private fun RoleLine(label: String, color: androidx.compose.ui.graphics.Color) {
+    Text(
+        text = label,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Medium,
+        color = color.copy(alpha = 0.9f),
+        modifier = Modifier.padding(bottom = 5.dp)
+    )
 }
 
 /**

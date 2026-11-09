@@ -750,7 +750,6 @@ class CustomXmlRenderer(
         val body = remember(content) { extractThinkBody(content) }
         val isInProgress = (xmlStream != null) && !isXmlFullyClosed(content)
         var expanded by remember { mutableStateOf(false) }
-        val thinkRailColor = MaterialTheme.colorScheme.outlineVariant
 
         // cccodroid 的 THINK_CAP / THINK_TAIL：默认只渲染尾部，展开后按批渲染。
         val thinkCap = 4000
@@ -761,16 +760,6 @@ class CustomXmlRenderer(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
-                .drawBehind {
-                    // 左侧 2px 竖线，cccodroid 的 .think border-inline-start
-                    val w = 2.dp.toPx()
-                    drawRect(
-                        color = thinkRailColor,
-                        topLeft = Offset(0f, 0f),
-                        size = Size(w, size.height)
-                    )
-                }
-                .padding(start = 12.dp)
         ) {
             // 折叠头：▸ 思考过程 + 字符数
             Row(

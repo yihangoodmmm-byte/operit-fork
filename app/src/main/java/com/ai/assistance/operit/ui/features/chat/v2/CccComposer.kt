@@ -171,7 +171,7 @@ fun CccComposer(
                             .clip(CircleShape)
                             .background(
                                 if (isProcessing) cs.error
-                                else if (canSend) cs.primary.copy(alpha = 0.18f)
+                                else if (canSend) cs.primary
                                 else cs.surfaceVariant
                             ),
                     contentAlignment = Alignment.Center
@@ -181,7 +181,7 @@ fun CccComposer(
                         contentDescription = if (isProcessing) "停止" else "发送",
                         tint =
                             if (isProcessing) cs.onError
-                            else if (canSend) cs.primary
+                            else if (canSend) cs.onPrimary
                             else cs.onSurfaceVariant.copy(alpha = 0.38f),
                         modifier = Modifier.size(18.dp)
                     )

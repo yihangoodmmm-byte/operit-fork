@@ -75,42 +75,41 @@ object AiCodePalette {
     )
 
     /**
-     * CC 暖灰（cccodroid）：暖中性 + 陶土橙。
+     * Midnight Aurora（午夜极光）：深空蓝黑 + 电光蓝紫 + 青绿，冷色高级感。
      *
-     * 逐值取自 cccodroid 0.4.10 gateway/web/style.css（Apache-2.0）：
-     *   深色    --bg #1f1e1d  --bg2 #262624  --bg3 #2f2e2b  --line #3a3935
-     *           --fg #ece9e1  --fg2 #aaa59b  --fg3 #7f7a70  --accent #d97757
-     *           --tool #8fb0d4 --ok #7fb069
-     *   浅色    --bg #faf9f5  --bg2 #f3f1ea  --bg3 #ebe8df  --line #e0dcd0
-     *           --fg #29261f  --fg2 #5d594f  --fg3 #8b867a  --accent #c96442
-     *           --tool #2f6aa8 --ok #3d7a2a
+     * 为让产品彻底脱离 Operit / cccodroid 的「陶土橙暖灰」视觉身份，这里换成一整套冷色调：
+     *   深色    背景 #0b0d12（深空蓝黑） 卡片 #12151c  强调 #7c8cff（电光蓝紫）
+     *           文字 #e8ebf2 / #9aa3b2  边框 #2a2f3a
+     *   浅色    背景 #f7f8fa（冷灰白） 卡片 #ffffff  强调 #5b6cff
+     *           文字 #14161a / #5a6070  边框 #b4bac6
      *
-     * secondary 取它的 --tool（钢蓝），tertiary 取 --ok（橄榄绿），这两色在原设计里跨主题固定。
+     * secondary 取青绿（工具/成功倾向），tertiary 取珊瑚红（提醒/温度），
+     * 与电光蓝紫的 primary 构成三色品牌体系。
      */
     val CC = AiSeed(
-        primary = Color(0xFFC96442),
-        secondary = Color(0xFF2F6AA8),
-        tertiary = Color(0xFF3D7A2A),
-        background = Color(0xFFFAF9F5),
-        surface = Color(0xFFF3F1EA),
-        surfaceVariant = Color(0xFFEBE8DF),
-        onSurface = Color(0xFF29261F),
-        onSurfaceVariant = Color(0xFF5D594F),
-        outline = Color(0xFF8B867A),
-        outlineVariant = Color(0xFFE0DCD0)
+        primary = Color(0xFF5B6CFF),
+        secondary = Color(0xFF00A88F),
+        tertiary = Color(0xFFFF6B6B),
+        background = Color(0xFFF7F8FA),
+        surface = Color(0xFFFFFFFF),
+        surfaceVariant = Color(0xFFEEF0F4),
+        onSurface = Color(0xFF14161A),
+        onSurfaceVariant = Color(0xFF5A6070),
+        outline = Color(0xFFB4BAC6),
+        outlineVariant = Color(0xFFE2E5EA)
     )
 
     val CC_DARK = AiSeed(
-        primary = Color(0xFFD97757),
-        secondary = Color(0xFF8FB0D4),
-        tertiary = Color(0xFF7FB069),
-        background = Color(0xFF1F1E1D),
-        surface = Color(0xFF262624),
-        surfaceVariant = Color(0xFF2F2E2B),
-        onSurface = Color(0xFFECE9E1),
-        onSurfaceVariant = Color(0xFFAAA59B),
-        outline = Color(0xFF7F7A70),
-        outlineVariant = Color(0xFF3A3935)
+        primary = Color(0xFF7C8CFF),
+        secondary = Color(0xFF34D399),
+        tertiary = Color(0xFFFF7B7B),
+        background = Color(0xFF0B0D12),
+        surface = Color(0xFF12151C),
+        surfaceVariant = Color(0xFF1A1E28),
+        onSurface = Color(0xFFE8EBF2),
+        onSurfaceVariant = Color(0xFF9AA3B2),
+        outline = Color(0xFF2A2F3A),
+        outlineVariant = Color(0xFF1E232E)
     )
 
     /** 由种子推导完整 ColorScheme。 */
