@@ -25,7 +25,7 @@ object ModelContextWindows {
      * 顺序有意义：具体型号族必须排在宽泛的厂商兜底之前。
      */
     private val rules = listOf(
-        Rule("DeepSeek V4", Regex("^deepseek-v4"), 1_000_000),
+        Rule("DeepSeek V4/Flash", Regex("^deepseek-(v4|flash|4[.]0)"), 1_000_000),
         Rule("DeepSeek V3/R1", Regex("^deepseek-(v3|r1|chat|reasoner)"), 128_000),
         Rule("DeepSeek", Regex("^deepseek"), 128_000),
         Rule("GPT-4.1", Regex("^gpt-4[.]1"), 1_047_576),
@@ -36,6 +36,7 @@ object ModelContextWindows {
         Rule("GPT legacy", Regex("^gpt-4"), 128_000),
         Rule("GPT", Regex("^gpt"), 128_000),
         Rule("Claude", Regex("^claude"), 200_000),
+        Rule("Gemini 2.5 Pro", Regex("^gemini-2[.]5-pro"), 2_097_152),
         Rule("Gemini", Regex("^gemini"), 1_048_576),
         Rule("GLM-5/4.6", Regex("^glm-(5|4[.]6)"), 200_000),
         Rule("GLM", Regex("^glm"), 128_000),

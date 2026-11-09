@@ -1,5 +1,7 @@
 package com.ai.assistance.operit.ui.features.chat.components.part
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,6 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -21,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -47,14 +53,14 @@ fun CompactToolDisplay(
         params: String = "",
         textColor: Color,
         modifier: Modifier = Modifier,
-        enableDialog: Boolean = true  // 新增参数：是否启用弹窗功能，默认启用
+        enableDialog: Boolean = true  // 新增参数：是否启用参数展开功能，默认启用
 ) {
     val context = LocalContext.current
     val (displayToolName, displayParams) = remember(toolName, params) {
         normalizeToolDisplayForStrictProxy(toolName, params)
     }
-    // 弹窗状态
-    var showDetailDialog by remember { mutableStateOf(false) }
+    // 折叠状态（cccodroid 的 .tool：默认收起参数，点击展开 .tool-body）
+    var expanded by remember { mutableStateOf(false) }
     val hasParams = displayParams.isNotBlank()
     val semanticDescription = remember(displayToolName, displayParams.length) {
         buildToolSemanticDescription(
@@ -65,21 +71,11 @@ fun CompactToolDisplay(
         )
     }
 
-    // 显示详细内容的弹窗 - 仅在启用弹窗时显示
-    if (showDetailDialog && hasParams && enableDialog) {
-        ContentDetailDialog(
-            title = "$displayToolName ${context.getString(R.string.tool_call_parameters)}",
-            content = displayParams,
-            icon = getToolIcon(displayToolName),
-            onDismiss = { showDetailDialog = false }
-        )
-    }
-
     val summary = remember(displayParams) { buildParamsHeadPreview(displayParams) }
 
     // Claude 式工具卡：一次调用 = 一张细描边小卡（10dp 圆角、无阴影），
-    // 工具名用正文色 + 参数摘要弱化，整块与助手正文区分开但不喧宾夺主。
-    Box(
+    // 工具名用正文色 + 参数摘要弱化；有参数时点击内联展开（对齐 cccodroid，不再弹窗）。
+    Column(
         modifier =
             modifier
                 .padding(vertical = 2.dp)
@@ -90,7 +86,6 @@ fun CompactToolDisplay(
                     color = MaterialTheme.colorScheme.outlineVariant,
                     shape = RoundedCornerShape(10.dp)
                 )
-                .padding(horizontal = 10.dp, vertical = 7.dp)
     ) {
         CanvasToolSummaryRow(
             toolName = displayToolName,
@@ -99,14 +94,36 @@ fun CompactToolDisplay(
             leadingIcon = getToolIcon(displayToolName),
             titleColor = MaterialTheme.colorScheme.onSurface,
             summaryColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
             onClick =
                 if (hasParams && enableDialog) {
-                    { showDetailDialog = true }
+                    { expanded = !expanded }
                 } else {
                     null
                 },
         )
+        AnimatedVisibility(visible = expanded && hasParams) {
+            // 参数详情（cccodroid 的 .tool-body：等宽小字、限高滚动）
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp, bottom = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+                        .heightIn(max = 340.dp)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = displayParams,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = textColor.copy(alpha = 0.8f),
+                    lineHeight = 17.sp
+                )
+            }
+        }
     }
 }
 
@@ -117,7 +134,8 @@ fun DetailedToolDisplay(
         params: String = "",
         textColor: Color,
         modifier: Modifier = Modifier,
-        enableDialog: Boolean = true  // 新增参数：是否启用弹窗功能，默认启用
+        enableDialog: Boolean = true,  // 新增参数：是否启用弹窗功能，默认启用
+        isInProgress: Boolean = false,
 ) {
     val context = LocalContext.current
     val (displayToolName, displayParams) = remember(toolName, params) {
@@ -146,21 +164,60 @@ fun DetailedToolDisplay(
         )
     }
 
-    CanvasToolSummaryRow(
-        toolName = displayToolName,
-        summary = paramsSizeLabel,
-        semanticDescription = semanticDescription,
-        leadingIcon = getToolIcon(displayToolName),
-        titleColor = MaterialTheme.colorScheme.primary,
-        summaryColor = textColor.copy(alpha = 0.7f),
-        modifier = modifier,
-        onClick =
-            if (hasParams && enableDialog) {
-                { showDetailDialog = true }
-            } else {
-                null
-            },
-    )
+    val summaryRow: @Composable (Modifier) -> Unit = { rowModifier ->
+        CanvasToolSummaryRow(
+            toolName = displayToolName,
+            summary = paramsSizeLabel,
+            semanticDescription = semanticDescription,
+            leadingIcon = getToolIcon(displayToolName),
+            titleColor = MaterialTheme.colorScheme.primary,
+            summaryColor = textColor.copy(alpha = 0.7f),
+            modifier = rowModifier,
+            onClick =
+                if (hasParams && enableDialog) {
+                    { showDetailDialog = true }
+                } else {
+                    null
+                },
+        )
+    }
+
+    if (isInProgress) {
+        // 流式进行中的工具调用：左侧加一个闪烁光标圆点（cccodroid 的 .cursor { animation: blink 1s }）
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
+            val infiniteTransition = rememberInfiniteTransition(label = "tool-cursor")
+            val cursorAlpha by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 1f,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            keyframes {
+                                durationMillis = 1000
+                                1f at 0
+                                1f at 420
+                                0f at 500
+                                0f at 920
+                                1f at 1000
+                            },
+                        repeatMode = RepeatMode.Restart
+                    ),
+                label = "tool-cursor-alpha"
+            )
+            Box(
+                modifier =
+                    Modifier
+                        .padding(end = 6.dp)
+                        .size(5.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .graphicsLayer { alpha = cursorAlpha }
+            )
+            Box(modifier = Modifier.weight(1f)) { summaryRow(Modifier) }
+        }
+    } else {
+        summaryRow(modifier)
+    }
 }
 
 /** 显示带行号的代码内容 */

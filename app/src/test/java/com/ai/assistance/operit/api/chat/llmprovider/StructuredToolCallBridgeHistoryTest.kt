@@ -63,7 +63,9 @@ class StructuredToolCallBridgeHistoryTest {
             ),
             placeholder
         )
-        assertFalse(placeholder.contains("用户取消"))
+        // 占位符应明确澄清「这不是用户取消」，而不是把未匹配结果误标为用户取消；
+        // contains("用户取消") 会把「这不是用户取消」里的否定句也误匹配进去。
+        assertTrue(placeholder.contains("这不是用户取消"))
         assertEquals("The second read was skipped.", messages.at(4).getString("content"))
         assertToolResultsFollowTheirCalls(messages)
     }

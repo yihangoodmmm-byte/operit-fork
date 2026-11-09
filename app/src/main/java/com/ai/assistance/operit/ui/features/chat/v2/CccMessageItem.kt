@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,7 +72,22 @@ fun CccMessageItem(
     val charStream =
         remember(displayStream) { displayStream?.coalesceRevisable()?.toCharStream() }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    // 消息淡入（cccodroid 的 .msg { animation: fade .18s }）：
+    // 首次进入组合时 opacity 0→1、translateY 4dp→0，之后内容更新（流式）不再重播。
+    val entranceAlpha = remember { Animatable(0f) }
+    LaunchedEffect(message.timestamp) {
+        entranceAlpha.animateTo(1f, tween(durationMillis = 180, easing = FastOutSlowInEasing))
+    }
+
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    alpha = entranceAlpha.value
+                    translationY = (1f - entranceAlpha.value) * 4.dp.toPx()
+                }
+    ) {
         if (isUser) {
             // ── 用户：右对齐、**按内容收缩**、上限 85% / 680dp ──────────
             // cccodroid 的写法是 max-width:min(85%,680px)，即"最宽到这里"，

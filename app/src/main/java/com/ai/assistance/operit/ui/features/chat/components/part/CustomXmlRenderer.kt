@@ -807,12 +807,34 @@ class CustomXmlRenderer(
                 )
                 if (isInProgress) {
                     Spacer(modifier = Modifier.width(6.dp))
+                    // 流式进行中的光标圆点：cccodroid 的 .cursor { animation: blink 1s }。
+                    // 42% 亮 → 50% 暗 → 92% 暗 → 100% 亮，1s 循环。
+                    val infiniteTransition = rememberInfiniteTransition(label = "think-cursor")
+                    val cursorAlpha by infiniteTransition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 1f,
+                        animationSpec =
+                            infiniteRepeatable(
+                                animation =
+                                    keyframes {
+                                        durationMillis = 1000
+                                        1f at 0
+                                        1f at 420
+                                        0f at 500
+                                        0f at 920
+                                        1f at 1000
+                                    },
+                                repeatMode = RepeatMode.Restart
+                            ),
+                        label = "think-cursor-alpha"
+                    )
                     Box(
                         modifier =
                             Modifier
                                 .size(5.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary)
+                                .graphicsLayer { alpha = cursorAlpha }
                     )
                 }
             }
@@ -954,7 +976,8 @@ class CustomXmlRenderer(
                     params = renderState.paramText,
                     textColor = textColor,
                     modifier = modifier,
-                    enableDialog = enableDialogs
+                    enableDialog = enableDialogs,
+                    isInProgress = true
                 )
             }
         } else {
@@ -965,7 +988,8 @@ class CustomXmlRenderer(
                         params = renderState.paramText,
                         textColor = textColor,
                         modifier = modifier,
-                        enableDialog = enableDialogs  // 传递弹窗启用状态
+                        enableDialog = enableDialogs,  // 传递弹窗启用状态
+                        isInProgress = true
                 )
             } else {
                 CompactToolDisplay(
