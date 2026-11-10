@@ -620,6 +620,13 @@ class ApiConfigDelegate(
         }
     }
 
+    /** 显式设置思考模式（推理 off 档用：直接关闭，不依赖当前状态翻转）。 */
+    fun setEnableThinkingMode(enabled: Boolean) {
+        configScope.launch {
+            apiPreferences.updateThinkingSettings(enableThinkingMode = enabled)
+        }
+    }
+
     fun updateThinkingOptionId(optionId: String) {
         configScope.launch {
             modelConfigManager.updateThinkingOptionId(effectiveChatConfigId.value, optionId)

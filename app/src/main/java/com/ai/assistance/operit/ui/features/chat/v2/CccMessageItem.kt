@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.operit.data.model.ChatMessage
 import com.ai.assistance.operit.ui.common.markdown.StreamMarkdownRenderer
+import com.ai.assistance.operit.ui.features.chat.components.part.CustomXmlRenderer
 import com.ai.assistance.operit.ui.features.chat.components.rememberRevisableTextStream
 import com.ai.assistance.operit.util.markdown.toCharStream
 import com.ai.assistance.operit.util.stream.coalesceRevisable
@@ -135,12 +136,24 @@ private fun MessageBody(
     enableDialogs: Boolean,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
+    // 关键：必须显式传 CustomXmlRenderer，否则 StreamMarkdownRenderer 会用默认的
+    // DefaultXmlRenderer——它会把 <think>/<tool> 等 XML 原文直接显示出来，不折叠。
+    val xmlRenderer =
+        remember(enableDialogs) {
+            CustomXmlRenderer(
+                showThinkingProcess = true,
+                showStatusTags = true,
+                initialThinkingExpanded = false,
+                enableDialogs = enableDialogs
+            )
+        }
     if (charStream != null) {
         StreamMarkdownRenderer(
             markdownStream = charStream,
             textColor = textColor,
             backgroundColor = MaterialTheme.colorScheme.background,
             enableDialogs = enableDialogs,
+            xmlRenderer = xmlRenderer,
             modifier = Modifier.fillMaxWidth()
         )
     } else {
@@ -149,6 +162,7 @@ private fun MessageBody(
             textColor = textColor,
             backgroundColor = MaterialTheme.colorScheme.background,
             enableDialogs = enableDialogs,
+            xmlRenderer = xmlRenderer,
             modifier = Modifier.fillMaxWidth()
         )
     }

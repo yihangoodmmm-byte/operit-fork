@@ -1568,12 +1568,15 @@ private fun ChatInputBottomBar(
     val cccThinkingOptionId by actualViewModel.thinkingOptionId.collectAsState()
     val cccReasoningOptions =
         remember(cccThinkingMapping) {
-            cccThinkingMapping?.options.orEmpty().map { CccReasoningOption(it.id, it.displayLabel) }
+            val levels = cccThinkingMapping?.options.orEmpty().map { CccReasoningOption(it.id, it.displayLabel) }
+            // 前置一个 OFF 档：关闭推理（等价于 enableThinkingMode=false）
+            if (levels.isNotEmpty()) listOf(CccReasoningOption("OFF", "OFF")) + levels else levels
         }
     val cccReasoningLabel: String? =
-        remember(cccReasoningOptions, cccThinkingOptionId, cccThinkingMapping) {
+        remember(cccReasoningOptions, cccThinkingOptionId, cccThinkingMapping, enableThinkingMode) {
             when {
                 cccThinkingMapping == null -> null
+                !enableThinkingMode -> "OFF"
                 cccReasoningOptions.isNotEmpty() ->
                     cccReasoningOptions.firstOrNull { it.id == cccThinkingOptionId }?.label
                         ?: cccReasoningOptions.first().label
@@ -1985,7 +1988,12 @@ private fun ChatInputBottomBar(
                     currentId = cccThinkingOptionId,
                     onPick = { optionId ->
                         cccShowReasoningPicker = false
-                        actualViewModel.updateThinkingOptionId(optionId)
+                        if (optionId == "OFF") {
+                            actualViewModel.setEnableThinkingMode(false)
+                        } else {
+                            actualViewModel.setEnableThinkingMode(true)
+                            actualViewModel.updateThinkingOptionId(optionId)
+                        }
                     },
                 )
             },

@@ -4,7 +4,10 @@ import android.content.Context
 import com.ai.assistance.operit.util.AppLogger
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -42,6 +45,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
@@ -264,14 +269,37 @@ private fun ExpandedLoadingView(
                                 .fillMaxWidth()
                                 .padding(16.dp)
             ) {
-                // 应用名称/Logo
-                Text(
-                        text = stringResource(id = R.string.plugin_app_name),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 32.sp
-                )
+                // 应用 Logo：圆点标记 + 名称，入场 fade + scale（克制，不发光不渐变）
+                val logoAlpha = remember { Animatable(0f) }
+                LaunchedEffect(Unit) {
+                    logoAlpha.animateTo(1f, tween(700, easing = FastOutSlowInEasing))
+                }
+                Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier =
+                                Modifier.graphicsLayer {
+                                    alpha = logoAlpha.value
+                                    val s = 0.9f + 0.1f * logoAlpha.value
+                                    scaleX = s
+                                    scaleY = s
+                                }
+                ) {
+                    Box(
+                            modifier =
+                                    Modifier
+                                            .size(10.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                            text = stringResource(id = R.string.plugin_app_name),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 32.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
