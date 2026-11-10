@@ -304,12 +304,16 @@ internal object ThinkingConfigurationApplier {
 
         val thinkingEnabled = enableThinking || mapping.reasoningRequired
         val modeActions = if (thinkingEnabled) mapping.enabledActions else mapping.disabledActions
-        modeActions.forEach { applyAction(requestJson, it) }
+        // 聊天菜单的开关与档位是本次请求的显式选择。ON、OFF 都必须
+        // 覆盖同路径的旧参数，否则 OFF 能关、再选 HIGH 却仍会发 disabled。
+        modeActions.forEach { action ->
+            applyAction(requestJson, action.copy(overwrite = true))
+        }
 
         if (thinkingEnabled && mapping.control == ThinkingQualityControl.LEVELS) {
             val selected = mapping.optionFor(optionId)
                 ?: throw IllegalArgumentException("$providerTypeId option is not supported: $optionId")
-            selected.actions.forEach { applyAction(requestJson, it) }
+            selected.actions.forEach { applyAction(requestJson, it.copy(overwrite = true)) }
         }
         return mapping
     }

@@ -94,6 +94,39 @@ class OpenAiChatReasoningEffortTest {
     }
 
     @Test
+    fun explicitOffOverridesPreviouslyEnabledThinkingParameter() {
+        val request = JSONObject().put("thinking", JSONObject().put("type", "enabled"))
+        ThinkingConfigurationApplier.apply(
+            requestJson = request,
+            providerTypeId = ApiProviderType.DEEPSEEK.name,
+            modelName = "deepseek-chat",
+            apiEndpoint = "https://api.deepseek.com/chat/completions",
+            thinkingConfigurations = ModelThinkingConfigDefaults.forProvider(ApiProviderType.DEEPSEEK.name),
+            enableThinking = false,
+            optionId = "high"
+        )
+        assertEquals("disabled", request.getJSONObject("thinking").getString("type"))
+    }
+
+    @Test
+    fun explicitHighEnablesThinkingAndOverridesSavedLowEffort() {
+        val request = JSONObject()
+            .put("thinking", JSONObject().put("type", "disabled"))
+            .put("reasoning_effort", "low")
+        ThinkingConfigurationApplier.apply(
+            requestJson = request,
+            providerTypeId = ApiProviderType.DEEPSEEK.name,
+            modelName = "deepseek-chat",
+            apiEndpoint = "https://api.deepseek.com/chat/completions",
+            thinkingConfigurations = ModelThinkingConfigDefaults.forProvider(ApiProviderType.DEEPSEEK.name),
+            enableThinking = true,
+            optionId = "high"
+        )
+        assertEquals("enabled", request.getJSONObject("thinking").getString("type"))
+        assertEquals("high", request.getString("reasoning_effort"))
+    }
+
+    @Test
     fun openAiChatModelsNeverReceiveReasoningEffort() {
         for (model in listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-3.5-turbo", "chatgpt-4o-latest")) {
             assertEquals(model, ThinkingQualityControl.UNSUPPORTED, mapping(ApiProviderType.OPENAI, model).control)

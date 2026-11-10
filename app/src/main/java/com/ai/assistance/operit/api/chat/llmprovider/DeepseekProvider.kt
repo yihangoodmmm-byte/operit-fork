@@ -133,9 +133,6 @@ class DeepseekProvider(
             jsonObject.put("stream_options", JSONObject().put("include_usage", true))
         }
 
-        // DeepSeek Thinking Mode 默认开启，关闭时也必须显式发送 thinking.type=disabled。
-        applyThinkingParamsIfNeeded(jsonObject)
-
         // 添加已启用的模型参数
         for (param in modelParameters) {
             if (param.isEnabled) {
@@ -169,6 +166,9 @@ class DeepseekProvider(
                 }
             }
         }
+
+        // 放在自定义参数之后，避免 thinking 对象将 OFF 覆盖回 enabled。
+        applyThinkingParamsIfNeeded(jsonObject)
 
         // 当工具为空时，将enableToolCall视为false
         val effectiveEnableToolCall = enableToolCall && availableTools != null && availableTools.isNotEmpty()

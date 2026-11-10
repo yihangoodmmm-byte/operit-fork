@@ -39,6 +39,7 @@ import com.ai.assistance.operit.data.preferences.FunctionConfigMapping
 import com.ai.assistance.operit.data.preferences.ModelConfigManager
 import com.ai.assistance.operit.ui.features.chat.v2.CccComposer
 import com.ai.assistance.operit.api.chat.llmprovider.ThinkingQualityMappingRegistry
+import com.ai.assistance.operit.api.chat.llmprovider.ThinkingQualityControl
 import com.ai.assistance.operit.ui.features.chat.v2.CccModelPicker
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningOption
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningPicker
@@ -1530,11 +1531,10 @@ private fun ChatInputBottomBar(
     val cccFunctionalConfigManager = remember(context) { FunctionalConfigManager(context) }
     val cccConfigSummaries by
         cccModelConfigManager.configSummariesFlow.collectAsState(initial = emptyList())
-    val cccMappingWithIndex by
-        cccFunctionalConfigManager.functionConfigMappingWithIndexFlow.collectAsState(initial = emptyMap())
-    val cccCurrentMapping =
-        cccMappingWithIndex[FunctionType.CHAT]
-            ?: FunctionConfigMapping(FunctionalConfigManager.DEFAULT_CONFIG_ID, 0)
+    val cccEffectiveTarget by actualViewModel.effectiveChatConfigTarget.collectAsState()
+    val cccCurrentMapping = FunctionConfigMapping(
+        cccEffectiveTarget.configId, cccEffectiveTarget.modelIndex
+    )
     var cccShowModelPicker by remember { mutableStateOf(false) }
 
     // 从「配置 + 索引」解析出当前实际使用的模型名
@@ -1573,22 +1573,35 @@ private fun ChatInputBottomBar(
             // 但 reasoning-required 模型（如 Gemini thinking level）根本不允许关闭推理，
             // 强行给 OFF 会被 reasoningRequired 覆盖成第一个档位，误导用户——所以不显示 OFF。
             val reasoningRequired = cccThinkingMapping?.reasoningRequired == true
-            if (levels.isNotEmpty() && !reasoningRequired) {
-                listOf(CccReasoningOption("OFF", "OFF")) + levels
+            if (cccThinkingMapping != null &&
+                cccThinkingMapping.control != ThinkingQualityControl.UNSUPPORTED &&
+                cccThinkingMapping.disabledActions.isNotEmpty() && !reasoningRequired) {
+                listOf(CccReasoningOption("OFF", "OFF")) +
+                    levels.ifEmpty { listOf(CccReasoningOption("ON", "ON")) }
             } else {
                 levels
             }
         }
+    val cccCanDisableThinking = cccThinkingMapping?.let {
+        !it.reasoningRequired && it.disabledActions.isNotEmpty()
+    } == true
+    val cccSelectedReasoningId = when {
+        !enableThinkingMode && cccCanDisableThinking -> "OFF"
+        !enableThinkingMode && cccThinkingMapping?.reasoningRequired != true -> "DEFAULT"
+        cccThinkingMapping?.control == ThinkingQualityControl.TOGGLE_ONLY -> "ON"
+        else -> cccThinkingOptionId
+    }
     val cccReasoningLabel: String? =
-        remember(cccReasoningOptions, cccThinkingOptionId, cccThinkingMapping, enableThinkingMode) {
+        remember(cccReasoningOptions, cccSelectedReasoningId, cccThinkingMapping, enableThinkingMode, cccCanDisableThinking) {
             when {
-                cccThinkingMapping == null -> null
+                cccThinkingMapping == null || cccThinkingMapping.control == ThinkingQualityControl.UNSUPPORTED -> null
                 // 只有非 reasoning-required 且关闭了思考，才显示 OFF；
                 // reasoning-required 模型永远显示实际档位（OFF 不适用于它）。
-                !enableThinkingMode && cccThinkingMapping.reasoningRequired != true -> "OFF"
+                !enableThinkingMode && cccCanDisableThinking -> "OFF"
+                !enableThinkingMode && !cccThinkingMapping.reasoningRequired -> "DEFAULT"
                 cccReasoningOptions.isNotEmpty() ->
-                    cccReasoningOptions.firstOrNull { it.id == cccThinkingOptionId }?.label
-                        ?: cccReasoningOptions.first().label
+                    cccReasoningOptions.firstOrNull { it.id == cccSelectedReasoningId }?.label
+                        ?: cccReasoningOptions.firstOrNull { it.id != "OFF" }?.label
                 else -> null
             }
         }
@@ -1994,14 +2007,17 @@ private fun ChatInputBottomBar(
                     expanded = cccShowReasoningPicker,
                     onDismiss = { cccShowReasoningPicker = false },
                     options = cccReasoningOptions,
-                    currentId = cccThinkingOptionId,
+                    // OFF 独立于保留的强度 id，菜单勾选必须读取当前开关。
+                    currentId = cccSelectedReasoningId,
                     onPick = { optionId ->
                         cccShowReasoningPicker = false
                         if (optionId == "OFF") {
                             actualViewModel.setEnableThinkingMode(false)
                         } else {
                             actualViewModel.setEnableThinkingMode(true)
-                            actualViewModel.updateThinkingOptionId(optionId)
+                            if (cccThinkingMapping?.control == ThinkingQualityControl.LEVELS) {
+                                actualViewModel.updateThinkingOptionId(optionId)
+                            }
                         }
                     },
                 )

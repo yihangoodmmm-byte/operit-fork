@@ -684,9 +684,9 @@ class ConversationService(
     fun normalizeConversationHistoryForModel(
         chatHistory: List<PromptTurn>
     ): List<PromptTurn> {
-        // 先补悬空工具调用：进程中断会留下「有调用没结果」的断口，
-        // 直接发给模型会报错或让它空等。
-        return com.ai.assistance.operit.core.chat.DanglingToolCallRepair.repair(chatHistory).map { turn ->
+        // Provider 按真实工具批次边界匹配结果；单 pending 修复会误判连续调用，
+        // 插入假结果并挤掉随后到达的真实结果。此处只规范化标记。
+        return chatHistory.map { turn ->
             when (turn.kind) {
                 PromptTurnKind.ASSISTANT,
                 PromptTurnKind.TOOL_CALL,

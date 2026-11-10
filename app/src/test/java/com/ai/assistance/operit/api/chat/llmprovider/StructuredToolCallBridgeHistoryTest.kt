@@ -37,6 +37,30 @@ class StructuredToolCallBridgeHistoryTest {
     }
 
     @Test
+    fun `separate result turns retain every result in a tool batch`() {
+        val history = listOf(
+            PromptTurn(kind = PromptTurnKind.USER, content = "Read both files."),
+            PromptTurn(kind = PromptTurnKind.TOOL_CALL, content = toolCall("read_file", "path" to "a.txt")),
+            PromptTurn(kind = PromptTurnKind.TOOL_CALL, content = toolCall("read_file_part", "path" to "b.txt")),
+            PromptTurn(kind = PromptTurnKind.TOOL_RESULT, content = toolResult("read_file", "alpha")),
+            PromptTurn(kind = PromptTurnKind.TOOL_RESULT, content = toolResult("read_file_part", "beta"))
+        )
+        // 直接经过应用层归一化，旧单 pending 修复会在此额外插入假结果。
+        // real-method mock 避免初始化无关的 Android/DataStore 依赖。
+        val conversationService = org.mockito.Mockito.mock(
+            com.ai.assistance.operit.api.chat.enhance.ConversationService::class.java,
+            org.mockito.Mockito.CALLS_REAL_METHODS
+        )
+        val normalized = conversationService.normalizeConversationHistoryForModel(history)
+        assertEquals(history, normalized)
+        val messages = buildMessages(normalized)
+        assertEquals(listOf("user", "assistant", "tool", "tool"), messages.roles())
+        assertTrue(messages.at(2).getString("content").contains("alpha"))
+        assertTrue(messages.at(3).getString("content").contains("beta"))
+        assertToolResultsFollowTheirCalls(messages)
+    }
+
+    @Test
     fun `unanswered calls are closed before the trailing tool result text`() {
         val messages =
             buildMessages(

@@ -26,7 +26,6 @@ import com.ai.assistance.operit.core.chat.hooks.toRoleContentPairs
 import com.ai.assistance.operit.core.application.ActivityLifecycleManager
 import com.ai.assistance.operit.core.tools.AIToolHandler
 import com.ai.assistance.operit.core.tools.StringResultData
-import com.ai.assistance.operit.core.context.ConversationCompactor
 import com.ai.assistance.operit.core.tools.FailureMemoryStore
 import com.ai.assistance.operit.core.tools.ToolOutputSpillStore
 import com.ai.assistance.operit.core.tools.climode.CliToolModeSupport
@@ -1111,19 +1110,26 @@ class EnhancedAIService private constructor(private val context: Context) {
                         }
                     execContext.conversationHistory.clear()
                     execContext.conversationHistory.addAll(requestHistory)
-                    // 上下文预算：超过模型窗口 70% 时把较早轮次压成骨架。
-                    // 只影响本次请求，不改 execContext.conversationHistory（历史要保留原文）。
-                    val requestHistoryForModel = ConversationCompactor.compact(
-                        turns = requestHistory,
-                        modelWindow = (modelSnapshot.config.maxContextLength * 1000f).toInt()
-                    ).turns
-                    estimatePreparedRequestWindow(
+                    // 总结由既有上下文总结设置控制。请求前截首句会把旧思考提升为
+                    // SYSTEM，并切断工具调用/结果，不能在此另做一次隐式压缩。
+                    val requestHistoryForModel = requestHistory
+                    val preparedInputTokens = estimatePreparedRequestWindow(
                         serviceForFunction = serviceForFunction,
                         preparedHistory = requestHistoryForModel,
                         availableTools = availableTools,
                         publishEstimate = true
                     )
                     
+                    // 检查最终 hooks、附件及工具定义后的输入；异步总结不能保证本次请求缩小。
+                    val inputLimit = maxTokens.toLong()
+                    val outputReserve = if (modelSnapshot.config.maxTokensEnabled) {
+                        modelSnapshot.config.maxTokens.toLong().coerceAtLeast(0L)
+                    } else 0L
+                    require(inputLimit <= 0L || preparedInputTokens + outputReserve < inputLimit) {
+                        context.getString(R.string.token_limit_exceeded_message,
+                            (preparedInputTokens + outputReserve).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
+                            inputLimit.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+                    }
                     // 使用新的Stream API
                     AppLogger.d(TAG, "sendMessage请求前准备耗时: ${tAfterGetTools - startTime}ms, 流式输出: $stream")
                     val requestStartTime = messageTimingNow()
@@ -1803,14 +1809,8 @@ class EnhancedAIService private constructor(private val context: Context) {
                 val pureThinkingWarningDisplayContent = "\n$pureThinkingWarning"
                 context.roundManager.appendContent(pureThinkingWarningDisplayContent)
                 collector.emit(pureThinkingWarningDisplayContent)
-                try {
-                    context.conversationHistory.add(
-                        PromptTurn(kind = PromptTurnKind.TOOL_RESULT, content = pureThinkingWarning)
-                    )
-                } catch (e: Exception) {
-                    AppLogger.e(TAG, "添加纯思考告警到历史记录失败", e)
-                    return
-                }
+                // processToolResults 会把 override 消息写入一次；这里再写会让
+                // 同一条继续生成指令重复进入上下文。此处只更新显示。
                 AppLogger.w(TAG, "检测到纯思考输出（removeThinking后正文为空），已回传告警给AI继续生成")
                 handleToolInvocation(
                         toolInvocations = emptyList(),
@@ -2339,6 +2339,15 @@ class EnhancedAIService private constructor(private val context: Context) {
             publishEstimate = true
         )
 
+        // 工具结果也会增长输入，必须与首轮一样预留显式配置的输出。
+        val outputReserve = if (modelSnapshot.config.maxTokensEnabled) {
+            modelSnapshot.config.maxTokens.toLong().coerceAtLeast(0L)
+        } else 0L
+        require(maxTokens <= 0 || currentTokens + outputReserve < maxTokens.toLong()) {
+            this@EnhancedAIService.context.getString(R.string.token_limit_exceeded_message,
+                (currentTokens + outputReserve).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), maxTokens)
+        }
+
         // After a tool call, check if token usage exceeds the threshold.
         // 只有真正接近上下文上限（90%）才硬中断并总结，否则让 AI 完成当前轮的
         // 工具结果分析——原先在 70% 就 return，正是「输出到一半被掐断」的根因。
@@ -2369,11 +2378,8 @@ class EnhancedAIService private constructor(private val context: Context) {
             try {
                 // 发送消息并获取响应流
                 val aiStartTime = messageTimingNow()
-                // 工具轮之后同样按预算压缩一次，避免长任务把窗口顶爆。
-                val compactedCurrentHistory = ConversationCompactor.compact(
-                    turns = currentChatHistory,
-                    modelWindow = (modelSnapshot.config.maxContextLength * 1000f).toInt()
-                ).turns
+                // 保留完整工具轮；不能把旧思考截成 SYSTEM 或切断工具结果。
+                val compactedCurrentHistory = currentChatHistory
                 val responseStream =
                         serviceForFunction.sendMessage(
                                 context = this@EnhancedAIService.context,
