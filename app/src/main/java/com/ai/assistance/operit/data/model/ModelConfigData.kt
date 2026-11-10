@@ -63,8 +63,9 @@ object ModelConfigDefaults {
         const val DEFAULT_ENABLE_MAX_CONTEXT_MODE = false
         const val DEFAULT_ENABLE_TOOL_CALL = true
         const val DEFAULT_SUMMARY_TOKEN_THRESHOLD = 0.70f
-        const val DEFAULT_ENABLE_SUMMARY = true
-        const val DEFAULT_ENABLE_SUMMARY_BY_MESSAGE_COUNT = true
+        // 默认不压缩：总结/按消息数压缩默认关闭，用户可自行在「上下文总结设置」开启并设阈值。
+        const val DEFAULT_ENABLE_SUMMARY = false
+        const val DEFAULT_ENABLE_SUMMARY_BY_MESSAGE_COUNT = false
         const val DEFAULT_SUMMARY_MESSAGE_COUNT_THRESHOLD = 16
 }
 

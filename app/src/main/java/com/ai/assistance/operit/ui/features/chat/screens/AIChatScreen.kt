@@ -1569,14 +1569,23 @@ private fun ChatInputBottomBar(
     val cccReasoningOptions =
         remember(cccThinkingMapping) {
             val levels = cccThinkingMapping?.options.orEmpty().map { CccReasoningOption(it.id, it.displayLabel) }
-            // 前置一个 OFF 档：关闭推理（等价于 enableThinkingMode=false）
-            if (levels.isNotEmpty()) listOf(CccReasoningOption("OFF", "OFF")) + levels else levels
+            // 前置一个 OFF 档：关闭推理（等价于 enableThinkingMode=false）。
+            // 但 reasoning-required 模型（如 Gemini thinking level）根本不允许关闭推理，
+            // 强行给 OFF 会被 reasoningRequired 覆盖成第一个档位，误导用户——所以不显示 OFF。
+            val reasoningRequired = cccThinkingMapping?.reasoningRequired == true
+            if (levels.isNotEmpty() && !reasoningRequired) {
+                listOf(CccReasoningOption("OFF", "OFF")) + levels
+            } else {
+                levels
+            }
         }
     val cccReasoningLabel: String? =
         remember(cccReasoningOptions, cccThinkingOptionId, cccThinkingMapping, enableThinkingMode) {
             when {
                 cccThinkingMapping == null -> null
-                !enableThinkingMode -> "OFF"
+                // 只有非 reasoning-required 且关闭了思考，才显示 OFF；
+                // reasoning-required 模型永远显示实际档位（OFF 不适用于它）。
+                !enableThinkingMode && cccThinkingMapping.reasoningRequired != true -> "OFF"
                 cccReasoningOptions.isNotEmpty() ->
                     cccReasoningOptions.firstOrNull { it.id == cccThinkingOptionId }?.label
                         ?: cccReasoningOptions.first().label

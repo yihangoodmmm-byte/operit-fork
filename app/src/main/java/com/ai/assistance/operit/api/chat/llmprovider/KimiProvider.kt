@@ -138,13 +138,14 @@ open class KimiProvider(
         calculateAndStoreInputTokens(
             providerReadyHistory,
             toolsJson,
-            preserveThinkInHistory = true
+            preserveThinkInHistory = preserveThinkInHistory
         )
         val messagesArray =
             buildMessagesWithReasoning(
                 context,
                 providerReadyHistory,
-                effectiveEnableToolCall
+                effectiveEnableToolCall,
+                preserveThinkInHistory
             )
         jsonObject.put("messages", messagesArray)
 
@@ -162,7 +163,8 @@ open class KimiProvider(
     private fun buildMessagesWithReasoning(
         context: Context,
         effectiveHistory: List<PromptTurn>,
-        useToolCall: Boolean
+        useToolCall: Boolean,
+        preserveThinkInHistory: Boolean
     ): JSONArray {
         val messagesArray = JSONArray()
 
@@ -262,7 +264,7 @@ open class KimiProvider(
 
         if (effectiveHistory.isNotEmpty()) {
             for (turn in effectiveHistory) {
-                val originalContent = comparableContentForTurn(turn, preserveThinkInHistory = true)
+                val originalContent = comparableContentForTurn(turn, preserveThinkInHistory = preserveThinkInHistory)
                 if (useToolCall) {
                     when (turn.kind) {
                         PromptTurnKind.SYSTEM -> {

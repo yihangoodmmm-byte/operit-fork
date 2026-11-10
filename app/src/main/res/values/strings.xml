@@ -3637,7 +3637,7 @@
     <string name="settings_max_context_length">最大上下文长度</string>
     <string name="settings_max_context_length_subtitle">模型API支持的最大上下文长度(k tokens)</string>
     <string name="settings_summary_threshold">上下文使用比例阈值</string>
-    <string name="settings_summary_threshold_subtitle">当上下文使用超过此比例时触发总结(0.1-0.95)</string>
+    <string name="settings_summary_threshold_subtitle">当上下文使用达到此百分比时自动压缩（0.1-0.95，例如 0.8 表示 80%）</string>
     
     <!-- 截断设置 -->
     <string name="settings_history_retention_title">历史媒体保留设置</string>

@@ -3717,7 +3717,7 @@
     <string name="settings_max_context_length">Maximum Context Length</string>
     <string name="settings_max_context_length_subtitle">Maximum context length supported by the model API (k tokens)</string>
     <string name="settings_summary_threshold">Summary Token Threshold</string>
-    <string name="settings_summary_threshold_subtitle">Threshold for triggering chat summary (0.1-0.95)</string>
+    <string name="settings_summary_threshold_subtitle">Context usage percentage that triggers auto-compression (0.1-0.95, e.g. 0.8 = 80%)</string>
     
     <!-- History Media Retention Settings -->
     <string name="settings_history_retention_title">History Media Retention</string>
