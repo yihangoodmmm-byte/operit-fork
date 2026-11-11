@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -73,13 +74,15 @@ fun TeamBoardScreen(
     val chatHistoryManager = remember { ChatHistoryManager.getInstance(context) }
     val currentChatId by chatHistoryManager.currentChatIdFlow.collectAsState(initial = null)
     val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
-    val isGroupChat = currentChatId != null &&
-        chatHistories.firstOrNull { it.id == currentChatId }?.isGroupChat == true
+    // 委托属性（by collectAsState）无法 smart cast，先落到局部变量再判空比较
+    val currentChatIdValue = currentChatId
+    val isGroupChat = currentChatIdValue != null &&
+        chatHistories.firstOrNull { it.id == currentChatIdValue }?.isGroupChat == true
     val groupChatRepository = remember { GroupChatRepository.getInstance(context) }
     var groupMembers by remember(currentChatId) { mutableStateOf<List<GroupChatMember>>(emptyList()) }
-    LaunchedEffect(currentChatId, isGroupChat) {
-        if (currentChatId != null && isGroupChat) {
-            groupMembers = groupChatRepository.members(currentChatId)
+    LaunchedEffect(currentChatIdValue, isGroupChat) {
+        if (currentChatIdValue != null && isGroupChat) {
+            groupMembers = groupChatRepository.members(currentChatIdValue)
         } else {
             groupMembers = emptyList()
         }
