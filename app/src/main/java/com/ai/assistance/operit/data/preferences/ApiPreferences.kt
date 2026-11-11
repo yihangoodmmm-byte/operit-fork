@@ -149,11 +149,6 @@ class ApiPreferences private constructor(private val context: Context) {
         val PROMPT_DISABLED_LAYERS = stringPreferencesKey("prompt_disabled_layers")
         val PROMPT_LAYER_CONTENTS = stringPreferencesKey("prompt_layer_contents")
 
-        // 工作习惯：用户自定义的持续性行为约定（每轮以最高优先级注入，空 = 不注入）
-        val WORK_HABITS_PROMPT = stringPreferencesKey("work_habits_prompt")
-        // 工作习惯强校验规则（JSON 数组，每项 {id,label,regex}；regex 为空表示仅做提示不强制）
-        val WORK_HABITS_RULES_JSON = stringPreferencesKey("work_habits_rules_json")
-
         val MAX_IMAGE_HISTORY_USER_TURNS = intPreferencesKey("max_image_history_user_turns")
         val MAX_MEDIA_HISTORY_USER_TURNS = intPreferencesKey("max_media_history_user_turns")
 
@@ -178,8 +173,6 @@ class ApiPreferences private constructor(private val context: Context) {
         // Default system prompt template (empty means use built-in template)
         const val DEFAULT_SYSTEM_PROMPT_TEMPLATE = ""
         const val DEFAULT_SYSTEM_PERSONA_PROMPT = ""
-        const val DEFAULT_WORK_HABITS_PROMPT = ""
-        const val DEFAULT_WORK_HABITS_RULES_JSON = "[]"
 
         const val DEFAULT_MAX_IMAGE_HISTORY_USER_TURNS = 2
         const val DEFAULT_MAX_MEDIA_HISTORY_USER_TURNS = 1
@@ -346,18 +339,6 @@ class ApiPreferences private constructor(private val context: Context) {
     val systemPersonaPromptFlow: Flow<String> =
             context.apiDataStore.data.map { preferences ->
                 preferences[SYSTEM_PERSONA_PROMPT] ?: DEFAULT_SYSTEM_PERSONA_PROMPT
-            }
-
-    // 工作习惯：用户自定义的持续性行为约定，每轮最高优先级注入
-    val workHabitsPromptFlow: Flow<String> =
-            context.apiDataStore.data.map { preferences ->
-                preferences[WORK_HABITS_PROMPT] ?: DEFAULT_WORK_HABITS_PROMPT
-            }
-
-    // 工作习惯强校验规则 JSON 字符串（原样透传，由 WorkHabitsEnforcer 解析）
-    val workHabitsRulesJsonFlow: Flow<String> =
-            context.apiDataStore.data.map { preferences ->
-                preferences[WORK_HABITS_RULES_JSON] ?: DEFAULT_WORK_HABITS_RULES_JSON
             }
 
     /** 用户改写过正文的层：id -> 正文（JSON 对象字符串存储） */
@@ -555,20 +536,6 @@ class ApiPreferences private constructor(private val context: Context) {
     suspend fun saveSystemPersonaPrompt(prompt: String) {
         context.apiDataStore.edit { preferences ->
             preferences[SYSTEM_PERSONA_PROMPT] = prompt
-        }
-    }
-
-    // 保存工作习惯（用户可随时增删改，无需重编译）
-    suspend fun saveWorkHabitsPrompt(prompt: String) {
-        context.apiDataStore.edit { preferences ->
-            preferences[WORK_HABITS_PROMPT] = prompt
-        }
-    }
-
-    // 保存工作习惯强校验规则（JSON 数组字符串，原样透传）
-    suspend fun saveWorkHabitsRulesJson(rulesJson: String) {
-        context.apiDataStore.edit { preferences ->
-            preferences[WORK_HABITS_RULES_JSON] = rulesJson
         }
     }
 

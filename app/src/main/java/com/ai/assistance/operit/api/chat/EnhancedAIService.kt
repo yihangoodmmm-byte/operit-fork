@@ -353,10 +353,7 @@ class EnhancedAIService private constructor(private val context: Context) {
         var chatModelIndexOverride: Int? = null,
         var memorySpaceIdOverride: String? = null,
         var stream: Boolean = true,
-        var disableWarning: Boolean = false,
-        // 完整输出收集完成后的通知点：传入本次完整输出文本。
-        // 供工作习惯校验（WorkHabitsEnforcer）等「输出后」逻辑接入，不参与主循环控制流。
-        var onOutputComplete: (suspend (String) -> Unit)? = null
+        var disableWarning: Boolean = false
     )
 
     // MultiServiceManager 管理不同功能的 AIService 实例
@@ -934,7 +931,6 @@ class EnhancedAIService private constructor(private val context: Context) {
         val memorySpaceIdOverride = options.memorySpaceIdOverride
         val stream = options.stream
         val disableWarning = options.disableWarning
-        val onOutputComplete = options.onOutputComplete
         val onNonFatalError: suspend (error: String) -> Unit = { error ->
             options.onNonFatalError(error)
             callbacks?.onNonFatalError(error)
@@ -1242,16 +1238,6 @@ class EnhancedAIService private constructor(private val context: Context) {
                         }
                     }
                     providerStreamCollectionStarted = false
-
-                    // 完整输出收集完成，通知「输出后」逻辑（工作习惯校验等）。
-                    // 不抛异常也不参与重试控制流；调用方自行决定后续动作。
-                    if (onOutputComplete != null) {
-                        try {
-                            onOutputComplete.invoke(execContext.streamBuffer.toString())
-                        } catch (e: Exception) {
-                            AppLogger.e(TAG, "onOutputComplete 回调失败", e)
-                        }
-                    }
 
                     // Update accumulated token counts and persist them
                     val inputTokens = serviceForFunction.inputTokenCount
