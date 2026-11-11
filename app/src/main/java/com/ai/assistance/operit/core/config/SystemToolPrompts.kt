@@ -60,6 +60,14 @@ object SystemToolPrompts {
                         required = true
                     )
                 )
+            ),
+            ToolPrompt(
+                name = "orchestrate_team",
+                description = "Decompose a complex task into subtasks and run them with a team of subagents in parallel, returning a combined summary.",
+                parametersStructured = listOf(
+                    ToolParameterSchema(name = "goal", type = "string", description = "the team goal, one sentence describing what to accomplish", required = true),
+                    ToolParameterSchema(name = "subtasks", type = "string", description = "JSON array string of subtasks, each: {\"task\":\"...\",\"capabilities\":[\"read\",\"write\",\"command\"],\"files\":[\"/abs/path\"]}. capabilities: read/tools/write/command", required = true)
+                )
             )
         )
     )
@@ -79,6 +87,14 @@ object SystemToolPrompts {
                 description = "在当前会话中激活包。",
                 parametersStructured = listOf(
                     ToolParameterSchema(name = "package_name", type = "string", description = "要激活的包名", required = true)
+                )
+            ),
+            ToolPrompt(
+                name = "orchestrate_team",
+                description = "把复杂任务拆解成多个子任务，交给子智能体团队并行执行，返回汇总结论。",
+                parametersStructured = listOf(
+                    ToolParameterSchema(name = "goal", type = "string", description = "团队目标，一句话描述要完成什么", required = true),
+                    ToolParameterSchema(name = "subtasks", type = "string", description = "子任务 JSON 数组字符串，每个：{\"task\":\"...\",\"capabilities\":[\"read\",\"write\",\"command\"],\"files\":[\"/绝对路径\"]}。capabilities 可选 read/tools/write/command", required = true)
                 )
             )
         )

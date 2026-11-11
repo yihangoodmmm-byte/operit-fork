@@ -138,6 +138,14 @@ object ScreenRouteRegistry {
                 order = 30
             ),
             hostEntryDefinition(
+                entryId = "main.team_board",
+                screen = Screen.TeamBoard,
+                surface = NavigationSurface.MAIN_SIDEBAR_AI,
+                launchNavItem = NavItem.TeamBoard,
+                icon = NavItem.TeamBoard.icon,
+                order = 40
+            ),
+            hostEntryDefinition(
                 entryId = "main.packages",
                 screen = Screen.Packages,
                 surface = NavigationSurface.MAIN_SIDEBAR_TOOLS,

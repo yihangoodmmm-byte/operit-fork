@@ -2936,6 +2936,74 @@ fun registerAllTools(handler: AIToolHandler, context: Context) {
             }
     )
 
+    // 智能体团队编排：把复杂任务拆解成多个子任务，派给子智能体并行执行。
+    // 主模型通过此工具表达「拆解 + 派团队」；结果回传，同时注册到团队看板。
+    handler.registerTool(
+            name = "orchestrate_team",
+            descriptionGenerator = { tool ->
+                val goal = tool.parameters.find { it.name == "goal" }?.value.orEmpty()
+                "把复杂任务拆解成多个子任务，交给子智能体团队并行执行，返回汇总结论。\n" +
+                    "参数：\n" +
+                    "- goal（必填）：团队目标，一句话描述要完成什么。\n" +
+                    "- subtasks（必填，JSON 数组字符串）：每个子任务形如 " +
+                    "{\"task\":\"子任务描述\",\"capabilities\":[\"read\",\"write\",\"command\"],\"files\":[\"/绝对路径\"]}。\n" +
+                    "  capabilities 可选值：read(只读) / tools(受控工具) / write(写文件) / command(跑命令)。\n" +
+                    "  files 是该子任务要阅读的绝对路径列表（可空）。\n" +
+                    "当前目标：" + goal
+            },
+            executor = { tool ->
+                val goal = tool.parameters.find { it.name == "goal" }?.value.orEmpty().trim()
+                val subtasksJson = tool.parameters.find { it.name == "subtasks" }?.value.orEmpty().trim()
+                if (goal.isEmpty() || subtasksJson.isEmpty()) {
+                    ToolResult(
+                        toolName = tool.name,
+                        success = false,
+                        result = StringResultData(""),
+                        error = "goal 与 subtasks 均为必填"
+                    )
+                } else {
+                    runBlocking(Dispatchers.IO) {
+                        runCatching {
+                            val specs =
+                                com.ai.assistance.operit.core.agent.AgentTeamOrchestrator
+                                    .parseSubagentSpecs(subtasksJson)
+                            if (specs.isEmpty()) {
+                                ToolResult(
+                                    toolName = tool.name,
+                                    success = false,
+                                    result = StringResultData(""),
+                                    error = "subtasks 解析为空或格式错误"
+                                )
+                            } else {
+                                val team =
+                                    com.ai.assistance.operit.core.agent.AgentTeamOrchestrator
+                                        .orchestrate(
+                                            context = context,
+                                            goal = goal,
+                                            specs = specs
+                                        )
+                                ToolResult(
+                                    toolName = tool.name,
+                                    success = true,
+                                    result = StringResultData(team.summarize())
+                                )
+                            }
+                        }.fold(
+                            onSuccess = { it },
+                            onFailure = { error ->
+                                ToolResult(
+                                    toolName = tool.name,
+                                    success = false,
+                                    result = StringResultData(""),
+                                    error = error.message ?: "团队编排失败"
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+    )
+
     // 在输入框中设置文本
     handler.registerTool(
             name = "set_input_text",

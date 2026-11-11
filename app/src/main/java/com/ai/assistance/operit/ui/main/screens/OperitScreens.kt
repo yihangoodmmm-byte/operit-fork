@@ -68,6 +68,7 @@ import com.ai.assistance.operit.ui.features.toolbox.screens.StreamMarkdownDemoSc
 import com.ai.assistance.operit.ui.features.toolbox.screens.TerminalAutoConfigToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.TerminalToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.ToolboxScreen
+import com.ai.assistance.operit.ui.features.team.TeamBoardScreen
 import com.ai.assistance.operit.ui.common.composedsl.ToolPkgComposeDslToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.UIDebuggerToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.DefaultAssistantGuideToolScreen
@@ -741,6 +742,23 @@ sealed class Screen(
             WorkflowDetailScreen(
                 workflowId = workflowId,
                 onNavigateBack = onGoBack
+            )
+        }
+    }
+
+    data object TeamBoard : Screen(navItem = NavItem.TeamBoard, titleRes = R.string.screen_title_team_board) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            TeamBoardScreen(
+                onGoBack = onGoBack
             )
         }
     }

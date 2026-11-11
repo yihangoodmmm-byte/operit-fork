@@ -127,6 +127,8 @@
     <string name="chathistory_external_storage">External storage</string>
 
     <string name="nav_workflow">Workflow</string>
+    <string name="nav_team_board">Agent Team</string>
+    <string name="screen_title_team_board">Agent Team</string>
     <string name="nav_group_ai_features">AI Features</string>
     <string name="nav_group_tools">Tools</string>
     <string name="nav_group_system">System</string>
