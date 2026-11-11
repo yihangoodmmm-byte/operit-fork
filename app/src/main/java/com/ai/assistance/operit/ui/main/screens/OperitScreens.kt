@@ -59,6 +59,7 @@ import com.ai.assistance.operit.ui.features.settings.screens.ThemeSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.ToolPermissionSettingsScreen
 import com.ai.assistance.operit.ui.features.settings.screens.MnnModelDownloadScreen
 import com.ai.assistance.operit.ui.features.settings.screens.UserPreferencesSettingsScreen
+import com.ai.assistance.operit.ui.features.settings.screens.WorkHabitsSettingsScreen
 import com.ai.assistance.operit.ui.features.token.TokenConfigWebViewScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.AppPermissionsToolScreen
 import com.ai.assistance.operit.ui.features.toolbox.screens.FileManagerToolScreen
@@ -604,6 +605,7 @@ sealed class Screen(
                     navigateToGlobalDisplaySettings = {},
                     navigateToModelPrompts = { navigateTo(SystemPromptSettings) },
                     navigateToPromptLayers = { navigateTo(PromptLayersSettings) },
+                    navigateToWorkHabits = { navigateTo(WorkHabitsSettings) },
                     navigateToFunctionalConfig = {},
                     navigateToChatHistorySettings = { navigateTo(ChatHistorySettings) },
                     navigateToChatBackupSettings = {},
@@ -935,6 +937,22 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             SystemPromptSettingsScreen(onBackPressed = onGoBack)
+        }
+    }
+
+    data object WorkHabitsSettings :
+            Screen(navItem = NavItem.Settings, titleRes = R.string.screen_title_work_habits_settings) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            WorkHabitsSettingsScreen(onBackPressed = onGoBack)
         }
     }
 

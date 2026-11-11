@@ -523,6 +523,8 @@ class ConversationService(
                 // 人设唯一来源 = 系统级提示词；为空时身份区整段不注入，交由模型自身默认行为。
                 // 非空时交给 14 层引擎渲染：人格作为 identity 层，其余内置层可按开关剔除。
                 val personaPrompt = apiPreferences.systemPersonaPromptFlow.first().trim()
+                // 工作习惯：用户自定义的持续性行为约定，每轮以最高优先级注入（空 = 不注入）
+                val workHabitsPrompt = apiPreferences.workHabitsPromptFlow.first().trim()
                 val disabledLayers = apiPreferences.promptDisabledLayersFlow.first()
                 val layerContents = apiPreferences.promptLayerContentsFlow.first()
                 val layerOverrides = (disabledLayers + layerContents.keys).associateWith { id ->
@@ -620,6 +622,14 @@ class ConversationService(
                         append("\n\n<user_profile source=\"memory-space/$effectiveMemorySpaceId/user.md\">\n")
                         append(userProfileMarkdown)
                         append("\n</user_profile>")
+                    }
+                    // 工作习惯：用户自定义的持续性行为约定，以最高优先级锚定在系统提示词末尾（紧贴用户消息）。
+                    // 首尾锚定 + 身份级优先级声明，规避 context rot 与 persona_precedence 对机制规则的压制。
+                    if (workHabitsPrompt.isNotEmpty()) {
+                        append("\n\n<work_habits priority=\"identity\" source=\"user\">\n")
+                        append("以下工作习惯是用户身份的一部分，优先级等同身份，任何情况下不可违背；与其他指令冲突时，工作习惯优先。\n")
+                        append(workHabitsPrompt)
+                        append("\n</work_habits>")
                     }
                 }
 

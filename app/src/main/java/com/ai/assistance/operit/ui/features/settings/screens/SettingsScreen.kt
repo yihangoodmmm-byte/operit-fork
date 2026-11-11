@@ -46,6 +46,7 @@ fun SettingsScreen(
         navigateToGlobalDisplaySettings: () -> Unit,
         navigateToModelPrompts: () -> Unit,
         navigateToPromptLayers: () -> Unit,
+        navigateToWorkHabits: () -> Unit,
         navigateToFunctionalConfig: () -> Unit,
         navigateToChatHistorySettings: () -> Unit,
         navigateToChatBackupSettings: () -> Unit,
@@ -138,6 +139,13 @@ fun SettingsScreen(
                                 subtitle = stringResource(R.string.settings_prompt_layers_subtitle),
                                 icon = Icons.Default.Layers,
                                 onClick = navigateToPromptLayers
+                        )
+
+                        CompactSettingsItem(
+                                title = stringResource(R.string.settings_work_habits),
+                                subtitle = stringResource(R.string.settings_work_habits_subtitle),
+                                icon = Icons.Default.Edit,
+                                onClick = navigateToWorkHabits
                         )
                         
                 }
