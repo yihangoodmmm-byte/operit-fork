@@ -99,6 +99,9 @@ interface ChatDao {
     @Query("UPDATE chats SET pinned = :pinned, updatedAt = :timestamp WHERE id = :chatId")
     suspend fun updateChatPinned(chatId: String, pinned: Boolean, timestamp: Long = System.currentTimeMillis())
 
+    @Query("UPDATE chats SET isGroupChat = :isGroupChat, updatedAt = :timestamp WHERE id = :chatId")
+    suspend fun updateChatGroupChat(chatId: String, isGroupChat: Boolean, timestamp: Long = System.currentTimeMillis())
+
     /** 更新单个聊天的顺序和分组 */
     @Query("UPDATE chats SET displayOrder = :displayOrder, `group` = :group, updatedAt = :timestamp WHERE id = :chatId")
     suspend fun updateChatOrderAndGroup(chatId: String, displayOrder: Long, group: String?, timestamp: Long = System.currentTimeMillis())

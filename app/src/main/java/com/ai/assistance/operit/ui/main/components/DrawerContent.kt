@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Wifi
@@ -213,6 +214,18 @@ fun DrawerContent(
                         handleScreenSelection(ScreenRouteRegistry.defaultScreenForNavItem(NavItem.AiChat))
                 }
         }
+
+        val handleNewGroupChat: () -> Unit = {
+                scope.launch {
+                        runCatching {
+                                ChatHistoryManager.getInstance(context).createGroupChat(setAsCurrentChat = true)
+                        }
+                        if (drawerState.currentValue == DrawerValue.Open) {
+                                drawerState.close()
+                        }
+                        handleScreenSelection(ScreenRouteRegistry.defaultScreenForNavItem(NavItem.AiChat))
+                }
+        }
         val handleNavigationEntryClick: (NavigationEntrySpec) -> Unit = { entry ->
                 val shouldCloseBeforeNavigate =
                         drawerState.currentValue == DrawerValue.Open ||
@@ -249,6 +262,7 @@ fun DrawerContent(
                                 onNavItemClick = handleNavItemClick,
                                 onNavigationEntryClick = handleNavigationEntryClick,
                                 onNewChat = handleNewChat,
+                                onNewGroupChat = handleNewGroupChat,
                         )
 
                 // 最近对话占据剩余全部高度，自己滚动（cccodroid 的 .side-recent{flex:1;overflow-y:auto}）
@@ -457,6 +471,7 @@ private fun NewSidebarTopContent(
         onNavItemClick: (NavItem) -> Unit,
         onNavigationEntryClick: (NavigationEntrySpec) -> Unit,
         onNewChat: () -> Unit,
+        onNewGroupChat: () -> Unit,
 ) {
         // ── iOS 化：删除 Operit 的品牌卡与三张统计快捷键 ─────────────────
         // 原来的「Operit AI + WiFi 胶囊 + 包管理/权限/工作流 三卡」是 Operit 最强的识别特征：
@@ -486,6 +501,13 @@ private fun NewSidebarTopContent(
         DrawerNewChatButton(
             appearance = appearance,
             onClick = onNewChat,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        DrawerNewGroupChatButton(
+            appearance = appearance,
+            onClick = onNewGroupChat,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -640,6 +662,44 @@ private fun DrawerNewChatButton(
         Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = "新对话",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = appearance.titleColor,
+            maxLines = 1
+        )
+    }
+}
+
+/**
+ * 「群聊对话」按钮。样式与「新对话」一致,但用群组图标,点击创建群聊会话。
+ * 位置在新对话按钮正下方。
+ */
+@Composable
+private fun DrawerNewGroupChatButton(
+    appearance: NavigationDrawerAppearance,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(11.dp)
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+                .clip(shape)
+                .border(width = 1.dp, color = appearance.dividerColor.copy(alpha = 0.55f), shape = shape)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.Groups,
+            contentDescription = null,
+            tint = appearance.selectedContentColor,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "群聊对话",
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
             color = appearance.titleColor,

@@ -14,6 +14,9 @@ import com.ai.assistance.operit.data.model.ModelParameter
 import com.ai.assistance.operit.data.model.CharacterCard
 import com.ai.assistance.operit.data.model.ConversationSummaryConfig
 import com.ai.assistance.operit.data.model.FunctionType
+import com.ai.assistance.operit.data.model.ChatHistory
+import com.ai.assistance.operit.core.agent.GroupChatOrchestrator
+import com.ai.assistance.operit.data.repository.GroupChatRepository
 import com.ai.assistance.operit.data.model.PromptFunctionType
 import com.ai.assistance.operit.data.model.ChatMessage
 import com.ai.assistance.operit.data.model.ChatMessageDisplayMode
@@ -555,6 +558,43 @@ class MessageCoordinationDelegate(
         if (!isAutoContinuation) {
             cancelPendingAutoContinuation(chatId, restoreIdleIfPendingState = false)
         }
+
+        // 群聊会话:走子智能体并行编排(与角色群组「轮流发言」是两条独立路径)。
+        // 判断依据是 chat.isGroupChat 标记,而不是 activePrompt 是否为 CharacterGroup。
+        val currentChatSnapshot = chatHistoryDelegate.chatHistories.value.firstOrNull { it.id == chatId }
+        if (
+            currentChatSnapshot?.isGroupChat == true &&
+            !isGroupOrchestrationTurn &&
+            !isAutoContinuation &&
+            turnOptions.persistTurn
+        ) {
+            coroutineScope.launch {
+                runCatching {
+                    orchestrateGroupChat(chatId = chatId, turnOptions = turnOptions)
+                }.onFailure { throwable ->
+                    AppLogger.e(TAG, "群聊编排失败，回退普通发送", throwable)
+                    sendMessageInternal(
+                        promptFunctionType = promptFunctionType,
+                        isContinuation = isContinuation,
+                        skipSummaryCheck = skipSummaryCheck,
+                        isAutoContinuation = isAutoContinuation,
+                        roleCardIdOverride = roleCardIdOverride,
+                        preferActiveRoleCard = preferActiveRoleCard,
+                        chatIdOverride = chatIdOverride,
+                        messageTextOverride = messageTextOverride,
+                        proxySenderNameOverride = proxySenderNameOverride,
+                        chatModelConfigIdOverride = chatModelConfigIdOverride,
+                        chatModelIndexOverride = chatModelIndexOverride,
+                        suppressUserMessageInHistory = suppressUserMessageInHistory,
+                        forceDisableSummary = forceDisableSummary,
+                        enableGroupOrchestration = false,
+                        turnOptions = turnOptions
+                    )
+                }
+            }
+            return
+        }
+
         if (
             turnOptions.persistTurn &&
             enableGroupOrchestration &&
@@ -761,6 +801,71 @@ class MessageCoordinationDelegate(
             uiBridge.resetAttachmentPanelState()
             uiBridge.clearReplyToMessage()
         }
+    }
+
+    /**
+     * 群聊编排:把一次群聊请求拆成 N 个并行子任务,交给子智能体团队执行,结果写回聊天。
+     *
+     * 与角色群组轮流发言(orchestrateGroupConversation)的区别:
+     * - 成员是「同主提示词的子智能体」,不是不同角色卡;
+     * - 执行是「并行」(AgentTeamOrchestrator),不是「轮流发言」;
+     * - 分工过程静默,结果只在团队看板 + 最终汇总里可见。
+     */
+    private suspend fun orchestrateGroupChat(
+        chatId: String,
+        turnOptions: ChatTurnOptions
+    ): Boolean {
+        val originalUserText = messageProcessingDelegate.userMessage.value.text.trim()
+        if (originalUserText.isBlank()) {
+            AppLogger.d(TAG, "群聊编排终止: 输入为空")
+            return false
+        }
+
+        val members = GroupChatRepository.getInstance(context).members(chatId)
+        if (members.isEmpty()) {
+            AppLogger.d(TAG, "群聊编排终止: 没有成员")
+            uiStateDelegate.showErrorMessage(context.getString(R.string.group_chat_no_members))
+            return false
+        }
+
+        // 清空输入框,落库用户消息
+        messageProcessingDelegate.updateUserMessage("")
+        messageProcessingDelegate.setInputProcessingStateForChat(
+            chatId,
+            InputProcessingState.Processing(context.getString(R.string.group_chat_orchestrating))
+        )
+
+        val userMessage = ChatMessage(
+            sender = "user",
+            content = originalUserText,
+            roleName = context.getString(R.string.message_role_user),
+            displayMode =
+                if (turnOptions.hideUserMessage) ChatMessageDisplayMode.HIDDEN_PLACEHOLDER
+                else ChatMessageDisplayMode.NORMAL
+        )
+        chatHistoryDelegate.addMessageToChat(userMessage, chatId)
+
+        // 编排:拆任务 → 并行执行 → 注册看板
+        val result = GroupChatOrchestrator.orchestrate(
+            context = context,
+            goal = originalUserText,
+            members = members,
+        )
+
+        // 把汇总结果作为 AI 消息写回聊天
+        val aiMessage = ChatMessage(
+            sender = "ai",
+            content = result.summary,
+            roleName = "",
+            displayMode = ChatMessageDisplayMode.NORMAL
+        )
+        chatHistoryDelegate.addMessageToChat(aiMessage, chatId)
+
+        messageProcessingDelegate.setInputProcessingStateForChat(chatId, InputProcessingState.Completed)
+        attachmentDelegate.clearAttachments()
+        uiBridge.resetAttachmentPanelState()
+        uiBridge.clearReplyToMessage()
+        return true
     }
 
     private fun shouldRunGroupOrchestration(

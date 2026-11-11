@@ -98,7 +98,13 @@ object RuleDecisionGate : DecisionGate {
         "settings", "设置", "修改系统",
     )
 
-    override suspend fun gate(request: GateRequest): GateVerdict {
+    override suspend fun gate(request: GateRequest): GateVerdict = evaluateSync(request)
+
+    /**
+     * 同步版规则判定:不调模型、不挂起,可在 AIToolHook.onToolCallIntercept
+     * 这类同步回调里直接调用,作为工具执行前的第一道高危拦截。
+     */
+    fun evaluateSync(request: GateRequest): GateVerdict {
         val hay = (request.toolId + " " + request.toolTitle).lowercase()
         val block = BLOCK_TOOL_KEYWORDS.firstOrNull { hay.contains(it) }
         if (block != null) return GateVerdict.Block("该操作被判定为高风险,已阻止")

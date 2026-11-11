@@ -21,7 +21,7 @@ import com.ai.assistance.operit.util.AppLogger
 import java.io.File
 import java.util.UUID
 
-private const val APP_DATABASE_VERSION = 21
+private const val APP_DATABASE_VERSION = 22
 
 /** 应用数据库，包含聊天表和消息表 */
 @Database(
@@ -351,6 +351,14 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        /** v21 -> v22: 群聊会话标记(isGroupChat)。 */
+        internal val MIGRATION_21_22 =
+            object : Migration(21, 22) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE chats ADD COLUMN `isGroupChat` INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+
         // 定义从版本2到3的迁移
         private val MIGRATION_2_3 =
             object : Migration(2, 3) {
@@ -533,7 +541,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_17_18,
                     MIGRATION_18_19,
                     MIGRATION_19_20,
-                    MIGRATION_20_21
+                    MIGRATION_20_21,
+                    MIGRATION_21_22
                 )
                 .build()
 

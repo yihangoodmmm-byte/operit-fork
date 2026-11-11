@@ -8,6 +8,9 @@ import com.ai.assistance.operit.core.agent.AgentTeamOrchestrator
 import com.ai.assistance.operit.core.agent.AgentTeamRegistry
 import com.ai.assistance.operit.core.agent.SubagentSpec
 import com.ai.assistance.operit.util.AppLogger
+import com.ai.assistance.operit.data.model.GroupChatMember
+import com.ai.assistance.operit.data.repository.GroupChatRepository
+import com.ai.assistance.operit.data.repository.ChatHistoryManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,6 +66,27 @@ class TeamBoardViewModel : ViewModel() {
 
     fun setActiveTeam(id: String?) {
         AgentTeamRegistry.setActive(id)
+    }
+
+    // ── 群聊成员管理 ──────────────────────────────────────────────
+
+    /** 召唤一个成员(默认名按当前数量递增)。 */
+    fun summonMember(context: Context) {
+        viewModelScope.launch {
+            val chatId = ChatHistoryManager.getInstance(context).currentChatIdFlow.value ?: return@launch
+            val repo = GroupChatRepository.getInstance(context)
+            val current = repo.members(chatId)
+            val newMember = GroupChatMember(name = GroupChatMember.defaultName(current.size))
+            repo.addMember(chatId, newMember)
+        }
+    }
+
+    /** 删除一个成员。 */
+    fun removeMember(context: Context, memberId: String) {
+        viewModelScope.launch {
+            val chatId = ChatHistoryManager.getInstance(context).currentChatIdFlow.value ?: return@launch
+            GroupChatRepository.getInstance(context).removeMember(chatId, memberId)
+        }
     }
 
     /** 观察模式：确认放行某工作项。 */

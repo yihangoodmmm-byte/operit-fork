@@ -12,6 +12,7 @@ import com.ai.assistance.operit.data.backup.OperitBackupDirs
 import com.ai.assistance.operit.data.db.AppDatabase
 import com.ai.assistance.operit.data.model.ChatEntity
 import com.ai.assistance.operit.data.model.ChatHistory
+import com.ai.assistance.operit.data.model.GroupChatMember
 import com.ai.assistance.operit.data.model.ChatMessage
 import com.ai.assistance.operit.data.model.ChatMessageLocatorPreview
 import com.ai.assistance.operit.data.model.CharacterCardChatStats
@@ -1535,6 +1536,35 @@ class ChatHistoryManager private constructor(private val context: Context) {
         if (setAsCurrentChat) {
             setCurrentChatId(newHistory.id)
         }
+
+        return newHistory
+    }
+
+    /**
+     * 创建群聊会话。
+     *
+     * 群聊与普通对话的区别:isGroupChat = true,且成员列表由 [GroupChatRepository] 管理。
+     * 创建时默认「我 + 1 个 AI」,即成员列表含 1 个默认成员。
+     */
+    suspend fun createGroupChat(
+        setAsCurrentChat: Boolean = true,
+        memberCount: Int = 1,
+    ): ChatHistory {
+        val newHistory = createNewChat(
+            group = null,
+            characterCardName = null,
+            characterGroupId = null,
+            setAsCurrentChat = setAsCurrentChat,
+        ).copy(isGroupChat = true)
+
+        // 回写 isGroupChat 标记到数据库
+        chatDao.updateChatGroupChat(newHistory.id, true)
+
+        // 初始化成员列表:默认 1 个 AI 成员
+        val members = (0 until memberCount.coerceAtLeast(1)).map { index ->
+            GroupChatMember(name = GroupChatMember.defaultName(index))
+        }
+        GroupChatRepository.getInstance(context).setMembers(newHistory.id, members)
 
         return newHistory
     }

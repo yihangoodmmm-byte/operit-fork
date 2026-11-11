@@ -22,6 +22,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.ai.assistance.operit.data.model.GroupChatMember
+import com.ai.assistance.operit.data.repository.GroupChatRepository
+import com.ai.assistance.operit.data.repository.ChatHistoryManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,6 +69,22 @@ fun TeamBoardScreen(
 
     val activeTeam: AgentTeam? = teams.find { it.id == activeTeamId } ?: teams.firstOrNull()
 
+    // ── 群聊成员管理区块 ────────────────────────────────────────────
+    val chatHistoryManager = remember { ChatHistoryManager.getInstance(context) }
+    val currentChatId by chatHistoryManager.currentChatIdFlow.collectAsState(initial = null)
+    val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
+    val isGroupChat = currentChatId != null &&
+        chatHistories.firstOrNull { it.id == currentChatId }?.isGroupChat == true
+    val groupChatRepository = remember { GroupChatRepository.getInstance(context) }
+    var groupMembers by remember(currentChatId) { mutableStateOf<List<GroupChatMember>>(emptyList()) }
+    LaunchedEffect(currentChatId, isGroupChat) {
+        if (currentChatId != null && isGroupChat) {
+            groupMembers = groupChatRepository.members(currentChatId)
+        } else {
+            groupMembers = emptyList()
+        }
+    }
+
     CustomScaffold(
         topBar = {
             Row(
@@ -87,22 +114,30 @@ fun TeamBoardScreen(
             }
         }
     ) { padding ->
-        if (activeTeam == null) {
-            EmptyState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                busy = busy
-            )
-        } else {
-            TeamBoard(
-                team = activeTeam,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                onApprove = viewModel::approve,
-                onReject = viewModel::reject
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // 群聊成员管理区块(仅群聊会话显示)
+            if (isGroupChat) {
+                GroupChatMemberPanel(
+                    members = groupMembers,
+                    onSummon = { viewModel.summonMember(context) },
+                    onRemove = { memberId -> viewModel.removeMember(context, memberId) },
+                )
+            }
+
+            // 团队看板
+            if (activeTeam == null) {
+                EmptyState(
+                    modifier = Modifier.fillMaxSize(),
+                    busy = busy
+                )
+            } else {
+                TeamBoard(
+                    team = activeTeam,
+                    modifier = Modifier.fillMaxSize(),
+                    onApprove = viewModel::approve,
+                    onReject = viewModel::reject
+                )
+            }
         }
     }
 }
@@ -326,4 +361,73 @@ private fun capabilityLabel(cap: SubagentCapability): String = when (cap) {
     SubagentCapability.USE_TOOLS -> "工具"
     SubagentCapability.WRITE_FILE -> "写文件"
     SubagentCapability.RUN_COMMAND -> "跑命令"
+}
+
+
+/**
+ * 群聊成员管理面板:显示当前群聊成员,提供「召唤成员」与「删除成员」。
+ */
+@Composable
+private fun GroupChatMemberPanel(
+    members: List<GroupChatMember>,
+    onSummon: () -> Unit,
+    onRemove: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "群聊成员（" + members.size + "）",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = onSummon) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("召唤成员")
+                }
+            }
+
+            if (members.isEmpty()) {
+                Text(
+                    text = "暂无成员，点击「召唤成员」添加",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                members.forEach { member ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = member.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = { onRemove(member.id) }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "删除成员",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

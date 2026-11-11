@@ -3,6 +3,7 @@ package com.ai.assistance.operit.core.tools
 import android.content.Context
 import com.ai.assistance.operit.util.AppLogger
 import com.ai.assistance.operit.core.tools.mcp.MCPManager
+import com.ai.assistance.operit.core.decision.RuleDecisionHook
 import com.ai.assistance.operit.core.tools.packTool.PackageManager
 import com.ai.assistance.operit.data.model.AITool
 import com.ai.assistance.operit.data.model.ToolInvocation
@@ -36,7 +37,12 @@ class AIToolHandler private constructor(private val context: Context) {
         fun getInstance(context: Context): AIToolHandler {
             return INSTANCE
                     ?: synchronized(this) {
-                        INSTANCE ?: AIToolHandler(context.applicationContext).also { INSTANCE = it }
+                        INSTANCE ?: AIToolHandler(context.applicationContext).also {
+                            INSTANCE = it
+                            // 注册高危工具拦截 Hook(RuleDecisionGate 的本地规则版),
+                            // 在权限弹窗之前拦下转账/密码/格式化等明确高危操作。
+                            it.addToolHook(RuleDecisionHook())
+                        }
                     }
         }
     }
