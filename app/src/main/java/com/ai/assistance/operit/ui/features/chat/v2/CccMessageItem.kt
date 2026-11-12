@@ -134,8 +134,8 @@ fun CccMessageItem(
                     )
                 }
             }
-        } else {
-            // ── 助手 / 摘要：左对齐，角色行 + 全宽正文（ChatGPT 式文档流）──
+        } else if (isSummary) {
+            // ── 摘要：系统消息，保持全宽文档，不进气泡 ─────────────────
             if (showRole) {
                 RoleLine(label = roleLabel, color = roleColor)
             }
@@ -146,6 +146,30 @@ fun CccMessageItem(
                 textColor = MaterialTheme.colorScheme.onSurface,
                 backgroundColor = MaterialTheme.colorScheme.background
             )
+        } else {
+            // ── 助手：左对齐灰色气泡（iMessage / 微信群聊风格）────────
+            // 角色名在气泡上方，正文装进左气泡；代码块照常在气泡内渲染。
+            Column(modifier = Modifier.fillMaxWidth()) {
+                if (showRole) {
+                    RoleLine(label = roleLabel, color = roleColor)
+                }
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(0.88f)
+                            .clip(RoundedCornerShape(18.dp, 18.dp, 18.dp, 5.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    MessageBody(
+                        message = message,
+                        charStream = charStream,
+                        enableDialogs = enableDialogs,
+                        textColor = MaterialTheme.colorScheme.onSurface,
+                        backgroundColor = MaterialTheme.colorScheme.surface
+                    )
+                }
+            }
         }
     }
 }
