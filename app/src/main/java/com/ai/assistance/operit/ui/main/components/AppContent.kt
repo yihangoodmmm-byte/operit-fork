@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -297,9 +298,9 @@ fun AppContent(
                                         stringResource(id = selectedItem.titleResId)
                                     else -> ""
                                 },
-                                fontSize = 15.sp,
+                                fontSize = 17.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.2.sp,
+                                letterSpacing = 0.sp,
                                 color = appBarContentColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -395,23 +396,11 @@ fun AppContent(
                     // 加载中状态
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Surface(
-                                modifier = Modifier.size(48.dp),
-                                shape = MaterialTheme.shapes.small,
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(28.dp),
                                 color = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "...",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
+                                strokeWidth = 2.5.dp
+                            )
 
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
