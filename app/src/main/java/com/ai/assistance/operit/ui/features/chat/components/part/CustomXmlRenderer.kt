@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Web
+import androidx.compose.material.icons.outlined.Psychology
+import androidx.compose.material3.Icon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -761,16 +763,53 @@ class CustomXmlRenderer(
                 .fillMaxWidth()
                 .padding(vertical = 4.dp)
         ) {
-            // 折叠头：▸ 思考过程 + 字符数
+            // 折叠头：思考图标 + 「思考过程」 + 字符数徽章 + 折叠箭头。
+            // 相比原来一行纯文字，这里给整行加了浅色胶囊底、图标圆和字符数徽章，
+            // 让「思考」这个状态在文档流里有明确的视觉层次，而不是一条容易被忽略的灰字。
             Row(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
                         .clickable { expanded = !expanded }
-                        .padding(vertical = 6.dp, horizontal = 2.dp),
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Psychology,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(13.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.thinking_process_block),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatCharCount(body.length),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier =
+                        Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+                            .padding(horizontal = 7.dp, vertical = 2.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
                 val rotation by animateFloatAsState(
                     targetValue = if (expanded) 90f else 0f,
                     animationSpec = tween(150),
@@ -778,21 +817,9 @@ class CustomXmlRenderer(
                 )
                 Text(
                     text = "\u25B8",
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.rotate(rotation)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = stringResource(R.string.thinking_process_block),
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = formatCharCount(body.length),
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
                 if (isInProgress) {
                     Spacer(modifier = Modifier.width(6.dp))
