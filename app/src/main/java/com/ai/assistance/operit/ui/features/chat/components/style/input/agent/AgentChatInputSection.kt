@@ -885,51 +885,9 @@ fun AgentChatInputSection(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color.Transparent,
-                                modifier =
-                                    Modifier
-                                        .widthIn(min = 0.dp, max = 220.dp)
-                                        .border(
-                                            width = 1.dp,
-                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                            shape = RoundedCornerShape(12.dp),
-                                        )
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable(onClick = onModelSelectorClick),
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = modelLabel,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.widthIn(max = 160.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector =
-                                            if (showModelSelectorPopup.value) {
-                                                Icons.Default.KeyboardArrowUp
-                                            } else {
-                                                Icons.Default.KeyboardArrowDown
-                                            },
-                                        contentDescription = context.getString(R.string.select_model_config),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                }
-                            }
-                        }
+                        // 模型入口已下移到底部 ComposerHintRow（富 chip：图标+名称+箭头），
+                        // 按钮行这里只留「设置 / 附件 / 发送」，避免模型徽章重复显示。
+                        Spacer(modifier = Modifier.weight(1f))
 
                         Box(
                             modifier =
@@ -1185,58 +1143,8 @@ fun AgentChatInputSection(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.CenterStart,
-                            ) {
-                                // ── 模型入口（codex 式紧凑徽章）──────────────────
-                                // codex 的输入区里模型只是一个小徽章，点开才是选择器，不占一整行文字。
-                                // 这里同样收成「圆点 + 短名」的胶囊：圆点用主色示意当前供应商，
-                                // 名字按字符数截断，宽度上限比原来（220dp）收到 150dp。
-                                Surface(
-                                    shape = RoundedCornerShape(999.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                    modifier =
-                                        Modifier
-                                            .widthIn(min = 0.dp, max = 150.dp)
-                                            .clip(RoundedCornerShape(999.dp))
-                                            .clickable(onClick = onModelSelectorClick),
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Box(
-                                            modifier =
-                                                Modifier
-                                                    .size(6.dp)
-                                                    .clip(CircleShape)
-                                                    .background(MaterialTheme.colorScheme.primary)
-                                        )
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                        Text(
-                                            text = modelLabel,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.widthIn(max = 110.dp),
-                                        )
-                                        Spacer(modifier = Modifier.width(2.dp))
-                                        Icon(
-                                            imageVector =
-                                                if (showModelSelectorPopup.value) {
-                                                    Icons.Default.KeyboardArrowUp
-                                                } else {
-                                                    Icons.Default.KeyboardArrowDown
-                                                },
-                                            contentDescription = context.getString(R.string.select_model_config),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(16.dp),
-                                        )
-                                    }
-                                }
-                            }
+                            // 模型入口统一收进底部 ComposerHintRow，按钮行不再重复显示。
+                            Spacer(modifier = Modifier.weight(1f))
 
                                 Box(
                                     modifier =
