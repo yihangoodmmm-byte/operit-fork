@@ -280,7 +280,7 @@ fun BubbleUserMessageComposable(
                                     showImagePreview.value = true
                                 },
                             shape = RoundedCornerShape(8.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
                             Image(
                                 bitmap = bitmap.asImageBitmap(),

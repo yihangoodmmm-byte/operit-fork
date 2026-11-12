@@ -448,7 +448,7 @@ fun ClassicChatSettingsBar(
                                                             alpha = 0.95f
                                                     )
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(
                                 modifier =
@@ -792,7 +792,7 @@ fun ClassicChatSettingsBar(
                                                             alpha = 0.95f
                                                     )
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),

@@ -465,7 +465,7 @@ fun SpeechServicesSettingsScreen(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
                     border = BorderStroke(0.7.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
 
@@ -2108,7 +2108,7 @@ fun SpeechServicesSettingsScreen(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
                     border = BorderStroke(0.7.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
 

@@ -1597,7 +1597,7 @@ private fun AgentModelSelectorPopup(
                     CardDefaults.cardColors(
                         containerColor = popupContainerColor,
                     ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
                     modifier =
@@ -2336,7 +2336,7 @@ private fun AgentExtraSettingsPopup(
                     CardDefaults.cardColors(
                         containerColor = popupContainerColor,
                     ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
                     modifier =
@@ -3110,7 +3110,7 @@ private fun AgentInfoPopup(
                     CardDefaults.cardColors(
                         containerColor = popupContainerColor,
                     ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

@@ -856,7 +856,7 @@ fun AppItem(app: AppInfo, onClick: () -> Unit) {
     Card(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             shape = RoundedCornerShape(12.dp),
             colors =
                     CardDefaults.cardColors(
