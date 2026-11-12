@@ -256,7 +256,7 @@ fun ClassicChatInputSection(
     val inputWaterGlassEnabled =
         chatInputTransparent && chatInputWaterGlass && isWaterGlassSupported()
     // AiCode：输入栏外框用 Radius.lg = 14dp（原 22dp 的"大胶囊"是 Operit 的识别特征之一）
-    val containerShape = if (chatInputFloating) RoundedCornerShape(14.dp) else RoundedCornerShape(0.dp)
+    val containerShape = if (chatInputFloating) RoundedCornerShape(20.dp) else RoundedCornerShape(0.dp)
     val containerModifier =
         if (chatInputFloating) {
             modifier.padding(horizontal = 8.dp, vertical = 6.dp)
@@ -490,7 +490,7 @@ fun ClassicChatInputSection(
             ) {
                 // Input field (保持原有高度)
 
-                val classicInputShape = RoundedCornerShape(14.dp)
+                val classicInputShape = RoundedCornerShape(20.dp)
                 val classicInputEnabled = !isProcessing || allowTextInputWhileProcessing
                 val classicInputBorderColor =
                     if (userMessage.text.isNotBlank()) {
