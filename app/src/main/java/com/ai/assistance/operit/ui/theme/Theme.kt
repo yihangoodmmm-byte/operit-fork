@@ -349,62 +349,13 @@ fun OperitTheme(content: @Composable () -> Unit) {
         // 玻璃开启时才有可模糊/可折射的内容。
         val hasBackgroundImage = useBackgroundImage && backgroundImageUri != null
         val baseBackground = colorScheme.background
-        val isDarkBackground = baseBackground.luminance() < 0.5f
         val wallpaperModifier =
             if (hasBackgroundImage) {
                 Modifier.background(if (darkTheme) Color.Black else Color.White)
             } else {
-                // ── 暖纸质感背景（替换原来的「渐变 + 两团品牌色光晕」）───────
-                // 原来的光晕是为了让液态玻璃"有东西可折射"，玻璃已经下线，
-                // 残留的品牌色光只会让底色发花。改成纸张该有的三件事：
-                //   1) 纵向微渐变：顶部略亮、底部略沉，模拟受光；
-                //   2) 极细颗粒：一张 96×96 的随机噪点平铺，透明度很低，远看是纸纹、近看才有点；
-                //   3) 四角轻微压暗：vignette，把视线收进中间。
-                // 三步都是纯绘制，不引额外的离屏缓冲。
-                val paperGrain = remember {
-                    val sizePx = 96
-                    val bitmap =
-                        android.graphics.Bitmap.createBitmap(
-                            sizePx,
-                            sizePx,
-                            android.graphics.Bitmap.Config.ARGB_8888
-                        )
-                    val pixels = IntArray(sizePx * sizePx)
-                    val random = java.util.Random(20261108L)
-                    for (i in pixels.indices) {
-                        val alpha = random.nextInt(22)
-                        val base = if (random.nextBoolean()) 0x000000 else 0xFFFFFF
-                        pixels[i] = base or (alpha shl 24)
-                    }
-                    bitmap.setPixels(pixels, 0, sizePx, 0, 0, sizePx, sizePx)
-                    androidx.compose.ui.graphics.ShaderBrush(
-                        androidx.compose.ui.graphics.ImageShader(
-                            bitmap.asImageBitmap(),
-                            androidx.compose.ui.graphics.TileMode.Repeated,
-                            androidx.compose.ui.graphics.TileMode.Repeated
-                        )
-                    )
-                }
-                Modifier.drawWithCache {
-                    val topColor = lerp(baseBackground, Color.White, if (isDarkBackground) 0.045f else 0.06f)
-                    val bottomColor = lerp(baseBackground, Color.Black, if (isDarkBackground) 0.10f else 0.035f)
-                    val vertical = Brush.verticalGradient(listOf(topColor, bottomColor))
-                    val vignette =
-                        Brush.radialGradient(
-                            colors =
-                                listOf(
-                                    Color.Transparent,
-                                    Color.Black.copy(alpha = if (isDarkBackground) 0.16f else 0.05f)
-                                ),
-                            center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
-                            radius = size.maxDimension * 0.78f
-                        )
-                    onDrawBehind {
-                        drawRect(vertical)
-                        drawRect(paperGrain)
-                        drawRect(vignette)
-                    }
-                }
+                // iOS 化：干净纯色表面。纸纹 / 渐变 / vignette 会把 iOS 的纯白 / 纯黑
+                // 表面衬得脏；玻璃材质改为折射真实内容，不再需要装饰性光晕与颗粒。
+                Modifier.background(baseBackground)
             }
 
         // layerBackdrop / liquefiable 会给整个应用再加一层全屏离屏缓冲。

@@ -15,13 +15,14 @@ import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import java.io.File
 
 /**
- * 字重与字号节奏（对齐 AiCode）。
+ * 字重与字号节奏（iOS 高级设计感）。
  *
- * AiCode 的排版基线：标题类一律 SemiBold（不用 Normal，也不用 Bold），
- * 正文 bodyLarge 行高 24sp、字距 0（不是 Operit 原来的 0.5sp——字距一宽就显得松散），
- * 标签类 Medium 且字距归零。
+ * iOS 的排版基线：大标题 34sp Bold（Large Title），往下 28 / 22 / 20 递减；
+ * 标题类 SemiBold，正文 Normal，字距归零（大标题保留 0.35–0.4sp 弱对比）。
+ * 字体默认用系统字体栈（Android 上即 Roboto，含 CJK 回退），
+ * 这是「iOS 感」最直接的一层——干净、不混入第三方字形。
  *
- * 字体家族用 [CcFontFamily]（cccodroid 的 Inter + Hei）。
+ * [CcFontFamily] 保留供兼容，但不再作为默认；
  * 若用户在偏好里选了系统字体或导入字体，applyFontFamilyToTypography 会在运行时覆盖。
  */
 /**
@@ -43,53 +44,109 @@ val CcFontFamily = FontFamily(
 )
 
 val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = CcFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
+    displayLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 34.sp,
+        lineHeight = 41.sp,
+        letterSpacing = 0.4.sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 34.sp,
+        letterSpacing = 0.4.sp
+    ),
+    displaySmall = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.35.sp
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 25.sp,
         letterSpacing = 0.sp
     ),
-    bodyMedium = TextStyle(
-        fontFamily = CcFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 21.sp,
+    headlineMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 17.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = CcFontFamily,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
-        lineHeight = 26.sp,
+        lineHeight = 25.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = CcFontFamily,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = CcFontFamily,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
-    labelLarge = TextStyle(
-        fontFamily = CcFontFamily,
-        fontWeight = FontWeight.Medium,
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 17.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
         fontSize = 13.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.sp
     ),
+    labelLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.sp
+    ),
     labelSmall = TextStyle(
-        fontFamily = CcFontFamily,
+        fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
-        lineHeight = 16.sp,
+        lineHeight = 14.sp,
         letterSpacing = 0.sp
     )
 )
