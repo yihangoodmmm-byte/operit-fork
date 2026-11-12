@@ -1170,7 +1170,7 @@ private fun BubbleFontStyleEditor(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                containerColor = MaterialTheme.colorScheme.surface,
             ),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -1324,7 +1324,7 @@ private fun BubbleImageStyleEditor(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                containerColor = MaterialTheme.colorScheme.surface,
             ),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

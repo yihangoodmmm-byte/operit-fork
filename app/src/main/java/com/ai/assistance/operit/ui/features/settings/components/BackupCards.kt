@@ -190,7 +190,7 @@ fun BackupFilesStatisticsCard(
             if (!isScanning) {
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Text(

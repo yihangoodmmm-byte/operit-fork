@@ -661,9 +661,9 @@ fun ModelConfigScreen(
                                         .fillMaxWidth()
                                         .padding(top = 12.dp),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                        containerColor = MaterialTheme.colorScheme.surface
                                     ),
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(12.dp)) {
                                         results.forEachIndexed { index, item ->
