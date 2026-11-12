@@ -477,23 +477,20 @@ private fun NewSidebarTopContent(
         // 原来的「Operit AI + WiFi 胶囊 + 包管理/权限/工作流 三卡」是 Operit 最强的识别特征：
         // 品牌卡 + 徽章数字 + 权限状态，都在 iOS 的抽屉里不会出现。
         // 现在只保留一行大标题（对应 iOS 大标题），然后直接是导航列表。
-        // 品牌行照 cccodroid 的 .side-head：图标 22dp + 名字 15sp/600，
-        // 一行结束，不放大标题，也不挂网络状态。
-        // 原来这里是 titleLarge+Bold 的"Operit AI"再跟一行"WiFi"——大标题 + 状态行
-        // 是 Operit 抽屉的辨识特征，而且 WiFi 状态对"打开抽屉找会话"这件事毫无帮助。
+        // iOS 大标题：品牌名 28sp Bold，一行结束，作为抽屉的视觉锚点。
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
                 text = brandName,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.2.sp,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.sp,
                 color = appearance.titleColor,
                 maxLines = 1,
                 modifier = Modifier.padding(start = 16.dp, end = 20.dp)
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // ── 「新对话」按钮（照 cccodroid 的 .side-new）─────────────────
         // cccodroid 抽屉的第一个可点项永远是"新对话"：全宽、1dp 描边、11dp 圆角、
@@ -641,55 +638,57 @@ private fun DrawerNewChatButton(
     appearance: NavigationDrawerAppearance,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(11.dp)
+    // iOS 主按钮：蓝色实底、16dp 圆角、52dp 触控高、图标+文字居中。
+    val shape = RoundedCornerShape(16.dp)
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp)
+                .padding(horizontal = 12.dp, vertical = 2.dp)
+                .height(52.dp)
                 .clip(shape)
-                .border(width = 1.dp, color = appearance.dividerColor.copy(alpha = 0.55f), shape = shape)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 9.dp),
-        verticalAlignment = Alignment.CenterVertically
+                .background(MaterialTheme.colorScheme.primary)
+                .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = null,
-            tint = appearance.selectedContentColor,
-            modifier = Modifier.size(18.dp)
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(20.dp)
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "新对话",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            color = appearance.titleColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimary,
             maxLines = 1
         )
     }
 }
 
 /**
- * 「群聊对话」按钮。样式与「新对话」一致,但用群组图标,点击创建群聊会话。
- * 位置在新对话按钮正下方。
+ * 「群聊对话」按钮。次要动作：描边、44dp，与主按钮「新对话」拉开层级。
  */
 @Composable
 private fun DrawerNewGroupChatButton(
     appearance: NavigationDrawerAppearance,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(11.dp)
+    val shape = RoundedCornerShape(16.dp)
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp)
+                .padding(horizontal = 12.dp, vertical = 2.dp)
+                .height(44.dp)
                 .clip(shape)
                 .border(width = 1.dp, color = appearance.dividerColor.copy(alpha = 0.55f), shape = shape)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 9.dp),
-        verticalAlignment = Alignment.CenterVertically
+                .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = Icons.Default.Groups,
@@ -697,7 +696,7 @@ private fun DrawerNewGroupChatButton(
             tint = appearance.selectedContentColor,
             modifier = Modifier.size(18.dp)
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "群聊对话",
             fontSize = 15.sp,

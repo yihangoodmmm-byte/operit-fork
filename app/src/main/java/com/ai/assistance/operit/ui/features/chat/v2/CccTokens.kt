@@ -18,13 +18,13 @@ import androidx.compose.ui.unit.sp
  * 没有统一节奏，所以看起来"能用但不好看"。
  */
 internal object CccTokens {
-    // 列表外框
-    val ListPaddingTop = 14.dp
-    val ListPaddingHorizontal = 12.dp
-    val ListPaddingBottom = 8.dp
+    // 列表外框（iOS 呼吸感：左右 16dp、首尾更松）
+    val ListPaddingTop = 16.dp
+    val ListPaddingHorizontal = 16.dp
+    val ListPaddingBottom = 12.dp
 
-    /** 消息之间的间距（cccodroid 的 margin-bottom:16px）。 */
-    val MessageGap = 16.dp
+    /** 消息之间的间距（iOS 文档流更松，20dp）。 */
+    val MessageGap = 20.dp
 
     /** 单条消息最大宽度上限（cccodroid 的 max-width:900px，手机上是满宽）。 */
     val MessageMaxWidth = 680.dp
