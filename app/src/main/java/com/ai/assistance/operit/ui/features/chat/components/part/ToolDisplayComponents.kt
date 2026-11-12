@@ -18,8 +18,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Web
+import androidx.compose.material3.Icon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -80,29 +83,40 @@ fun CompactToolDisplay(
         modifier =
             modifier
                 .padding(vertical = 2.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.outlineVariant,
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(12.dp)
                 )
     ) {
-        CanvasToolSummaryRow(
-            toolName = displayToolName,
-            summary = summary,
-            semanticDescription = semanticDescription,
-            leadingIcon = getToolIcon(displayToolName),
-            titleColor = MaterialTheme.colorScheme.onSurface,
-            summaryColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-            onClick =
-                if (hasParams && enableDialog) {
-                    { expanded = !expanded }
-                } else {
-                    null
-                },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CanvasToolSummaryRow(
+                toolName = displayToolName,
+                summary = summary,
+                semanticDescription = semanticDescription,
+                leadingIcon = getToolIcon(displayToolName),
+                titleColor = MaterialTheme.colorScheme.onSurface,
+                summaryColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f).padding(start = 10.dp, top = 7.dp, bottom = 7.dp),
+                onClick =
+                    if (hasParams && enableDialog) {
+                        { expanded = !expanded }
+                    } else {
+                        null
+                    },
+            )
+            if (hasParams && enableDialog) {
+                Icon(
+                    imageVector =
+                        if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                    modifier = Modifier.padding(end = 10.dp).size(16.dp)
+                )
+            }
+        }
         AnimatedVisibility(visible = expanded && hasParams) {
             // 参数详情（cccodroid 的 .tool-body：等宽小字、限高滚动）
             Box(
