@@ -138,6 +138,12 @@ internal fun CanvasToolSummaryRow(
             modifier = Modifier.fillMaxWidth().height(with(density) { totalHeightPx.toDp() })
         ) {
             val iconTop = topPaddingPx + (contentHeightPx - iconSizePx) / 2f
+            // 图标圆底：淡色圆盘，与思考块、空状态的「图标圆」视觉语言保持一致。
+            drawCircle(
+                color = titleColor.copy(alpha = 0.12f),
+                radius = iconSizePx * 0.75f,
+                center = Offset(iconSizePx / 2f, iconTop + iconSizePx / 2f),
+            )
             translate(top = iconTop) {
                 with(iconPainter) {
                     draw(
