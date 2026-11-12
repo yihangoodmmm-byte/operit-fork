@@ -3378,62 +3378,103 @@ private fun ComposerHintRow(
             0.0
         }
     val overLimit = percent >= 90.0
-    FlowRow(
-        modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        ComposerHintChip(
-            text = modelLabel.ifBlank { "未选择模型" },
-            emphasized = true,
-            onClick = onModelClick,
-        )
-        ComposerHintChip(
-            text = "上下文 ${percent.toInt()}% · ${formatCompactCount(contextUsed)}/${formatCompactCount(contextLimit)}",
-            danger = overLimit,
-        )
-    }
-}
-
-/** 单个 chip：999px 胶囊 + 1px 描边 + 次要色文字。 */
-@Composable
-private fun ComposerHintChip(
-    text: String,
-    emphasized: Boolean = false,
-    danger: Boolean = false,
-    onClick: (() -> Unit)? = null,
-) {
-    val borderColor =
+    val warn = percent >= 75.0
+    val contextColor =
         when {
-            danger -> MaterialTheme.colorScheme.error.copy(alpha = 0.45f)
-            else -> MaterialTheme.colorScheme.outlineVariant
-        }
-    val contentColor =
-        when {
-            danger -> MaterialTheme.colorScheme.error
-            emphasized -> MaterialTheme.colorScheme.primary
+            overLimit -> MaterialTheme.colorScheme.error
+            warn -> MaterialTheme.colorScheme.tertiary
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         }
-    val base =
-        Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(999.dp))
-            .then(
-                if (onClick != null) {
-                    Modifier.clickable(onClick = onClick)
-                } else {
-                    Modifier
-                }
+    val barColor =
+        when {
+            overLimit -> MaterialTheme.colorScheme.error
+            warn -> MaterialTheme.colorScheme.tertiary
+            else -> MaterialTheme.colorScheme.primary
+        }
+
+    // 富信息行：左侧「模型」胶囊（脑图标 + 名称 + 下拉箭头），
+    // 右侧「上下文」胶囊（仪表图标 + 百分比/用量 + 迷你进度条）。
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable(onClick = onModelClick)
+                    .padding(start = 10.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Psychology,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(15.dp),
             )
-            .padding(horizontal = 9.dp, vertical = 3.dp)
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        color = contentColor,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = base,
-    )
+            Text(
+                text = modelLabel.ifBlank { "未选择模型" },
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 150.dp),
+            )
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+                modifier = Modifier.size(16.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Column(
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.End,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Speed,
+                    contentDescription = null,
+                    tint = contextColor,
+                    modifier = Modifier.size(14.dp),
+                )
+                Text(
+                    text = "${percent.toInt()}% · ${formatCompactCount(contextUsed)}/${formatCompactCount(contextLimit)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contextColor,
+                    maxLines = 1,
+                )
+            }
+            Box(
+                modifier =
+                    Modifier
+                        .width(84.dp)
+                        .height(3.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth((percent / 100.0).toFloat().coerceIn(0f, 1f))
+                            .height(3.dp)
+                            .clip(CircleShape)
+                            .background(barColor),
+                )
+            }
+        }
+    }
 }
 
 /** 把 token 数压成 1.2K / 3.4M 这类紧凑写法（cccodroid 的 usNum 同款处理）。 */
