@@ -43,7 +43,10 @@ import com.ai.assistance.operit.api.chat.llmprovider.ThinkingQualityControl
 import com.ai.assistance.operit.ui.features.chat.v2.CccModelPicker
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningOption
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningPicker
+import com.ai.assistance.operit.ui.features.chat.v2.ReasoningLevelPanel
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.ai.assistance.operit.ui.features.chat.v2.formatTokenCount as cccFormatK
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -2003,24 +2006,38 @@ private fun ChatInputBottomBar(
             reasoningLabel = cccReasoningLabel,
             onReasoningClick = { cccShowReasoningPicker = true },
             reasoningPicker = {
-                CccReasoningPicker(
-                    expanded = cccShowReasoningPicker,
-                    onDismiss = { cccShowReasoningPicker = false },
-                    options = cccReasoningOptions,
-                    // OFF 独立于保留的强度 id，菜单勾选必须读取当前开关。
-                    currentId = cccSelectedReasoningId,
-                    onPick = { optionId ->
-                        cccShowReasoningPicker = false
-                        if (optionId == "OFF") {
-                            actualViewModel.setEnableThinkingMode(false)
-                        } else {
-                            actualViewModel.setEnableThinkingMode(true)
-                            if (cccThinkingMapping?.control == ThinkingQualityControl.LEVELS) {
-                                actualViewModel.updateThinkingOptionId(optionId)
-                            }
-                        }
-                    },
-                )
+                if (cccShowReasoningPicker) {
+                    Dialog(
+                        onDismissRequest = { cccShowReasoningPicker = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+                    ) {
+                        ReasoningLevelPanel(
+                            currentLevel =
+                                cccReasoningOptions
+                                    .indexOfFirst { it.id == cccSelectedReasoningId }
+                                    .coerceIn(0, 5),
+                            onSelectLevel = { index ->
+                                cccShowReasoningPicker = false
+                                val option =
+                                    cccReasoningOptions.getOrNull(index)
+                                        ?: cccReasoningOptions.lastOrNull()
+                                if (option != null) {
+                                    if (option.id == "OFF") {
+                                        actualViewModel.setEnableThinkingMode(false)
+                                    } else {
+                                        actualViewModel.setEnableThinkingMode(true)
+                                        if (cccThinkingMapping?.control == ThinkingQualityControl.LEVELS) {
+                                            actualViewModel.updateThinkingOptionId(option.id)
+                                        }
+                                    }
+                                }
+                            },
+                            onResetLevel = { _ ->
+                                actualViewModel.setEnableThinkingMode(false)
+                            },
+                        )
+                    }
+                }
             },
     )
 }
