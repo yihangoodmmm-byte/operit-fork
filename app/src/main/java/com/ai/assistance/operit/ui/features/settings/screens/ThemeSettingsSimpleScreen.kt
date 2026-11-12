@@ -1,6 +1,5 @@
 package com.ai.assistance.operit.ui.features.settings.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -62,12 +61,6 @@ fun ThemeSettingsSimpleScreen(onBackPressed: () -> Unit = {}) {
     val manager = remember(context) { ActivePromptManager.getInstance(context) }
     val glassSupported = remember { isLiquidGlassSupported() }
 
-    var currentFamily by remember(snapshot) {
-        mutableStateOf(
-            AppThemeFamily.entries.firstOrNull { it.id == snapshot.values.string("app_theme_family") }
-                ?: AppThemeFamily.IOS_LIGHT
-        )
-    }
     var bubbleGlass by remember(snapshot) {
         mutableStateOf(snapshot.values.booleans["bubble_ai_bubble_liquid_glass"] == true)
     }
@@ -96,67 +89,34 @@ fun ThemeSettingsSimpleScreen(onBackPressed: () -> Unit = {}) {
             Text("选择一套配色，切换后立即生效。", fontSize = 13.sp)
             Spacer(Modifier.height(16.dp))
 
-            AppThemeFamily.entries.forEach { family ->
-                // AICODE / CC 有浅深两套，预览固定展示深色板（与浅色差异最明显）；
-                // 其余家族本身写死明暗，传了也不会变。
-                val scheme = AppThemes.schemeOf(
-                    family,
-                    dark = family == AppThemeFamily.AICODE || family == AppThemeFamily.CC
-                )
-                val selected = family == currentFamily
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(scheme.surface)
-                        .border(
-                            width = if (selected) 2.dp else 1.dp,
-                            color = if (selected) scheme.primary else scheme.outlineVariant,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .clickable {
-                            currentFamily = family
-                            apply { withString("app_theme_family", family.id) }
-                            Toast.makeText(context, "已切换到 " + family.displayName, Toast.LENGTH_SHORT).show()
-                        }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf(scheme.primary, scheme.background, scheme.surface).forEach { color ->
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(color)
-                                    .border(1.dp, Color.Black.copy(alpha = 0.08f), CircleShape)
-                            )
-                        }
-                    }
-                    Spacer(Modifier.size(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = family.displayName,
-                            color = scheme.onSurface,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp
-                        )
-                        Text(
-                            text = when (family) {
-                                AppThemeFamily.CLAUDE -> "暖纸底 · 陶土橙"
-                                AppThemeFamily.IOS_DARK -> "深色 · 系统蓝"
-                                AppThemeFamily.AICODE -> "冷灰底 · 品牌蓝（AiCode）"
-                                AppThemeFamily.CC -> "暖中性 · 陶土橙（cccodroid）"
-                                else -> "系统灰底 · 纯白卡片"
-                            },
-                            color = scheme.onSurfaceVariant,
-                            fontSize = 12.sp
+            // 主题已固定为 iOS 系统外观（浅色系统蓝 + 纯白，深色纯黑 + 系统蓝），
+            // 不再提供多套配色切换，避免出现「选项不同但结果相同」的失效 UI。
+            val scheme = AppThemes.schemeOf(AppThemeFamily.IOS_LIGHT, dark = false)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(scheme.surface)
+                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(scheme.primary, scheme.background, scheme.surface).forEach { color ->
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                                .border(1.dp, Color.Black.copy(alpha = 0.08f), CircleShape)
                         )
                     }
-                    if (selected) {
-                        Text("OK", color = scheme.primary, fontWeight = FontWeight.Bold)
-                    }
+                }
+                Spacer(Modifier.size(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("iOS 系统外观", color = scheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("随系统浅色 / 深色自动切换", color = scheme.onSurfaceVariant, fontSize = 12.sp)
                 }
             }
 

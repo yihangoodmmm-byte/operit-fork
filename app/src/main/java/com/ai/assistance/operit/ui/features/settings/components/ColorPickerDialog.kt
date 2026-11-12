@@ -30,26 +30,23 @@ import kotlin.math.*
 import com.ai.assistance.operit.ui.common.components.CcButton
 
 /**
- * Material colors for the color picker
+ * 颜色选择器预设：iOS 系统色（system colors），与整体 iOS 观感一致。
  */
 val materialColors = listOf(
-    // Material Design primary colors
-    Color(0xFF6200EE), // Purple 500 (Material primary)
-    Color(0xFF3700B3), // Purple 700 (Material primary variant)
-    Color(0xFF03DAC6), // Teal 200 (Material secondary)
-    Color(0xFF018786), // Teal 700 (Material secondary variant)
-    Color(0xFF1976D2), // Blue 700
-    Color(0xFF0D47A1), // Blue 900
-    Color(0xFF1E88E5), // Blue 600
-
-    // More Material colors with good contrast
-    Color(0xFFD32F2F), // Red 700
-    Color(0xFF7B1FA2), // Purple 700
-    Color(0xFF388E3C), // Green 700
-    Color(0xFFE64A19), // Deep Orange 700
-    Color(0xFFF57C00), // Orange 700
-    Color(0xFF5D4037), // Brown 700
-    Color(0xFF455A64)  // Blue Grey 700
+    Color(0xFF007AFF), // systemBlue
+    Color(0xFF0A84FF), // systemBlue (dark)
+    Color(0xFF34C759), // systemGreen
+    Color(0xFF30D158), // systemGreen (dark)
+    Color(0xFF5856D6), // systemIndigo
+    Color(0xFF5E5CE6), // systemIndigo (dark)
+    Color(0xFFAF52DE), // systemPurple
+    Color(0xFFFF9500), // systemOrange
+    Color(0xFFFF9F0A), // systemOrange (dark)
+    Color(0xFFFF2D55), // systemPink
+    Color(0xFFFF3B30), // systemRed
+    Color(0xFFFF453A), // systemRed (dark)
+    Color(0xFF5AC8FA), // systemTeal
+    Color(0xFFFFCC00)  // systemYellow
 )
 
 /**
