@@ -6,8 +6,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -81,7 +88,7 @@ fun CccMessageItem(
         remember(displayStream) { displayStream?.coalesceRevisable()?.toCharStream() }
 
     // 消息进入动画（cccodroid 的 .msg { animation: fade .18s } 的增强版）：
-    // 首次进入组合时 scale 0.96→1、opacity 0→1、translateY 12px→0，
+    // 首次进入组合时 scale 0.96→1、opacity 0→1、translateX 12px→0（方向随说话方），
     // 之后内容更新（流式）不再重播。
     val entranceAlpha = remember { Animatable(0f) }
     LaunchedEffect(message.timestamp) {
@@ -94,22 +101,52 @@ fun CccMessageItem(
                 .fillMaxWidth()
                 .graphicsLayer {
                     alpha = entranceAlpha.value
-                    // graphicsLayer 的 lambda 不是 Density 作用域，toPx() 在这里不可用；
-                    // 位移量直接用像素常量（4dp 在常见密度下约 10~16px，取 12f 与设计值一致）
-                    translationY = (1f - entranceAlpha.value) * ENTRANCE_TRANSLATE_PX
+                    // 方向感入场：用户气泡从右侧滑入，助手正文从左侧滑入，
+                    // 让「对话」有来有回，而不是所有消息都从下面同一方向冒出。
+                    val dir = if (isUser) 1f else -1f
+                    translationX = (1f - entranceAlpha.value) * ENTRANCE_TRANSLATE_PX * dir
                     val s = 0.96f + 0.04f * entranceAlpha.value
                     scaleX = s
                     scaleY = s
                 }
     ) {
-        if (showRole) {
-            RoleLine(label = roleLabel, color = roleColor)
+        if (isUser) {
+            // ── 用户消息：右对齐蓝色气泡（iOS Messages 风格）────────────────
+            // 去掉「You」角色行，靠右对齐 + 蓝色底 + 白字来区分说话方。
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(0.78f)
+                            .clip(RoundedCornerShape(18.dp, 18.dp, 5.dp, 18.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(horizontal = 14.dp, vertical = 9.dp)
+                ) {
+                    MessageBody(
+                        message = message,
+                        charStream = charStream,
+                        enableDialogs = enableDialogs,
+                        textColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        } else {
+            // ── 助手 / 摘要：左对齐，角色行 + 全宽正文（ChatGPT 式文档流）──
+            if (showRole) {
+                RoleLine(label = roleLabel, color = roleColor)
+            }
+            MessageBody(
+                message = message,
+                charStream = charStream,
+                enableDialogs = enableDialogs,
+                textColor = MaterialTheme.colorScheme.onSurface,
+                backgroundColor = MaterialTheme.colorScheme.background
+            )
         }
-        MessageBody(
-            message = message,
-            charStream = charStream,
-            enableDialogs = enableDialogs
-        )
     }
 }
 
@@ -134,8 +171,9 @@ private fun MessageBody(
     message: ChatMessage,
     charStream: com.ai.assistance.operit.util.stream.Stream<Char>?,
     enableDialogs: Boolean,
+    textColor: Color,
+    backgroundColor: Color,
 ) {
-    val textColor = MaterialTheme.colorScheme.onSurface
     // 关键：必须显式传 CustomXmlRenderer，否则 StreamMarkdownRenderer 会用默认的
     // DefaultXmlRenderer——它会把 <think>/<tool> 等 XML 原文直接显示出来，不折叠。
     val xmlRenderer =
@@ -151,7 +189,7 @@ private fun MessageBody(
         StreamMarkdownRenderer(
             markdownStream = charStream,
             textColor = textColor,
-            backgroundColor = MaterialTheme.colorScheme.background,
+            backgroundColor = backgroundColor,
             enableDialogs = enableDialogs,
             xmlRenderer = xmlRenderer,
             modifier = Modifier.fillMaxWidth()
@@ -160,7 +198,7 @@ private fun MessageBody(
         StreamMarkdownRenderer(
             content = message.content,
             textColor = textColor,
-            backgroundColor = MaterialTheme.colorScheme.background,
+            backgroundColor = backgroundColor,
             enableDialogs = enableDialogs,
             xmlRenderer = xmlRenderer,
             modifier = Modifier.fillMaxWidth()
