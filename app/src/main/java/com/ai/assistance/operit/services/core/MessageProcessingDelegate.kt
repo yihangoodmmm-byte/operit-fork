@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
@@ -48,6 +49,8 @@ import kotlinx.coroutines.sync.withLock
 import com.ai.assistance.operit.core.tools.ToolProgressBus
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import org.json.JSONObject
+import java.io.File
 import kotlin.coroutines.coroutineContext
 
 /** 委托类，负责处理消息处理相关功能 */
@@ -154,6 +157,8 @@ class MessageProcessingDelegate(
     private val userMessageDraftsByChatId = ConcurrentHashMap<String, TextFieldValue>()
     @Volatile
     private var activeDraftChatId: String? = null
+    private val draftStoreFile = File(context.filesDir, "chat_input_drafts.json")
+    private var draftPersistJob: Job? = null
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -578,6 +583,7 @@ class MessageProcessingDelegate(
 
     init {
         AppLogger.d(TAG, "MessageProcessingDelegate初始化: 创建滚动事件流")
+        loadDraftsFromDisk()
     }
 
     fun setActiveDraftChat(chatId: String?) {
@@ -631,17 +637,80 @@ class MessageProcessingDelegate(
     private fun saveUserMessageDraft(chatId: String, value: TextFieldValue) {
         if (value.text.isEmpty()) {
             userMessageDraftsByChatId.remove(chatId)
+            scheduleDraftPersist()
             return
         }
 
         userMessageDraftsByChatId[chatId] = value
+        scheduleDraftPersist()
     }
 
     private fun clearUserMessageDraft(chatId: String) {
         userMessageDraftsByChatId.remove(chatId)
+        scheduleDraftPersist()
         if (activeDraftChatId == chatId) {
             _userMessage.value = TextFieldValue("")
         }
+    }
+
+    private fun loadDraftsFromDisk() {
+        val file = draftStoreFile
+        if (!file.exists()) return
+        try {
+            val json = JSONObject(file.readText())
+            json.keys().forEach { chatId ->
+                val obj = json.optJSONObject(chatId) ?: return@forEach
+                val text = obj.optString("text", "")
+                if (text.isEmpty()) return@forEach
+                val selStart = obj.optInt("selStart", 0).coerceIn(0, text.length)
+                val selEnd = obj.optInt("selEnd", selStart).coerceIn(selStart, text.length)
+                val composition =
+                    if (obj.has("compStart") && !obj.isNull("compStart")) {
+                        TextRange(obj.optInt("compStart"), obj.optInt("compEnd"))
+                    } else {
+                        null
+                    }
+                userMessageDraftsByChatId[chatId] =
+                    TextFieldValue(
+                        text = text,
+                        selection = TextRange(selStart, selEnd),
+                        composition = composition,
+                    )
+            }
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "加载输入草稿失败", e)
+        }
+    }
+
+    private fun persistDraftsToDisk() {
+        val file = draftStoreFile
+        try {
+            val json = JSONObject()
+            userMessageDraftsByChatId.forEach { (chatId, value) ->
+                if (value.text.isEmpty()) return@forEach
+                val obj = JSONObject()
+                obj.put("text", value.text)
+                obj.put("selStart", value.selection.start)
+                obj.put("selEnd", value.selection.end)
+                if (value.composition != null) {
+                    obj.put("compStart", value.composition.start)
+                    obj.put("compEnd", value.composition.end)
+                }
+                json.put(chatId, obj)
+            }
+            file.writeText(json.toString())
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "保存输入草稿失败", e)
+        }
+    }
+
+    private fun scheduleDraftPersist() {
+        draftPersistJob?.cancel()
+        draftPersistJob =
+            coroutineScope.launch(Dispatchers.IO) {
+                delay(500)
+                persistDraftsToDisk()
+            }
     }
 
     fun scrollToBottom() {
