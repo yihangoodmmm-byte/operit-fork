@@ -168,39 +168,39 @@ private fun ReasoningSlider(
     ) {
         val trackY = size.height / 2f
         val thumbPx = thumbRadius.toPx()
-        val left = thumbPx
-        val right = size.width - thumbPx
+        val usableLeft = thumbPx
+        val usableRight = size.width - thumbPx
+        val usableWidth = usableRight - usableLeft
         val trackTop = trackY - trackHeight.toPx() / 2f
-        val trackWidth = right - left
-        val thumbX = left + fraction * trackWidth
+        val thumbX = usableLeft + fraction * usableWidth
         val corner = CornerRadius(trackHeight.toPx() / 2f, trackHeight.toPx() / 2f)
 
-        // 轨道
+        // 轨道：撑满整条宽度（与标题等宽）
         drawRoundRect(
             color = LevelColors.Track,
-            topLeft = Offset(left, trackTop),
-            size = Size(trackWidth, trackHeight.toPx()),
+            topLeft = Offset(0f, trackTop),
+            size = Size(size.width, trackHeight.toPx()),
             cornerRadius = corner,
         )
 
         // 左侧高亮填充
         if (fraction > 0f) {
-            val fillWidth = thumbX - left
+            val fillWidth = thumbX - usableLeft
             if (starry) {
                 drawRoundRect(
                     brush =
                         Brush.horizontalGradient(
                             colors = listOf(LevelColors.FillGradientStart, LevelColors.FillGradientEnd),
-                            startX = left,
+                            startX = usableLeft,
                             endX = thumbX,
                         ),
-                    topLeft = Offset(left, trackTop),
+                    topLeft = Offset(usableLeft, trackTop),
                     size = Size(fillWidth, trackHeight.toPx()),
                     cornerRadius = corner,
                 )
                 val random = kotlin.random.Random(42)
                 repeat(30) {
-                    val x = left + random.nextFloat() * fillWidth
+                    val x = usableLeft + random.nextFloat() * fillWidth
                     val y = trackTop + random.nextFloat() * trackHeight.toPx()
                     val r = 0.6f + random.nextFloat() * 1.3f
                     val a = 0.35f + random.nextFloat() * 0.6f
@@ -209,7 +209,7 @@ private fun ReasoningSlider(
             } else {
                 drawRoundRect(
                     color = LevelColors.FillBlue,
-                    topLeft = Offset(left, trackTop),
+                    topLeft = Offset(usableLeft, trackTop),
                     size = Size(fillWidth, trackHeight.toPx()),
                     cornerRadius = corner,
                 )
@@ -219,7 +219,7 @@ private fun ReasoningSlider(
         // 5 个刻度点
         for (i in 1..5) {
             val frac = i / 5f
-            val x = left + frac * trackWidth
+            val x = usableLeft + frac * usableWidth
             drawCircle(color = LevelColors.Tick, radius = tickRadius.toPx(), center = Offset(x, trackY))
         }
 
