@@ -1882,7 +1882,7 @@ private fun ChatInputBottomBar(
                     cccPerRequestTokens?.let { (input, output) ->
                         Text("上次请求：" + cccFormatK(input) + " 输入 / " + cccFormatK(output) + " 输出")
                     }
-                    Text("摘要阈值：" + ((summaryTokenThreshold * 100).toInt()) + "%")
+                    Text("摘要阈值：" + ((actualViewModel.summaryTokenThreshold.collectAsState().value * 100).toInt()) + "%")
                 }
             },
             confirmButton = {

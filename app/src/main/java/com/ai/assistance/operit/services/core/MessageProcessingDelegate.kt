@@ -692,9 +692,10 @@ class MessageProcessingDelegate(
                 obj.put("text", value.text)
                 obj.put("selStart", value.selection.start)
                 obj.put("selEnd", value.selection.end)
-                if (value.composition != null) {
-                    obj.put("compStart", value.composition.start)
-                    obj.put("compEnd", value.composition.end)
+                val composition = value.composition
+                if (composition != null) {
+                    obj.put("compStart", composition.start)
+                    obj.put("compEnd", composition.end)
                 }
                 json.put(chatId, obj)
             }
