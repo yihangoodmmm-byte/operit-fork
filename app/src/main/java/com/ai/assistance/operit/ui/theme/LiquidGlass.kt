@@ -30,7 +30,7 @@ val LocalLiquidGlassBackdrop = compositionLocalOf<Backdrop?> { null }
  * 产品方向是"去玻璃、纯色"。这里集中一个开关而不是删除实现，理由是：
  * 一是改动可回滚；二是 glass 相关代码里有大量平台分支，直接删会牵连 28 个调用点。
  */
-internal const val PlainSurfaceMode = true
+internal const val PlainSurfaceMode = false
 
 /**
  * 纯色模式下的描边颜色：按容器明暗给一档对方色的弱描边。

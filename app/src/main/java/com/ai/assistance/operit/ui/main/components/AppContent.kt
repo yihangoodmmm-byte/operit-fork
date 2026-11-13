@@ -59,6 +59,8 @@ import com.ai.assistance.operit.ui.main.navigation.retainedRouteKeysOnContentAtt
 import com.ai.assistance.operit.ui.main.screens.Screen
 import com.ai.assistance.operit.ui.common.composedsl.ToolPkgComposeDslToolScreen
 import com.ai.assistance.operit.ui.theme.LocalThemePreferenceSnapshot
+import com.ai.assistance.operit.ui.theme.isLiquidGlassSupported
+import com.ai.assistance.operit.ui.theme.liquidGlass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -67,6 +69,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -274,7 +277,25 @@ fun AppContent(
             topBar = {
                 // 单一工具栏 - 使用小型化的设计
                 // 使用 windowInsets 参数让 TopAppBar 自己处理状态栏的 insets
+                val topBarGlass =
+                    isLiquidGlassSupported() &&
+                        !toolbarTransparent &&
+                        !(useCustomAppBarColor && customAppBarColor != null)
                 TopAppBar(
+                    modifier =
+                        if (topBarGlass) {
+                            Modifier.liquidGlass(
+                                enabled = true,
+                                shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp),
+                                containerColor = MaterialTheme.colorScheme.background,
+                                shadowElevation = 10.dp,
+                                borderWidth = 1.dp,
+                                blurRadius = 12.dp,
+                                enableLens = true,
+                            )
+                        } else {
+                            Modifier
+                        },
                     windowInsets = WindowInsets.statusBars,
                     title = {
                         if (titleContent != null) {
@@ -359,6 +380,7 @@ fun AppContent(
                     TopAppBarDefaults.topAppBarColors(
                         containerColor =
                         when {
+                            topBarGlass -> Color.Transparent
                             toolbarTransparent -> Color.Transparent
                             useCustomAppBarColor && customAppBarColor != null -> Color(customAppBarColor)
                             // AiCode 风格：顶栏与页面同色（原来是 primary 大色块，最"像 Operit"的特征）
