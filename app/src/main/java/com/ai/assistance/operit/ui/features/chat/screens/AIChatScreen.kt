@@ -64,14 +64,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ai.assistance.operit.R
-import com.ai.assistance.operit.core.tools.AIToolHandler
-import com.ai.assistance.operit.data.model.AITool
 import com.ai.assistance.operit.data.model.ApiProviderType
 import com.ai.assistance.operit.data.model.AttachmentInfo
 import com.ai.assistance.operit.data.model.CharacterCardChatModelBindingMode
 import com.ai.assistance.operit.data.model.CharacterCardMemoryProfileBindingMode
 import com.ai.assistance.operit.data.model.InputProcessingState
-import com.ai.assistance.operit.data.model.ToolParameter
 import com.ai.assistance.operit.data.preferences.ApiPreferences
 import com.ai.assistance.operit.data.preferences.DisplayPreferencesManager
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
@@ -87,13 +84,7 @@ import com.ai.assistance.operit.ui.features.chat.components.style.input.common.C
 import com.ai.assistance.operit.ui.features.chat.components.style.input.classic.ClassicChatSettingsBar
 import com.ai.assistance.operit.ui.features.chat.components.style.input.common.PendingQueueMessageItem
 import com.ai.assistance.operit.ui.features.chat.components.style.bubble.BubbleImageStyleConfig
-import com.ai.assistance.operit.ui.features.chat.components.AndroidExportDialog
-import com.ai.assistance.operit.ui.features.chat.components.ExportCompleteDialog
-import com.ai.assistance.operit.ui.features.chat.components.ExportPlatformDialog
-import com.ai.assistance.operit.ui.features.chat.components.ExportProgressDialog
-import com.ai.assistance.operit.ui.features.chat.components.WindowsExportDialog
 import com.ai.assistance.operit.ui.features.chat.webview.MentionSuggestionPanelStyle
-import com.ai.assistance.operit.ui.features.chat.webview.workspace.WorkspaceScreen
 import com.ai.assistance.operit.ui.features.chat.webview.MentionSuggestionPanel
 import com.ai.assistance.operit.ui.features.chat.webview.computer.ComputerScreen
 import com.ai.assistance.operit.ui.features.chat.viewmodel.ChatViewModel
@@ -153,6 +144,7 @@ fun AIChatScreen(
         onNavigateToOnboardingModelConfig: () -> Unit = {},
         onNavigateToModelPrompts: () -> Unit = {},
         onNavigateToPackageManager: () -> Unit = {},
+        onNavigateToWorkspace: () -> Unit = {},
         onGestureConsumed: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -772,12 +764,6 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
             inputStyle == UserPreferencesManager.INPUT_STYLE_AGENT &&
             !showWebView &&
             !showAiComputer
-    var hasEverShownWebView by remember { mutableStateOf(false) }
-    LaunchedEffect(showWebView, isWorkspacePreparing) {
-        if (showWebView || isWorkspacePreparing) {
-            hasEverShownWebView = true
-        }
-    }
     // 当手势状态改变时，通知父组件
     LaunchedEffect(chatScreenGestureConsumed, showWebView) {
         val finalGestureState = chatScreenGestureConsumed
@@ -875,7 +861,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                             },
                             onClick = {
                                 showMoreMenu = false
-                                actualViewModel.onWorkspaceButtonClick()
+                                onNavigateToWorkspace()
                             }
                         )
                     }
@@ -884,18 +870,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
         }
     }
 
-    // 导出相关状态
-    var showExportPlatformDialog by remember { mutableStateOf(false) }
-    var showAndroidExportDialog by remember { mutableStateOf(false) }
-    var showWindowsExportDialog by remember { mutableStateOf(false) }
-    var showExportProgressDialog by remember { mutableStateOf(false) }
-    var showExportCompleteDialog by remember { mutableStateOf(false) }
-    var exportProgress by remember { mutableStateOf(0f) }
-    var exportStatus by remember { mutableStateOf("") }
-    var exportSuccess by remember { mutableStateOf(false) }
-    var exportFilePath by remember { mutableStateOf<String?>(null) }
-    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
-    var webContentDir by remember { mutableStateOf<File?>(null) }
+
     var showCharacterSelector by remember { mutableStateOf(false) }
 
     var bottomBarHeightPx by remember { mutableStateOf(0) }
@@ -1201,57 +1176,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                 ),
         )
 
-        val isWorkspaceVisible = !embedded && showWebView
-        val workspaceOverlayModifier =
-            if (isWorkspaceVisible) {
-                Modifier
-                    .fillMaxSize()
-                    .clipToBounds()
-            } else {
-                Modifier
-                    .size(0.dp)
-                    .clearAndSetSemantics {}
-            }
-
-        // Web开发模式作为浮层，现在位于Scaffold外部，可以覆盖整个屏幕
-        Layout(
-            modifier = workspaceOverlayModifier,
-            content = {
-                // The content is composed unconditionally, keeping it "alive"
-                val currentChat = chatHistories.find { it.id == currentChatId }
-                if (hasEverShownWebView && currentChat != null) {
-                    WorkspaceScreen(
-                        actualViewModel = actualViewModel,
-                        currentChat = currentChat,
-                        isVisible = isWorkspaceVisible, // Pass visibility state
-                        onExportClick = { workDir ->
-                            webContentDir = workDir
-                            AppLogger.d(
-                                "AIChatScreen",
-                                "正在导出工作区: ${workDir.absolutePath}, 聊天ID: $currentChatId"
-                            )
-                            showExportPlatformDialog = true
-                        }
-                    )
-                }
-            }
-        ) { measurables, constraints ->
-            if (measurables.isEmpty()) {
-                layout(0, 0) {}
-            } else {
-                if (isWorkspaceVisible) {
-                    val placeable = measurables.first().measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        placeable.placeRelative(0, 0)
-                    }
-                } else {
-                    // 当不可见时，我们让布局大小为0，并且完全不测量或放置子项。
-                    // 这可以跳过子项昂贵的测量/布局过程，从而解决性能问题，
-                    // 同时由于它仍在组合中，因此可以保持其状态。
-                    layout(0, 0) {}
-                }
-            }
-        }
+        // 工作区已拆分为独立页面 Screen.Workspace，聊天页不再承载其浮层。
 
         // AI电脑模式作为浮层：关闭时完全移出组合，确保 SurfaceView 被释放，避免机型相关残影
         if (!embedded && showAiComputer) {
@@ -1300,122 +1225,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
             }
         }
 
-        // 导出平台选择对话框
-        if (showExportPlatformDialog) {
-            ExportPlatformDialog(
-                    onDismiss = { showExportPlatformDialog = false },
-                    onSelectAndroid = {
-                        showExportPlatformDialog = false
-                        showAndroidExportDialog = true
-                    },
-                    onSelectWindows = {
-                        showExportPlatformDialog = false
-                        showWindowsExportDialog = true
-                    }
-            )
-        }
 
-        // Android导出设置对话框
-        if (showAndroidExportDialog && webContentDir != null) {
-            AndroidExportDialog(
-                    workDir = webContentDir!!,
-                    onDismiss = { showAndroidExportDialog = false },
-                    onExport = { packageName, appName, iconUri, versionName, versionCode ->
-                        showAndroidExportDialog = false
-                        showExportProgressDialog = true
-                        exportProgress = 0f
-                        exportStatus = context.getString(R.string.export_starting)
-
-                        // 启动导出过程
-                        coroutineScope.launch {
-                            exportAndroidApp(
-                                    context = context,
-                                    packageName = packageName,
-                                    appName = appName,
-                                    versionName = versionName,
-                                    versionCode = versionCode,
-                                    iconUri = iconUri,
-                                    webContentDir = webContentDir!!,
-                                    onProgress = { progress, status ->
-                                        exportProgress = progress
-                                        exportStatus = status
-                                    },
-                                    onComplete = { success, filePath, errorMessage ->
-                                        showExportProgressDialog = false
-                                        exportSuccess = success
-                                        exportFilePath = filePath
-                                        exportErrorMessage = errorMessage
-                                        showExportCompleteDialog = true
-                                    }
-                            )
-                        }
-                    }
-            )
-        }
-
-        // Windows导出设置对话框
-        if (showWindowsExportDialog && webContentDir != null) {
-            WindowsExportDialog(
-                    workDir = webContentDir!!,
-                    onDismiss = { showWindowsExportDialog = false },
-                    onExport = { appName, iconUri ->
-                        showWindowsExportDialog = false
-                        showExportProgressDialog = true
-                        exportProgress = 0f
-                        exportStatus = context.getString(R.string.export_starting)
-
-                        // 启动导出过程
-                        coroutineScope.launch {
-                            exportWindowsApp(
-                                    context = context,
-                                    appName = appName,
-                                    iconUri = iconUri,
-                                    webContentDir = webContentDir!!,
-                                    onProgress = { progress, status ->
-                                        exportProgress = progress
-                                        exportStatus = status
-                                    },
-                                    onComplete = { success, filePath, errorMessage ->
-                                        showExportProgressDialog = false
-                                        exportSuccess = success
-                                        exportFilePath = filePath
-                                        exportErrorMessage = errorMessage
-                                        showExportCompleteDialog = true
-                                    }
-                            )
-                        }
-                    }
-            )
-        }
-
-        // 导出进度对话框
-        if (showExportProgressDialog) {
-            ExportProgressDialog(
-                    progress = exportProgress,
-                    status = exportStatus,
-                    onCancel = {
-                        // TODO: 实现取消导出的逻辑
-                        showExportProgressDialog = false
-                    }
-            )
-        }
-
-        // 导出完成对话框
-        if (showExportCompleteDialog) {
-            ExportCompleteDialog(
-                    success = exportSuccess,
-                    filePath = exportFilePath,
-                    errorMessage = exportErrorMessage,
-                    onDismiss = { showExportCompleteDialog = false },
-                    onOpenFile = { path ->
-                        val tool = AITool(
-                            name = if (path.endsWith(".apk", ignoreCase = true)) "install_app" else "open_file",
-                            parameters = listOf(ToolParameter("path", path))
-                        )
-                        AIToolHandler.getInstance(context).executeTool(tool)
-                    }
-            )
-        }
 
         ChatToastHost(
             event = toastEvent,

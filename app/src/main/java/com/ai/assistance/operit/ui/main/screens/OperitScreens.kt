@@ -28,6 +28,7 @@ import com.ai.assistance.operit.ui.common.NavItem
 import com.ai.assistance.operit.ui.features.about.screens.AboutScreen
 import com.ai.assistance.operit.ui.features.assistant.screens.AssistantConfigScreen
 import com.ai.assistance.operit.ui.features.chat.screens.AIChatScreen
+import com.ai.assistance.operit.ui.features.chat.webview.workspace.WorkspacePage
 import com.ai.assistance.operit.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.operit.ui.features.help.screens.HelpScreen
 import com.ai.assistance.operit.ui.features.memory.screens.MemoryScreen
@@ -157,6 +158,7 @@ sealed class Screen(
                     onNavigateToOnboardingModelConfig = { navigateTo(ModelConfigOnboarding) },
                     onNavigateToModelPrompts = { navigateTo(SystemPromptSettings) },
                     onNavigateToPackageManager = { navigateTo(Packages) },
+                    onNavigateToWorkspace = { navigateTo(Workspace) },
                     onLoading = onLoading,
                     onError = onError,
                     onGestureConsumed = onGestureConsumed
@@ -1113,6 +1115,22 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             TerminalAutoConfigToolScreen(navController = navController)
+        }
+    }
+
+    data object Workspace :
+            Screen(navItem = NavItem.Terminal, titleRes = R.string.workspace) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            WorkspacePage()
         }
     }
 
