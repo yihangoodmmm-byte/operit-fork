@@ -61,6 +61,7 @@ fun ReasoningLevelIsland(
     Column(
         modifier =
             modifier
+                .width(320.dp)
                 .shadow(20.dp, RoundedCornerShape(28.dp))
                 .clip(RoundedCornerShape(28.dp))
                 .background(LevelColors.IslandBackground)

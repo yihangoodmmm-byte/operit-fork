@@ -79,7 +79,8 @@ fun CccComposer(
     val cs = MaterialTheme.colorScheme
     val fieldShape = RoundedCornerShape(22.dp)
 
-    Column(
+    Box {
+        Column(
         modifier =
             modifier
                 .fillMaxWidth()
@@ -105,7 +106,6 @@ fun CccComposer(
             if (reasoningLabel != null && onReasoningClick != null) {
                 Box {
                     HintChip(text = reasoningLabel, onClick = onReasoningClick)
-                    reasoningPicker()
                 }
             }
             HintChip(
@@ -188,6 +188,9 @@ fun CccComposer(
                 }
             }
         }
+    }
+        // 推理档位浮窗锚定在 composer 全宽根部，居中浮于输入栏上方
+        reasoningPicker()
     }
 }
 

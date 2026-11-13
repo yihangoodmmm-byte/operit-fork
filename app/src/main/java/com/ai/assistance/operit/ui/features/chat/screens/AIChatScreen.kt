@@ -47,6 +47,9 @@ import com.ai.assistance.operit.ui.features.chat.v2.ReasoningLevelIsland
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.unit.IntOffset
 import com.ai.assistance.operit.ui.features.chat.v2.formatTokenCount as cccFormatK
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -2007,8 +2010,12 @@ private fun ChatInputBottomBar(
             onReasoningClick = { cccShowReasoningPicker = true },
             reasoningPicker = {
                 if (cccShowReasoningPicker) {
-                    Dialog(
+                    val density = LocalDensity.current
+                    Popup(
+                        alignment = Alignment.TopCenter,
+                        offset = IntOffset(0, with(density) { (-130).dp.roundToPx() }),
                         onDismissRequest = { cccShowReasoningPicker = false },
+                        properties = PopupProperties(focusable = true),
                     ) {
                         ReasoningLevelIsland(
                             currentLevel =
