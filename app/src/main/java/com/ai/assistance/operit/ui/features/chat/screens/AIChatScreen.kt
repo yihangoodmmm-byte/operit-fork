@@ -45,8 +45,6 @@ import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningOption
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningPicker
 import com.ai.assistance.operit.ui.features.chat.v2.ReasoningLevelIsland
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.unit.IntOffset
