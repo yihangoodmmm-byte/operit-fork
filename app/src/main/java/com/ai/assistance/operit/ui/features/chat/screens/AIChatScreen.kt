@@ -43,7 +43,7 @@ import com.ai.assistance.operit.api.chat.llmprovider.ThinkingQualityControl
 import com.ai.assistance.operit.ui.features.chat.v2.CccModelPicker
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningOption
 import com.ai.assistance.operit.ui.features.chat.v2.CccReasoningPicker
-import com.ai.assistance.operit.ui.features.chat.v2.ReasoningLevelPanel
+import com.ai.assistance.operit.ui.features.chat.v2.ReasoningLevelIsland
 import com.ai.assistance.operit.ui.features.chat.v2.CccMessageList
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -2009,15 +2009,13 @@ private fun ChatInputBottomBar(
                 if (cccShowReasoningPicker) {
                     Dialog(
                         onDismissRequest = { cccShowReasoningPicker = false },
-                        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
                     ) {
-                        ReasoningLevelPanel(
+                        ReasoningLevelIsland(
                             currentLevel =
                                 cccReasoningOptions
                                     .indexOfFirst { it.id == cccSelectedReasoningId }
                                     .coerceIn(0, 5),
-                            onSelectLevel = { index ->
-                                cccShowReasoningPicker = false
+                            onLevelChange = { index ->
                                 val option =
                                     cccReasoningOptions.getOrNull(index)
                                         ?: cccReasoningOptions.lastOrNull()
@@ -2032,8 +2030,18 @@ private fun ChatInputBottomBar(
                                     }
                                 }
                             },
-                            onResetLevel = { _ ->
-                                actualViewModel.setEnableThinkingMode(false)
+                            onReset = {
+                                val option = cccReasoningOptions.firstOrNull()
+                                if (option != null) {
+                                    if (option.id == "OFF") {
+                                        actualViewModel.setEnableThinkingMode(false)
+                                    } else {
+                                        actualViewModel.setEnableThinkingMode(true)
+                                        if (cccThinkingMapping?.control == ThinkingQualityControl.LEVELS) {
+                                            actualViewModel.updateThinkingOptionId(option.id)
+                                        }
+                                    }
+                                }
                             },
                         )
                     }
