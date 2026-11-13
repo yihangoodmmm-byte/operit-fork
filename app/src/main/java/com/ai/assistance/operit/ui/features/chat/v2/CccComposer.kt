@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,20 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * 输入区（照 cccodroid 的 `#composer` / `#composer-inner` / `#hint-row` 移植）。
+ * 输入区（长方形样式）。
  *
- * cccodroid 的骨架：
- * ```
- * #composer                 ← 底部容器，padding 8/10 + 安全区
- *   #composer-inner         ← 一个圆角框，内部横向排列按钮与输入框（flex, align-items:flex-end）
- *     [+ 附件] [textarea] [发送]
- *   #hint-row               ← 框外下方一行居中细胶囊：模型 / 权限 / 用量
- * ```
- *
- * 与 Operit 原实现的结构差别：
- * - **只有一框**。Operit 是「模型胶囊行 + 工具图标行 + 附件行 + 输入框」多层堆叠。
- * - **按钮在框内**。cccodroid 把附件与发送都放进同一个圆角框里。
- * - **状态在框外**。模型/用量作为细胶囊排在框下面一行，不占框内空间。
+ * 结构：文本输入在上（多行可生长），底部一行左侧放「模型 / 推理档位 / 上下文」芯片，
+ * 发送键位于右下角。上下文芯片可点击查看具体 token 消耗。
  */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
@@ -69,137 +58,135 @@ fun CccComposer(
     modelPicker: @Composable () -> Unit = {},
     /**
      * 推理档位芯片的文案。为 null 表示当前模型不支持推理档位（TOGGLE_ONLY / UNSUPPORTED），
-     * 此时不渲染这颗芯片——空着比放一个点不动的假入口好。
+     * 此时不渲染这颗芯片。
      */
     reasoningLabel: String? = null,
     onReasoningClick: (() -> Unit)? = null,
-    /** 推理档位浮窗，锚定在推理芯片上。 */
+    /** 推理档位浮窗，锚定在输入区根部。 */
     reasoningPicker: @Composable () -> Unit = {},
+    /** 点击上下文芯片：查看具体 token 消耗明细。 */
+    onContextClick: () -> Unit = {},
 ) {
     val cs = MaterialTheme.colorScheme
-    val fieldShape = RoundedCornerShape(22.dp)
+    val fieldShape = RoundedCornerShape(12.dp)
 
     Box {
         Column(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .background(cs.background)
-                .padding(start = 10.dp, end = 10.dp, top = 6.dp, bottom = 8.dp)
-    ) {
-        // ── 1. 状态行在上方 ────────────────────────────────────────
-        // 原来这条在输入框下面。两个问题：
-        //   a) 拇指区被它占住——最靠近拇指的一条应该是最常按的输入框；
-        //   b) 键盘弹起时它正好压在 IME 上沿，会被系统工具条挤。
-        // 移到上方后，视觉顺序变成「上下文信息 → 输入」，也更符合"先看信息再动手"。
-        FlowRow(
-            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, bottom = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            // 模型芯片是"锚点"：点击弹出快捷切换浮窗，而不是跳配置页
-            Box {
-                HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
-                modelPicker()
-            }
-            // 推理档位：只有在当前模型真的支持分档时才出现
-            if (reasoningLabel != null && onReasoningClick != null) {
-                Box {
-                    HintChip(text = reasoningLabel, onClick = onReasoningClick)
-                }
-            }
-            HintChip(
-                text = contextText,
-                danger = contextPercent >= 90
-            )
-        }
-
-        // ── 2. 输入框：贴着底边，最靠近拇指 ─────────────────────────
-        Row(
             modifier =
-                Modifier
+                modifier
                     .fillMaxWidth()
-                    .clip(fieldShape)
-                    .background(cs.surface)
-                    .border(1.dp, cs.outlineVariant.copy(alpha = 0.7f), fieldShape)
-                    .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.Bottom
+                    .background(cs.background)
+                    .padding(start = 10.dp, end = 10.dp, top = 6.dp, bottom = 8.dp)
         ) {
-            Box(
-                modifier = Modifier.weight(1f).heightIn(min = 36.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (value.text.isEmpty()) {
-                    Text(
-                        text = placeholder,
-                        fontSize = 15.5.sp,
-                        color = cs.onSurfaceVariant.copy(alpha = 0.7f),
-                        maxLines = 1
-                    )
-                }
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    textStyle =
-                        LocalTextStyle.current.copy(
-                            color = cs.onSurface,
-                            fontSize = 15.5.sp,
-                            lineHeight = 22.sp
-                        ),
-                    cursorBrush = SolidColor(cs.primary),
-                    maxLines = 5,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp)
-                )
-            }
-
-            // 发送 / 停止：视觉 34dp 圆，但**触控区 44dp**。
-            // 之前只做 32dp 圆且没有额外可点区域，低于移动端 44dp 的下限，
-            // 拇指点偏一点就点不中——这不是美观问题，是可点性问题。
-            Box(
+            // 长方形输入容器
+            Column(
                 modifier =
                     Modifier
-                        .size(44.dp)
-                        .clickable(enabled = canSend || isProcessing) {
-                            if (isProcessing) onStop() else onSend()
-                        },
-                contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .clip(fieldShape)
+                        .background(cs.surface)
+                        .border(1.dp, cs.outlineVariant.copy(alpha = 0.7f), fieldShape)
+                        .padding(start = 14.dp, end = 8.dp, top = 4.dp, bottom = 6.dp)
             ) {
+                // 文本输入（上部，多行可生长）
                 Box(
-                    modifier =
-                        Modifier
-                            .size(34.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (isProcessing) cs.error
-                                else if (canSend) cs.primary
-                                else cs.surfaceVariant
-                            ),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Icon(
-                        imageVector = if (isProcessing) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
-                        contentDescription = if (isProcessing) "停止" else "发送",
-                        tint =
-                            if (isProcessing) cs.onError
-                            else if (canSend) cs.onPrimary
-                            else cs.onSurfaceVariant.copy(alpha = 0.38f),
-                        modifier = Modifier.size(18.dp)
+                    if (value.text.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            fontSize = 15.5.sp,
+                            color = cs.onSurfaceVariant.copy(alpha = 0.7f),
+                            maxLines = 1
+                        )
+                    }
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        textStyle =
+                            LocalTextStyle.current.copy(
+                                color = cs.onSurface,
+                                fontSize = 15.5.sp,
+                                lineHeight = 22.sp
+                            ),
+                        cursorBrush = SolidColor(cs.primary),
+                        maxLines = 5,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
+                }
+
+                // 底部工具行：左侧芯片 + 右侧发送
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FlowRow(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box {
+                            HintChip(text = modelLabel, emphasized = true, onClick = onModelClick)
+                            modelPicker()
+                        }
+                        if (reasoningLabel != null && onReasoningClick != null) {
+                            Box {
+                                HintChip(text = reasoningLabel, onClick = onReasoningClick)
+                            }
+                        }
+                        HintChip(
+                            text = contextText,
+                            danger = contextPercent >= 90,
+                            onClick = onContextClick
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // 发送 / 停止：触控区 44dp，视觉 34dp 圆，右下角
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(44.dp)
+                                .clickable(enabled = canSend || isProcessing) {
+                                    if (isProcessing) onStop() else onSend()
+                                },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isProcessing) cs.error
+                                        else if (canSend) cs.primary
+                                        else cs.surfaceVariant
+                                    ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isProcessing) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
+                                contentDescription = if (isProcessing) "停止" else "发送",
+                                tint =
+                                    if (isProcessing) cs.onError
+                                    else if (canSend) cs.onPrimary
+                                    else cs.onSurfaceVariant.copy(alpha = 0.38f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
         // 推理档位浮窗锚定在 composer 全宽根部，居中浮于输入栏上方
         reasoningPicker()
     }
 }
 
 /**
- * 状态芯片（框外一行）。
- *
- * 形态：浅填充 + 999dp 全圆角 + 11sp。
- * 之前是描边样式，在深色底上是一圈发亮的线，看起来像表单控件而不是"状态提示"；
- * 浅填充（主色/中性色 7–12% alpha）更安静，也和设置页、抽屉的填充语言一致。
+ * 状态芯片。形态：浅填充 + 999dp 全圆角 + 11sp。
  */
 @Composable
 private fun HintChip(

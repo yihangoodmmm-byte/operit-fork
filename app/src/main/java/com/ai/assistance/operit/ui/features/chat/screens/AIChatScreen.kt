@@ -1339,6 +1339,10 @@ private fun ChatInputBottomBar(
         }
     val cccContextText =
         "上下文 " + cccContextPercent + "% · " + cccFormatK(cccCurrentWindowSize) + "/" + cccFormatK(cccContextLimit)
+    val cccInputTokens = actualViewModel.inputTokenCount.collectAsState().value
+    val cccOutputTokens = actualViewModel.outputTokenCount.collectAsState().value
+    val cccPerRequestTokens = actualViewModel.perRequestTokenCount.collectAsState().value
+    var showTokenDetailDialog by remember { mutableStateOf(false) }
 
     // ── 模型快捷切换 ────────────────────────────────────────────
     // 与旧输入区同源：配置列表来自 ModelConfigManager，当前选中来自 FunctionalConfigManager，
@@ -1864,7 +1868,30 @@ private fun ChatInputBottomBar(
                     }
                 }
             },
+            onContextClick = { showTokenDetailDialog = true },
     )
+
+    if (showTokenDetailDialog) {
+        AlertDialog(
+            onDismissRequest = { showTokenDetailDialog = false },
+            title = { Text("上下文消耗") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("上下文窗口：" + cccFormatK(cccCurrentWindowSize) + " / " + cccFormatK(cccContextLimit))
+                    Text("已用比例：" + cccContextPercent + "%")
+                    Text("累计输入 tokens：" + cccFormatK(cccInputTokens))
+                    Text("累计输出 tokens：" + cccFormatK(cccOutputTokens))
+                    cccPerRequestTokens?.let { (input, output) ->
+                        Text("上次请求：" + cccFormatK(input) + " 输入 / " + cccFormatK(output) + " 输出")
+                    }
+                    Text("摘要阈值：" + ((summaryTokenThreshold * 100).toInt()) + "%")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showTokenDetailDialog = false }) { Text("知道了") }
+            }
+        )
+    }
 }
 
 @Composable
