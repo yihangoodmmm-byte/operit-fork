@@ -117,7 +117,16 @@ fun SettingsScreen(
                                 icon = Icons.Default.Api,
                                 onClick = navigateToModelConfig
                         )
-                        
+                        // 上下文压缩入口：重写设置页时漏挂，导致用户在设置里找不到总结/压缩与上限设置。
+                        CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_context_summary_entry),
+                                subtitle =
+                                        stringResource(
+                                                id = R.string.settings_context_summary_entry_subtitle
+                                        ),
+                                icon = Icons.Default.Compress,
+                                onClick = navigateToContextSummarySettings
+                        )
                 }
 
                 // ======= 提示词配置 =======

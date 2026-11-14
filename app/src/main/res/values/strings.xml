@@ -3638,6 +3638,12 @@
     <string name="settings_context_length_subtitle">模型记忆对话长度(k tokens)</string>
     <string name="settings_max_context_length">最大上下文长度</string>
     <string name="settings_max_context_length_subtitle">模型API支持的最大上下文长度(k tokens)</string>
+    <string name="settings_custom_context_length">自定义上下文上限</string>
+    <string name="settings_custom_context_length_desc">开启后用下方「上下文长度」作为上限，不再按模型自动推断</string>
+    <string name="settings_context_length_custom_desc">自定义上限(k tokens)，直接覆盖模型内置窗口</string>
+    <string name="settings_max_context_fallback_desc">模型未被识别时使用的上限(k tokens)</string>
+    <string name="settings_context_summary_entry">上下文压缩</string>
+    <string name="settings_context_summary_entry_subtitle">上下文用量达阈值时自动总结压缩，以及上下文上限</string>
     <string name="settings_summary_threshold">上下文使用比例阈值</string>
     <string name="settings_summary_threshold_subtitle">当上下文使用达到此百分比时自动压缩（0.1-0.95，例如 0.8 表示 80%）</string>
     

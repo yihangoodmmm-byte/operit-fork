@@ -3718,6 +3718,12 @@
     <string name="settings_context_length_subtitle">Model memory conversation length (k tokens)</string>
     <string name="settings_max_context_length">Maximum Context Length</string>
     <string name="settings_max_context_length_subtitle">Maximum context length supported by the model API (k tokens)</string>
+    <string name="settings_custom_context_length">Custom context limit</string>
+    <string name="settings_custom_context_length_desc">When on, the Context Length below is used as the limit instead of auto-detecting from the model</string>
+    <string name="settings_context_length_custom_desc">Custom limit (k tokens), overrides the built-in model window</string>
+    <string name="settings_max_context_fallback_desc">Limit used when the model is not recognized (k tokens)</string>
+    <string name="settings_context_summary_entry">Context compression</string>
+    <string name="settings_context_summary_entry_subtitle">Auto-compress when context usage hits the threshold, plus context limits</string>
     <string name="settings_summary_threshold">Summary Token Threshold</string>
     <string name="settings_summary_threshold_subtitle">Context usage percentage that triggers auto-compression (0.1-0.95, e.g. 0.8 = 80%)</string>
     

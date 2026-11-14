@@ -153,6 +153,11 @@ fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
     var maxContextLengthInput by remember(currentConfig?.id) {
         mutableStateOf(formatFloatValue(currentConfig?.maxContextLength))
     }
+    // 「自定义上下文上限」沿用 ModelConfigData.enableMaxContextMode 落库：
+    // 开启时用户填的 contextLength 直接作为生效上限，关闭时按模型内置表推断。
+    var enableCustomContextLength by remember(currentConfig?.id) {
+        mutableStateOf(currentConfig?.enableMaxContextMode ?: false)
+    }
     var contextError by remember { mutableStateOf<String?>(null) }
 
     var enableSummary by remember(currentConfig?.id) {
@@ -190,6 +195,9 @@ fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
     }
     LaunchedEffect(currentConfig?.id, currentConfig?.maxContextLength) {
         maxContextLengthInput = formatFloatValue(currentConfig?.maxContextLength)
+    }
+    LaunchedEffect(currentConfig?.id, currentConfig?.enableMaxContextMode) {
+        enableCustomContextLength = currentConfig?.enableMaxContextMode ?: false
     }
     LaunchedEffect(currentConfig?.id, currentConfig?.enableSummary) {
         enableSummary = currentConfig?.enableSummary ?: false
@@ -237,7 +245,13 @@ fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
 
     ContextSummaryAutoSaveEffects(
         currentConfig = currentConfig,
-        contextInputsProvider = { contextLengthInput to maxContextLengthInput },
+        contextInputsProvider = {
+            ContextLengthInputs(
+                contextLength = contextLengthInput,
+                maxContextLength = maxContextLengthInput,
+                enableCustomContextLength = enableCustomContextLength
+            )
+        },
         summaryInputsProvider = {
             listOf(
                 enableSummary,
@@ -317,6 +331,11 @@ fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
 
                 RenderContextSummaryConfigSections(
                     componentBackgroundColor = componentBackgroundColor,
+                    enableCustomContextLength = enableCustomContextLength,
+                    onEnableCustomContextLengthChange = {
+                        enableCustomContextLength = it
+                        contextError = null
+                    },
                     contextLengthInput = contextLengthInput,
                     onContextLengthInputChange = {
                         contextLengthInput = it
@@ -400,10 +419,17 @@ fun ContextSummarySettingsScreen(onBackPressed: () -> Unit) {
     }
 }
 
+/** 上下文相关输入的三元组：自定义上限值 / 未识别模型的兜底上限 / 自定义开关。 */
+private data class ContextLengthInputs(
+    val contextLength: String,
+    val maxContextLength: String,
+    val enableCustomContextLength: Boolean
+)
+
 @Composable
 private fun ContextSummaryAutoSaveEffects(
     currentConfig: ModelConfigData?,
-    contextInputsProvider: () -> Pair<String, String>,
+    contextInputsProvider: () -> ContextLengthInputs,
     summaryInputsProvider: () -> List<Any>,
     modelConfigManager: ModelConfigManager,
     errorValidContextLength: String,
@@ -422,9 +448,9 @@ private fun ContextSummaryAutoSaveEffects(
             .drop(1)
             .debounce(700)
             .distinctUntilChanged()
-            .collectLatest { (contextText, maxText) ->
-                val contextValue = contextText.toFloatOrNull()
-                val maxValue = maxText.toFloatOrNull()
+            .collectLatest { inputs ->
+                val contextValue = inputs.contextLength.toFloatOrNull()
+                val maxValue = inputs.maxContextLength.toFloatOrNull()
                 when {
                     contextValue == null || contextValue <= 0f ->
                         onContextErrorChange(errorValidContextLength)
@@ -433,7 +459,10 @@ private fun ContextSummaryAutoSaveEffects(
                     else -> {
                         val current = latestConfig ?: return@collectLatest
                         if (current.id != configId) return@collectLatest
-                        if (current.contextLength == contextValue && current.maxContextLength == maxValue) {
+                        if (current.contextLength == contextValue &&
+                            current.maxContextLength == maxValue &&
+                            current.enableMaxContextMode == inputs.enableCustomContextLength
+                        ) {
                             onContextErrorChange(null)
                             return@collectLatest
                         }
@@ -442,7 +471,7 @@ private fun ContextSummaryAutoSaveEffects(
                                 configId = current.id,
                                 contextLength = contextValue,
                                 maxContextLength = maxValue,
-                                enableMaxContextMode = current.enableMaxContextMode
+                                enableMaxContextMode = inputs.enableCustomContextLength
                             )
                             onContextErrorChange(null)
                         } catch (e: Exception) {
@@ -686,6 +715,8 @@ private fun ContextSummaryDialogueReviewAutoSaveEffect(
 @Composable
 private fun RenderContextSummaryConfigSections(
     componentBackgroundColor: Color,
+    enableCustomContextLength: Boolean,
+    onEnableCustomContextLengthChange: (Boolean) -> Unit,
     contextLengthInput: String,
     onContextLengthInputChange: (String) -> Unit,
     maxContextLengthInput: String,
@@ -718,20 +749,33 @@ private fun RenderContextSummaryConfigSections(
         text = stringResource(id = R.string.settings_context_card_content),
         backgroundColor = componentBackgroundColor
     )
+    SettingsSwitchRow(
+        title = stringResource(id = R.string.settings_custom_context_length),
+        subtitle = stringResource(id = R.string.settings_custom_context_length_desc),
+        checked = enableCustomContextLength,
+        onCheckedChange = onEnableCustomContextLengthChange,
+        backgroundColor = componentBackgroundColor
+    )
     SettingsInputField(
         title = stringResource(id = R.string.settings_context_length),
-        subtitle = stringResource(id = R.string.settings_context_length_subtitle),
+        subtitle =
+            if (enableCustomContextLength) {
+                stringResource(id = R.string.settings_context_length_custom_desc)
+            } else {
+                stringResource(id = R.string.settings_context_length_subtitle)
+            },
         value = contextLengthInput,
         onValueChange = onContextLengthInputChange,
         unitText = "K",
         backgroundColor = componentBackgroundColor,
+        enabled = enableCustomContextLength,
         allowDecimal = true,
         keyboardOptions =
             KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next)
     )
     SettingsInputField(
         title = stringResource(id = R.string.settings_max_context_length),
-        subtitle = stringResource(id = R.string.settings_max_context_length_subtitle),
+        subtitle = stringResource(id = R.string.settings_max_context_fallback_desc),
         value = maxContextLengthInput,
         onValueChange = onMaxContextLengthInputChange,
         unitText = "K",

@@ -32,6 +32,27 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * 解析当前生效的上下文上限（单位：k tokens）。
+ *
+ * 三条来源的优先级是明确契约，不是可选项：
+ * 1. 用户开启「自定义上下文上限」时，直接采用其填写的值。这个开关存在的唯一理由就是让用户
+ *    覆盖内置表——若这里仍让内置表优先，用户填的数字永远不会生效，「自定义」名不副实。
+ * 2. 否则按模型 id 从 ModelContextWindows 推断真实窗口。
+ * 3. 模型无法识别时，用用户填写的 maxContextLength 作为该模型的上限。
+ */
+internal fun resolveEffectiveContextLength(
+    modelName: String,
+    customContextLength: Float,
+    enableCustomContextLength: Boolean,
+    maxContextLength: Float
+): Float {
+    if (enableCustomContextLength) {
+        return customContextLength
+    }
+    return ModelContextWindows.resolveTokens(modelName)?.let { it / 1024f } ?: maxContextLength
+}
+
 data class ChatContextSettings(
     val configId: String,
     val baseContextLength: Float,
@@ -266,10 +287,16 @@ class ApiConfigDelegate(
     val effectiveContextLength: StateFlow<Float> =
             combine(
                 effectiveChatConfig.map { config -> config.modelName },
-                effectiveMaxContextLengthSetting
-            ) { modelName, maxLength ->
-                ModelContextWindows.resolveTokens(modelName)?.let { it / 1024f }
-                    ?: maxLength
+                effectiveBaseContextLength,
+                effectiveMaxContextLengthSetting,
+                effectiveEnableMaxContextMode
+            ) { modelName, customLength, maxLength, enableCustom ->
+                resolveEffectiveContextLength(
+                    modelName = modelName,
+                    customContextLength = customLength,
+                    enableCustomContextLength = enableCustom,
+                    maxContextLength = maxLength
+                )
             }
                 .stateIn(
                     configScope,
@@ -393,8 +420,12 @@ class ApiConfigDelegate(
 
     private fun buildChatContextSettings(configId: String, config: ModelConfigData): ChatContextSettings {
         val effectiveContextLength =
-            ModelContextWindows.resolveTokens(config.modelName)?.let { it / 1024f }
-                ?: config.maxContextLength
+            resolveEffectiveContextLength(
+                modelName = config.modelName,
+                customContextLength = config.contextLength,
+                enableCustomContextLength = config.enableMaxContextMode,
+                maxContextLength = config.maxContextLength
+            )
         return ChatContextSettings(
             configId = configId,
             baseContextLength = config.contextLength,
